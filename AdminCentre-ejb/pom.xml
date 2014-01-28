@@ -7,7 +7,7 @@
     <version>1.0-SNAPSHOT</version>
   </parent>
 
-    <groupId>com.engagepoint.university.admincentre</groupId>
+    <groupId>com.engagepoint.university.admincentre.ejb</groupId>
     <artifactId>AdminCentre-ejb</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>ejb</packaging>
