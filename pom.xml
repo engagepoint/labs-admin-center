@@ -7,8 +7,8 @@
   <packaging>pom</packaging>
   <name>AdminCentre</name>
   <modules>
-    <module>AdminCentre-ear</module>
     <module>AdminCentre-web</module>
     <module>AdminCentre-ejb</module>
+    <module>AdminCentre-ear</module>
   </modules>
 </project>
