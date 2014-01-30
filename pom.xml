@@ -10,5 +10,6 @@
     <module>AdminCentre-web</module>
     <module>AdminCentre-ejb</module>
     <module>AdminCentre-ear</module>
+    <module>AdminCentre-jar</module>
   </modules>
 </project>
