@@ -7,19 +7,19 @@ import javax.faces.bean.ManagedBean;
  *
  * @author artem.lysenko
  */
-@ManagedBean
+@ManagedBean (name = "document")
 public class Document implements Serializable, Comparable<Document> {
 
     private String name;
-    private String size;
+    private String value;
     private String type;
 
     public Document() {
     }
 
-    public Document(String name, String size, String type) {
+    public Document(String name, String value, String type) {
         this.name = name;
-        this.size = size;
+        this.value = value;
         this.type = type;
     }
 
@@ -31,12 +31,12 @@ public class Document implements Serializable, Comparable<Document> {
         this.name = name;
     }
 
-    public String getSize() {
-        return size;
+    public String getValue() {
+        return value;
     }
 
-    public void setSize(String size) {
-        this.size = size;
+    public void setValue(String value) {
+        this.value = value;
     }
 
     public String getType() {
@@ -53,7 +53,7 @@ public class Document implements Serializable, Comparable<Document> {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((size == null) ? 0 : size.hashCode());
+        result = prime * result + ((value == null) ? 0 : value.hashCode());
         result = prime * result + ((type == null) ? 0 : type.hashCode());
         return result;
     }
@@ -77,11 +77,11 @@ public class Document implements Serializable, Comparable<Document> {
         } else if (!name.equals(other.name)) {
             return false;
         }
-        if (size == null) {
-            if (other.size != null) {
+        if (value == null) {
+            if (other.value != null) {
                 return false;
             }
-        } else if (!size.equals(other.size)) {
+        } else if (!value.equals(other.value)) {
             return false;
         }
         if (type == null) {
