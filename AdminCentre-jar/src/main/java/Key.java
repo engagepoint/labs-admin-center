@@ -10,7 +10,6 @@ public class Key {
     private String key;
     private String type;
     private String value;
-    private Node node;
 
     public String getKey() {
         return key;

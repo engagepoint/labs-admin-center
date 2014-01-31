@@ -5,11 +5,15 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class Main {
-    final static Logger logger = Logger.getLogger(Main.class.getName());
+public final class Main {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
     private static StringBuilder stringBuilder = new StringBuilder("---");
+
+    private Main(){}
 
     public static void main(String[] args) {
         if (checkArgs(args)) {
@@ -29,52 +33,52 @@ public class Main {
 
             while ((line = br.readLine()) != null) {
 
-                if (line.equalsIgnoreCase(CommandConstants.EXIT)){
+                if (CommandConstants.EXIT.equalsIgnoreCase(line)){
                     break;
                 }
 
-                System.out.println("Execution command: " + line);
+                LOGGER.info("Execution command: " + line);
             }
 
         } catch (IOException ioe) {
-            System.out.println("Exception while reading input " + ioe);
+            LOGGER.warn("Exception while reading input " + ioe);
         } finally {
             // close the streams using close method
             try {
                 if (br != null) {
-                    System.out.println("Thank you for using EngagePoint Admin Centre...");
+                    LOGGER.info("Thank you for using EngagePoint Admin Centre...");
                     br.close();
                 }
             } catch (IOException ioe) {
-                System.out.println("Error while closing stream: " + ioe);
+                LOGGER.warn("Error while closing stream: " + ioe);
             }
 
         }
 
     }
 
-    private static boolean checkArgs(String[] args) {
+    private static boolean checkArgs(String ... args) {
         try {
-            if (args[0].equals(CommandConstants.VIEW) && args.length == 1) {
-                logger.info("Welcome to EngagePoint Admin Centre...");
+            if (CommandConstants.VIEW.equals(args[0]) && args.length == 1) {
+                LOGGER.info("Welcome to EngagePoint Admin Centre...");
             } else {
-                logger.warning("Illegal arguments");
+                LOGGER.warn("Illegal arguments");
                 return false;
             }
         } catch (ArrayIndexOutOfBoundsException e) {
-            logger.warning("Illegal arguments");
+            LOGGER.warn("Illegal arguments");
             return false;
         }
         return true;
     }
 
     private static void displayNodes(Node node) {
-        System.out.println(stringBuilder + "Node name = " + node.getName());
+        LOGGER.info(stringBuilder + "Node name = " + node.getName());
         displayKeys(node);
         if (node.getChildNodes() != null) {
             stringBuilder.insert(0, "   ");
-            System.out.println(stringBuilder.substring(0, stringBuilder.length() - 3) + "|");
-            System.out.println(stringBuilder.substring(0, stringBuilder.length() - 3) + "|");
+            LOGGER.info(stringBuilder.substring(0, stringBuilder.length() - 3) + "|");
+            LOGGER.info(stringBuilder.substring(0, stringBuilder.length() - 3) + "|");
             Iterator iterator = node.getChildNodes().iterator();
             while (iterator.hasNext()) {
                 Node n = (Node) iterator.next();
@@ -87,9 +91,10 @@ public class Main {
     }
 
     private static void displayKeys(Node node) {
-        if (node.getKeys() != null) {
-            for (Key key : node.getKeys()) {
-                System.out.println(stringBuilder.substring(0, stringBuilder.length() - 3) + "   Key = " + key.getKey() + ";" +
+        List <Key>keyList = node.getKeys();
+        if (keyList != null) {
+            for (Key key :keyList) {
+                LOGGER.info(stringBuilder.substring(0, stringBuilder.length() - 3) + "   Key = " + key.getKey() + ";" +
                         " Type = " + key.getType() + "; Value = " + key.getValue());
 
             }
