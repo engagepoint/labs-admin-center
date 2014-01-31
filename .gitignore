@@ -62,3 +62,9 @@ dist/
 nbdist/
 nbactions.xml
 nb-configuration.xml
+=======
+/AdminCentre-ear/target/
+/target/
+/AdminCentre-ejb/target/
+/AdminCentre-web/target/
+/nb-cofiguration.xml
