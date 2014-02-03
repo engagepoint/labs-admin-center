@@ -2,24 +2,35 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.logging.Logger;
 
 public final class Main {
+    private static final ConsoleController CONSOLE_CONTROLLER = new ConsoleController();
+    private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
-    private static StringBuilder stringBuilder = new StringBuilder("---");
-
-    private Main(){}
+    private Main() {
+    }
 
     public static void main(String[] args) {
         if (checkArgs(args)) {
-            displayNodes(getParentNode());
+            CONSOLE_CONTROLLER.displayNodes(DB.getParentNode());
             connectToInputStream();
         }
+    }
+
+    private static boolean checkArgs(String... args) {
+        try {
+            if (Commands.VIEW.getName().equals(args[0]) && args.length == 1) {
+                LOGGER.info("Welcome to EngagePoint Admin Centre...");
+            } else {
+                LOGGER.warning("Illegal arguments");
+                return false;
+            }
+        } catch (ArrayIndexOutOfBoundsException e) {
+            LOGGER.warning("Illegal arguments");
+            return false;
+        }
+        return true;
     }
 
     private static void connectToInputStream() {
@@ -32,120 +43,68 @@ public final class Main {
             String line = null;
 
             while ((line = br.readLine()) != null) {
-
-                if (CommandConstants.EXIT.equalsIgnoreCase(line)){
+                if (Commands.EXIT.getName().equals(line)) {
                     break;
                 }
-
-                LOGGER.info("Execution command: " + line);
+                analyzeLine(line);
             }
-
         } catch (IOException ioe) {
-            LOGGER.warn("Exception while reading input " + ioe);
+            LOGGER.warning("Exception while reading input " + ioe);
         } finally {
             // close the streams using close method
             try {
                 if (br != null) {
-                    LOGGER.info("Thank you for using EngagePoint Admin Centre...");
+                    LOGGER.info("Thank you for using EngagePoint Admin Center...");
                     br.close();
                 }
             } catch (IOException ioe) {
-                LOGGER.warn("Error while closing stream: " + ioe);
-            }
-
-        }
-
-    }
-
-    private static boolean checkArgs(String ... args) {
-        try {
-            if (CommandConstants.VIEW.equals(args[0]) && args.length == 1) {
-                LOGGER.info("Welcome to EngagePoint Admin Centre...");
-            } else {
-                LOGGER.warn("Illegal arguments");
-                return false;
-            }
-        } catch (ArrayIndexOutOfBoundsException e) {
-            LOGGER.warn("Illegal arguments");
-            return false;
-        }
-        return true;
-    }
-
-    private static void displayNodes(Node node) {
-        LOGGER.info(stringBuilder + "Node name = " + node.getName());
-        displayKeys(node);
-        if (node.getChildNodes() != null) {
-            stringBuilder.insert(0, "   ");
-            LOGGER.info(stringBuilder.substring(0, stringBuilder.length() - 3) + "|");
-            LOGGER.info(stringBuilder.substring(0, stringBuilder.length() - 3) + "|");
-            Iterator iterator = node.getChildNodes().iterator();
-            while (iterator.hasNext()) {
-                Node n = (Node) iterator.next();
-                displayNodes(n);
-            }
-            if (!iterator.hasNext()) {
-                stringBuilder.delete(0, 3);
+                LOGGER.warning("Error while closing stream: " + ioe);
             }
         }
     }
 
-    private static void displayKeys(Node node) {
-        List <Key>keyList = node.getKeys();
-        if (keyList != null) {
-            for (Key key :keyList) {
-                LOGGER.info(stringBuilder.substring(0, stringBuilder.length() - 3) + "   Key = " + key.getKey() + ";" +
-                        " Type = " + key.getType() + "; Value = " + key.getValue());
+    private static void analyzeLine(String line) {
+        String[] arguments = line.split(" ");
 
+        // -help command
+        if (Commands.HELP.getName().equals(arguments[0])) {
+            CONSOLE_CONTROLLER.showHelp();
+        }
+
+        // -view command
+        if (Commands.VIEW.getName().equals(arguments[0])) {
+            CONSOLE_CONTROLLER.displayNodes(CONSOLE_CONTROLLER.getCurrentNode());
+        }
+
+        // -choose command
+        if (Commands.CHOOSE.getName().equals(arguments[0])) {
+            if ("-ch".equals(arguments[1])) {
+                if (arguments.length == 3) {
+                    CONSOLE_CONTROLLER.chooseChildNode(arguments[2]);
+                }
+            }
+            if ("-p".equals(arguments[1])) {
+                if (arguments.length == 2) {
+                    CONSOLE_CONTROLLER.chooseParentNode();
+                }
             }
         }
-    }
 
-    private static Node getParentNode() {
-        Node nodeParent = new Node();
+        // -create command
+        if (Commands.CREATE.getName().equals(arguments[0])) {
+            if (arguments.length == 3) {
+                if ("-node".equals(arguments[1])) {
+                    CONSOLE_CONTROLLER.createNode(arguments[2]);
+                }
+            }
 
-        Node nodeChild1 = new Node();
-        Node nodeChild2 = new Node();
-        Node nodeChild3 = new Node();
-
-        Node nodeChild11 = new Node();
-        Node nodeChild22 = new Node();
-        Node nodeChild33 = new Node();
-
-        nodeParent.setName("Parent");
-
-        nodeChild1.setName("Child1");
-        nodeChild2.setName("Child2");
-        nodeChild3.setName("Child3");
-
-        nodeChild11.setName("Child11");
-        nodeChild22.setName("Child22");
-        nodeChild33.setName("Child33");
-
-        List<Node> list = new ArrayList<Node>();
-        list.add(nodeChild1);
-        list.add(nodeChild2);
-        list.add(nodeChild3);
-
-        List<Node> list1 = new ArrayList<Node>();
-        list1.add(nodeChild11);
-        list1.add(nodeChild22);
-        list1.add(nodeChild33);
-
-        List<Key> keyList1 = new ArrayList<Key>();
-        keyList1.add(new Key("1", "11", "111"));
-        keyList1.add(new Key("2", "22", "222"));
-        keyList1.add(new Key("3", "33", "333"));
-        keyList1.add(new Key("4", "44", "444"));
-
-        nodeParent.setChildNodes(list);
-        nodeChild1.setChildNodes(list1);
-
-        nodeChild2.setKeys(keyList1);
-        nodeChild33.setKeys(keyList1);
-
-
-        return nodeParent;
+            if (arguments.length == 5) {
+                if ("-key".equals(arguments[1])) {
+                    {
+                        CONSOLE_CONTROLLER.createKey(arguments[2], arguments[3], arguments[4]);
+                    }
+                }
+            }
+        }
     }
 }
-

@@ -1,14 +1,11 @@
+import java.util.ArrayList;
 import java.util.List;
 
 public class Node {
     private String name;
-
-    private List<Key> keys;
-
-    private Node parentNode;
-
-
-    private List<Node> childNodes;
+    private List<Node> childNodes = new ArrayList<Node>();
+    private List<Key> keys = new ArrayList<Key>();
+    private Node parentNode ;
 
     public String getName() {
         return name;
