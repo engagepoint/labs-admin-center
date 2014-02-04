@@ -6,7 +6,7 @@
     </global>
     <namedCache name="evictionCache">
         <persistence passivation="false">
-            <singleFile location="D:\\infinispan"
+            <singleFile location="D:/infinispan/db"
                         fetchPersistentState="true" preload="true" ignoreModifications="false"
                         purgeOnStartup="false" shared="false">
             </singleFile>

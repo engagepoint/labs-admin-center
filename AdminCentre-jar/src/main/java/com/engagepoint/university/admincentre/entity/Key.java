@@ -10,6 +10,16 @@ public class Key extends AbstractEntity implements Serializable {
     //TODO change value type to byte
     private String value;
 
+    public Key() {
+
+    }
+
+    public Key(String name, KeyType type, String value) {
+        this.name = name;
+        this.type = type;
+        this.value = value;
+    }
+
     public KeyType getType() {
         return type;
     }
