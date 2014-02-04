@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">-->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:cc="http://java.sun.com/jsf/composite"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ezui="http://java.sun.com/jsf/composite/ezui/components"
+                xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:form id="form">
+
+            <p:treeTable id="treetable" value="#{documentsController.root}" var="document">
+                <f:facet name="header">
+                    Properties Viewer
+                </f:facet>
+
+                <p:column style="width:32%">
+                    <f:facet name="header">
+                        File
+                    </f:facet>
+                    <h:outputText value="#{document.name}" />
+                </p:column>
+
+                <p:column style="width:32%">
+                    <f:facet name="header">
+                        Value
+                    </f:facet>
+                    <h:outputText value="#{document.value}" />
+                </p:column>
+
+                <p:column style="width:32%">
+                    <f:facet name="header">
+                        Type
+                    </f:facet>
+                    <h:outputText value="#{document.type}" />
+                </p:column>
+
+                <p:column style="width:4%">
+                    <f:facet name="header">
+                        Edit
+                    </f:facet>
+                    <p:commandLink update=":form:documentPanel" oncomplete="PF('documentDialog').show()" title="View Detail" styleClass="ui-icon ui-icon-search">
+                        <f:setPropertyActionListener value="#{document}" 
+                                                     target="#{documentsController.selectedDocument}" />
+                    </p:commandLink>
+                </p:column>
+            </p:treeTable>
+
+            <p:dialog id="dialog" header="Document Detail" showEffect="fade" widgetVar="documentDialog" modal="true">
+                <p:outputPanel id="documentPanel">
+                    <h:panelGrid  columns="2" cellpadding="5" rendered="#{not empty documentsController.selectedDocument}">
+                        <h:outputLabel for="name" value="Name: " />
+                        <h:outputText id="name" value="#{documentsController.selectedDocument.name}" style="font-weight:bold" />
+
+                        <h:outputLabel for="value" value="Value: " />
+                        <h:outputText id="value" value="#{documentsController.selectedDocument.value}" style="font-weight:bold" />
+
+                        <h:outputLabel for="type" value="Type " />
+                        <h:outputText id="type" value="#{documentsController.selectedDocument.type}" style="font-weight:bold" />
+                    </h:panelGrid>
+                </p:outputPanel>
+            </p:dialog>
+
+        </h:form>
+    </cc:implementation>
+</ui:composition>
+<!--</html>-->
