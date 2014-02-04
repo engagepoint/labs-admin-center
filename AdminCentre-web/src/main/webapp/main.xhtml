@@ -24,9 +24,9 @@
              <h:form id="form">  
 
             <p:contextMenu for="treeTable">  
-                <p:menuitem value="View" update="documentPanel" icon="ui-icon-search" oncomplete="PF('documentDialog').show()"/>  
+                <p:menuitem value="View" />  
                 <p:menuitem value="Add new Node"   actionListener="#{documentsController.addNode}" update="treeTable" />  
-                <p:menuitem value="Update" update="updateNodePanel"  oncomplete="PF('updateNodeDialog').show()"/>  
+                <p:menuitem value="Update" />  
                 <p:menuitem value="Delete" actionListener="#{documentsController.deleteNode}" update="treeTable"/> 
             </p:contextMenu>  
 
@@ -75,12 +75,9 @@
                         Edit
                     </f:facet>
                     <p:menuButton value=""  id="menuButton" >  
-                        <p:menuitem value="View"  update=":form:documentPanel"  oncomplete="PF('documentDialog').show()" >
-                                <f:setPropertyActionListener value="#{documentsController.selectedNode}"   
-                                                                     class="" target="#{documentsController.selectedNode}" />  
-                        </p:menuitem>
-                        <p:menuitem value="Add new Node" update=":form:addNodePanel" onclick="PF('addNodeDialog').show()"/>  
-                        <p:menuitem value="Update" update=":form:updateNodePanel" onclick="PF('updateNodeDialog').show()"/>  
+                        <p:menuitem value="View">    </p:menuitem>
+                        <p:menuitem value="Add new Node" />  
+                        <p:menuitem value="Update" />  
            
                         <p:menuitem value="Delete" />  
                     </p:menuButton>  
