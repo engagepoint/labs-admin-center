@@ -1,0 +1,35 @@
+<infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:infinispan:config:6.0 http://www.infinispan.org/schemas/infinispan-config-6.0.xsd"
+            xmlns="urn:infinispan:config:6.0">
+    <global>
+        <globalJmxStatistics allowDuplicateDomains="true"/>
+    </global>
+    <namedCache name="evictionCache">
+        <persistence passivation="false">
+            <singleFile location="D:\\infinispan"
+                        fetchPersistentState="true" preload="true" ignoreModifications="false"
+                        purgeOnStartup="false" shared="false">
+            </singleFile>
+        </persistence>
+        <indexing enabled="true">
+
+        </indexing>
+    </namedCache>
+</infinispan>
+
+        <!-- for infispan 5.1.1 -->
+        <!-- <namedCache name="evictionCache" > -->
+        <!-- <loaders passivation="false" shared="false" preload="true"> -->
+        <!-- name of loader (local file storage is using) -->
+        <!-- <loader class="org.infinispan.loaders.file.FileCacheStore" -->
+        <!-- fetchPersistentState="true" ignoreModifications="false" -->
+        <!-- > -->
+        <!-- <properties> -->
+        <!-- write in file when put invokes -->
+        <!-- <property name="fsyncMode" value="perWrite" /> -->
+        <!-- saved file location -->
+        <!-- <property name="location" value="D:\\infinispan" /> -->
+        <!-- </properties> -->
+        <!-- </loader> -->
+        <!-- </loaders> -->
+        <!-- </namedCache> -->

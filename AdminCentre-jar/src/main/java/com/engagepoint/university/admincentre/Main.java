@@ -1,5 +1,8 @@
 package com.engagepoint.university.admincentre;
 
+import com.engagepoint.university.admincentre.dao.NodeDAO;
+import com.engagepoint.university.admincentre.entity.Node;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,16 +10,23 @@ import java.io.InputStreamReader;
 import java.util.logging.Logger;
 
 public final class Main {
-    private static final ConsoleController CONSOLE_CONTROLLER = new ConsoleController();
     private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
+
+    private static final ConsoleController CONSOLE_CONTROLLER = new ConsoleController();
+    private static Node root =  new NodeDAO().getRoot();
+
+    static {
+      //      DBInfinispan.setNodeDAO();
+    }
 
     private Main() {
     }
 
     public static void main(String[] args) {
+
         if (checkArgs(args)) {
-            CONSOLE_CONTROLLER.displayNodes(DB.getParentNode());
-            connectToInputStream();
+            CONSOLE_CONTROLLER.displayNodes(root);
+            //connectToInputStream();
         }
     }
 
@@ -66,47 +76,47 @@ public final class Main {
     }
 
     private static void analyzeLine(String line) {
-        String[] arguments = line.split(" ");
-
-        // -help command
-        if (Commands.HELP.getName().equals(arguments[0])) {
-            CONSOLE_CONTROLLER.showHelp();
-        }
-
-        // -view command
-        if (Commands.VIEW.getName().equals(arguments[0])) {
-            CONSOLE_CONTROLLER.displayNodes(CONSOLE_CONTROLLER.getCurrentNode());
-        }
-
-        // -choose command
-        if (Commands.CHOOSE.getName().equals(arguments[0])) {
-            if ("-ch".equals(arguments[1])) {
-                if (arguments.length == 3) {
-                    CONSOLE_CONTROLLER.chooseChildNode(arguments[2]);
-                }
-            }
-            if ("-p".equals(arguments[1])) {
-                if (arguments.length == 2) {
-                    CONSOLE_CONTROLLER.chooseParentNode();
-                }
-            }
-        }
-
-        // -create command
-        if (Commands.CREATE.getName().equals(arguments[0])) {
-            if (arguments.length == 3) {
-                if ("-node".equals(arguments[1])) {
-                    CONSOLE_CONTROLLER.createNode(arguments[2]);
-                }
-            }
-
-            if (arguments.length == 5) {
-                if ("-key".equals(arguments[1])) {
-                    {
-                        CONSOLE_CONTROLLER.createKey(arguments[2], arguments[3], arguments[4]);
-                    }
-                }
-            }
-        }
+//        String[] arguments = line.split(" ");
+//
+//        // -help command
+//        if (Commands.HELP.getName().equals(arguments[0])) {
+//            CONSOLE_CONTROLLER.showHelp();
+//        }
+//
+//        // -view command
+//        if (Commands.VIEW.getName().equals(arguments[0])) {
+//            //CONSOLE_CONTROLLER.displayNodes(CONSOLE_CONTROLLER.getCurrentNode());
+//        }
+//
+//        // -choose command
+//        if (Commands.CHOOSE.getName().equals(arguments[0])) {
+//            if ("-ch".equals(arguments[1])) {
+//                if (arguments.length == 3) {
+//                    CONSOLE_CONTROLLER.chooseChildNode(arguments[2]);
+//                }
+//            }
+//            if ("-p".equals(arguments[1])) {
+//                if (arguments.length == 2) {
+//                    CONSOLE_CONTROLLER.chooseParentNode();
+//                }
+//            }
+//        }
+//
+//        // -create command
+//        if (Commands.CREATE.getName().equals(arguments[0])) {
+//            if (arguments.length == 3) {
+//                if ("-node".equals(arguments[1])) {
+//                    CONSOLE_CONTROLLER.createNode(arguments[2]);
+//                }
+//            }
+//
+//            if (arguments.length == 5) {
+//                if ("-key".equals(arguments[1])) {
+//                    {
+//                        CONSOLE_CONTROLLER.createKey(arguments[2], arguments[3], arguments[4]);
+//                    }
+//                }
+//            }
+//        }
     }
 }

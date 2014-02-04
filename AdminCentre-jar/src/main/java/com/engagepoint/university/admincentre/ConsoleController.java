@@ -1,14 +1,20 @@
 package com.engagepoint.university.admincentre;
 
+import com.engagepoint.university.admincentre.dao.NodeDAO;
+import com.engagepoint.university.admincentre.entity.Node;
+
+import java.io.IOException;
 import java.util.Iterator;
-import java.util.List;
+
 
 public class ConsoleController {
 
-    private static Node currentNode = DB.getParentNode();
+    private static Node currentNode = new NodeDAO().getRoot();
 
     private final static int FIX_LENGTH = 30;
     private final static StringBuilder ALIGN_STRING = new StringBuilder("---");
+
+
 
     public Node getCurrentNode() {
         return currentNode;
@@ -38,15 +44,21 @@ public class ConsoleController {
     }
 
     public void displayNodes(Node node) {
-        System.out.println(ALIGN_STRING + "com.engagepoint.university.admincentre.Node name = " + node.getName());
-        displayKeys(node);
-        if( (node.getChildNodes() != null) && (!node.getChildNodes().isEmpty()) ){
+        System.out.println(ALIGN_STRING + " name = " + node.getName());
+        NodeDAO nodeDAO = new NodeDAO();
+        // displayKeys(node);
+        if (!node.getChildNodeIdList().isEmpty()) {
             ALIGN_STRING.insert(0, "   ");
             System.out.println(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3) + "|");
             System.out.println(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3) + "|");
-            Iterator iterator = node.getChildNodes().iterator();
+            Iterator iterator = node.getChildNodeIdList().iterator();
             while (iterator.hasNext()) {
-                Node n = (Node) iterator.next();
+                Node n = null;
+                try {
+                    n = nodeDAO.read((String) iterator.next());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 displayNodes(n);
             }
             if (!iterator.hasNext()) {
@@ -55,70 +67,70 @@ public class ConsoleController {
         }
     }
 
-    private void displayKeys(Node node) {
-        List<Key> keyList = node.getKeys();
-        if (keyList != null) {
-            for (Key key : keyList) {
-                System.out.println(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3) + "   com.engagepoint.university.admincentre.Key = " + key.getKey() + ";" +
-                        " Type = " + key.getType() + "; Value = " + key.getValue());
-
-            }
-            System.out.println();
-        }
-    }
-
-    public boolean chooseChildNode(String childNodeName) {
-        List<Node> nodeList = currentNode.getChildNodes();
-        if (nodeList != null) {
-            for (Node node : nodeList) {
-                if (node.getName().equals(childNodeName)) {
-                    currentNode = node;
-                    displayNodes(currentNode);
-                    System.out.println();
-                    System.out.println("Current com.engagepoint.university.admincentre.Node node is ----> " + childNodeName);
-                    return true;
-                }
-            }
-        }
-        System.out.println();
-        System.out.println("Wrong child com.engagepoint.university.admincentre.Node name...");
-        return false;
-    }
-
-
-    public boolean chooseParentNode() {
-        Node parentNode = currentNode.getParentNode();
-        if (parentNode != null) {
-            currentNode = parentNode;
-            displayNodes(currentNode);
-            System.out.println();
-            System.out.println("Current com.engagepoint.university.admincentre.Node node is ----> " + currentNode.getName());
-            return true;
-        }
-        System.out.println();
-        System.out.println("Wrong parent com.engagepoint.university.admincentre.Node name...");
-        return false;
-    }
-
-    public void createNode(String nodeName) {
-        Node newNode = new Node();
-        newNode.setName(nodeName);
-        newNode.setParentNode(currentNode);
-        currentNode.getChildNodes().add(newNode);
-        displayNodes(currentNode);
-    }
-
-    public void createKey(String keyName, String keyType, String keyValue) {
-        Key newKey = new Key(keyName, keyType, keyValue);
-        currentNode.getKeys().add(newKey);
-        displayNodes(currentNode);
-    }
-
-    //TODO
-    public boolean nameValidation(String name) {
-        if (Character.isDigit(name.charAt(0))) {
-
-        }
-        return false;
-    }
+//    private void displayKeys(Node node) {
+//        List<Key> keyList = node.getKeys();
+//        if (keyList != null) {
+//            for (Key key : keyList) {
+//                System.out.println(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3) + " Key = " + key.getKey() + ";" +
+//                        " Type = " + key.getType() + "; Value = " + key.getValue());
+//
+//            }
+//            System.out.println();
+//        }
+//    }
+//
+//    public boolean chooseChildNode(String childNodeName) {
+//        List<Node> nodeList = currentNode.getChildNodes();
+//        if (nodeList != null) {
+//            for (Node node : nodeList) {
+//                if (node.getName().equals(childNodeName)) {
+//                    currentNode = node;
+//                    displayNodes(currentNode);
+//                    System.out.println();
+//                    System.out.println("Current Node node is ----> " + childNodeName);
+//                    return true;
+//                }
+//            }
+//        }
+//        System.out.println();
+//        System.out.println("Wrong child Node name...");
+//        return false;
+//    }
+//
+//
+//    public boolean chooseParentNode() {
+//        Node parentNode = currentNode.getParentNode();
+//        if (parentNode != null) {
+//            currentNode = parentNode;
+//            displayNodes(currentNode);
+//            System.out.println();
+//            System.out.println("Current Node node is ----> " + currentNode.getName());
+//            return true;
+//        }
+//        System.out.println();
+//        System.out.println("Wrong parent Node name...");
+//        return false;
+//    }
+//
+//    public void createNode(String nodeName) {
+//        Node newNode = new Node();
+//        newNode.setName(nodeName);
+//        newNode.setParentNode(currentNode);
+//        currentNode.getChildNodes().add(newNode);
+//        displayNodes(currentNode);
+//    }
+//
+//    public void createKey(String keyName, String keyType, String keyValue) {
+//        Key newKey = new Key(keyName, keyType, keyValue);
+//        currentNode.getKeys().add(newKey);
+//        displayNodes(currentNode);
+//    }
+//
+//    //TODO
+//    public boolean nameValidation(String name) {
+//        if (Character.isDigit(name.charAt(0))) {
+//
+//        }
+//        return false;
+//    }
 }

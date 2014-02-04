@@ -1,7 +1,9 @@
 package com.engagepoint.university.admincentre.dao;
 
-/**
- * Created by ievgen.abramov on 2/4/14.
- */
-public class KeyDAO {
+import com.engagepoint.university.admincentre.entity.Key;
+
+public class KeyDAO extends AbstractDAO<Key> {
+    public KeyDAO() {
+        super(Key.class);
+    }
 }

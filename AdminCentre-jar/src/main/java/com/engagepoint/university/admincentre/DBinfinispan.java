@@ -1,20 +1,15 @@
 package com.engagepoint.university.admincentre;
 
 import com.engagepoint.university.admincentre.dao.NodeDAO;
-import com.engagepoint.university.admincentre.entity.Key;
+
 import com.engagepoint.university.admincentre.entity.Node;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
-public class DBinfinispan {
-    NodeDAO nodeDAO;
+public class DBInfinispan {
 
-    public void setNodeDAO() throws IOException {
-        nodeDAO = new NodeDAO();
-        nodeDAO.getRoot();
 
+    public static void setNodeDAO(){
+        NodeDAO nodeDAO = new NodeDAO();
         Node nodeParent = nodeDAO.getRoot();
 
         Node nodeChild1 = new Node();
@@ -28,14 +23,14 @@ public class DBinfinispan {
         nodeParent.addChildNodeId(nodeChild1);
         nodeParent.addChildNodeId(nodeChild2);
 
-        nodeChild1.setParentNodeId(nodeParent.getId());
-        nodeChild2.setParentNodeId(nodeParent.getId());
+       /* nodeChild1.setParentNodeId(nodeParent.getId());
+        nodeChild2.setParentNodeId(nodeParent.getId());*/
 
         try {
-            nodeDAO.create(nodeChild1);
             nodeDAO.create(nodeChild2);
+            nodeDAO.create(nodeChild1);
             nodeDAO.update(nodeParent);
-        } catch (Exception e) {
+                   } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -79,7 +74,5 @@ public class DBinfinispan {
 
     }
 
-    public NodeDAO getNodeDAO() {
-        return nodeDAO;
-    }
+
 }

@@ -11,6 +11,21 @@
 
     <artifactId>AdminCentre-jar</artifactId>
 
+
+    <dependencies>
+        <!--Infinispan dependencies-->
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-core</artifactId>
+            <version>6.0.0.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-query</artifactId>
+            <version>6.0.1.Final</version>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>
@@ -20,7 +35,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>Main</mainClass>
+                            <mainClass>com.engagepoint.university.admincentre.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
