@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 public final class Main {
@@ -23,7 +24,7 @@ public final class Main {
     }
 
     public static void main(String[] args) {
-
+        LogManager.getLogManager().reset();
         if (checkArgs(args)) {
             CONSOLE_CONTROLLER.displayNodes(root);
             //connectToInputStream();
