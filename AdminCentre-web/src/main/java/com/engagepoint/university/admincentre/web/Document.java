@@ -3,19 +3,16 @@ package com.engagepoint.university.admincentre.web;
 import java.io.Serializable;
 import javax.faces.bean.ManagedBean;
 
-/**
- *
- * @author artem.lysenko
- */
+
 @ManagedBean (name = "document")
 public class Document implements Serializable, Comparable<Document> {
 
     private String name;
     private String value;
     private String type;
+    private String string = "test!!!";
 
-    public Document() {
-    }
+   
 
     public Document(String name, String value, String type) {
         this.name = name;
@@ -46,6 +43,15 @@ public class Document implements Serializable, Comparable<Document> {
     public void setType(String type) {
         this.type = type;
     }
+    
+        public String getString() {
+        return string;
+    }
+
+    public void setString(String string) {
+        this.string = string;
+    }
+    
 
     //Eclipse Generated hashCode and equals
     @Override
