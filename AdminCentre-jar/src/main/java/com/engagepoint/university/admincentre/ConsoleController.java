@@ -1,4 +1,5 @@
-import java.util.ArrayList;
+package com.engagepoint.university.admincentre;
+
 import java.util.Iterator;
 import java.util.List;
 
@@ -37,7 +38,7 @@ public class ConsoleController {
     }
 
     public void displayNodes(Node node) {
-        System.out.println(ALIGN_STRING + "Node name = " + node.getName());
+        System.out.println(ALIGN_STRING + "com.engagepoint.university.admincentre.Node name = " + node.getName());
         displayKeys(node);
         if( (node.getChildNodes() != null) && (!node.getChildNodes().isEmpty()) ){
             ALIGN_STRING.insert(0, "   ");
@@ -58,7 +59,7 @@ public class ConsoleController {
         List<Key> keyList = node.getKeys();
         if (keyList != null) {
             for (Key key : keyList) {
-                System.out.println(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3) + "   Key = " + key.getKey() + ";" +
+                System.out.println(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3) + "   com.engagepoint.university.admincentre.Key = " + key.getKey() + ";" +
                         " Type = " + key.getType() + "; Value = " + key.getValue());
 
             }
@@ -74,13 +75,13 @@ public class ConsoleController {
                     currentNode = node;
                     displayNodes(currentNode);
                     System.out.println();
-                    System.out.println("Current Node node is ----> " + childNodeName);
+                    System.out.println("Current com.engagepoint.university.admincentre.Node node is ----> " + childNodeName);
                     return true;
                 }
             }
         }
         System.out.println();
-        System.out.println("Wrong child Node name...");
+        System.out.println("Wrong child com.engagepoint.university.admincentre.Node name...");
         return false;
     }
 
@@ -91,11 +92,11 @@ public class ConsoleController {
             currentNode = parentNode;
             displayNodes(currentNode);
             System.out.println();
-            System.out.println("Current Node node is ----> " + currentNode.getName());
+            System.out.println("Current com.engagepoint.university.admincentre.Node node is ----> " + currentNode.getName());
             return true;
         }
         System.out.println();
-        System.out.println("Wrong parent Node name...");
+        System.out.println("Wrong parent com.engagepoint.university.admincentre.Node name...");
         return false;
     }
 

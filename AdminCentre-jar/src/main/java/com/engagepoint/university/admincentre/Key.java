@@ -1,3 +1,4 @@
+package com.engagepoint.university.admincentre;
 
 public class Key {
     private static final long serialVersionUID = 1L;
