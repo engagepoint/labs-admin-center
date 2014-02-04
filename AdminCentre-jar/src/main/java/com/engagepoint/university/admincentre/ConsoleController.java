@@ -7,6 +7,7 @@ import java.util.List;
 import com.engagepoint.university.admincentre.dao.KeyDAO;
 import com.engagepoint.university.admincentre.dao.NodeDAO;
 import com.engagepoint.university.admincentre.entity.Key;
+import com.engagepoint.university.admincentre.entity.KeyType;
 import com.engagepoint.university.admincentre.entity.Node;
 
 
@@ -16,7 +17,8 @@ public class ConsoleController {
 
     private final static int FIX_LENGTH = 30;
     private final static StringBuilder ALIGN_STRING = new StringBuilder("---");
-
+    private final NodeDAO nodeDAO = new NodeDAO();
+    private final KeyDAO keyDAO = new KeyDAO();
 
 
     public Node getCurrentNode() {
@@ -48,7 +50,6 @@ public class ConsoleController {
 
     public void displayNodes(Node node) {
         System.out.println(ALIGN_STRING + " name = " + node.getName());
-        NodeDAO nodeDAO = new NodeDAO();
         displayKeys(node);
         if (!node.getChildNodeIdList().isEmpty()) {
             ALIGN_STRING.insert(0, "   ");
@@ -71,7 +72,6 @@ public class ConsoleController {
     }
 
     private void displayKeys(Node node) {
-        KeyDAO keyDAO = new KeyDAO();
         List<String> keyIdList = node.getKeyIdList();
         if (!keyIdList.isEmpty()) {
             for (String keyId : keyIdList) {
@@ -92,58 +92,59 @@ public class ConsoleController {
         }
     }
 
-//    public boolean chooseChildNode(String childNodeName) {
-//        List<Node> nodeList = currentNode.getChildNodes();
-//        if (nodeList != null) {
-//            for (Node node : nodeList) {
-//                if (node.getName().equals(childNodeName)) {
-//                    currentNode = node;
-//                    displayNodes(currentNode);
-//                    System.out.println();
-//                    System.out.println("Current Node node is ----> " + childNodeName);
-//                    return true;
-//                }
-//            }
-//        }
-//        System.out.println();
-//        System.out.println("Wrong child Node name...");
-//        return false;
-//    }
-//
-//
-//    public boolean chooseParentNode() {
-//        Node parentNode = currentNode.getParentNode();
-//        if (parentNode != null) {
-//            currentNode = parentNode;
-//            displayNodes(currentNode);
-//            System.out.println();
-//            System.out.println("Current Node node is ----> " + currentNode.getName());
-//            return true;
-//        }
-//        System.out.println();
-//        System.out.println("Wrong parent Node name...");
-//        return false;
-//    }
-//
-//    public void createNode(String nodeName) {
-//        Node newNode = new Node();
-//        newNode.setName(nodeName);
-//        newNode.setParentNode(currentNode);
-//        currentNode.getChildNodes().add(newNode);
-//        displayNodes(currentNode);
-//    }
-//
-//    public void createKey(String keyName, String keyType, String keyValue) {
-//        Key newKey = new Key(keyName, keyType, keyValue);
-//        currentNode.getKeys().add(newKey);
-//        displayNodes(currentNode);
-//    }
-//
-//    //TODO
-//    public boolean nameValidation(String name) {
-//        if (Character.isDigit(name.charAt(0))) {
-//
-//        }
-//        return false;
-//    }
+    public boolean chooseChildNode(String childNodeId) {
+        try {
+            Node node = nodeDAO.read(childNodeId);
+            displayNodes(node);
+            currentNode = node;
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+
+    public boolean chooseParentNode() {
+        Node node = nodeDAO.getRoot();
+        displayNodes(node);
+        currentNode = node;
+        return true;
+    }
+
+    public void createNode(String nodeName) {
+
+        Node newNode = new Node();
+        newNode.setName(nodeName);
+        currentNode.addChildNodeId(newNode);
+        try {
+            nodeDAO.create(newNode);
+            nodeDAO.update(currentNode);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        displayNodes(currentNode);
+    }
+
+    public void createKey(String keyName, String keyType, String keyValue) {
+        Key newKey = new Key(keyName, KeyType.valueOf(keyType), keyValue);
+        currentNode.addKeyId(newKey);
+        try {
+            keyDAO.create(newKey);
+            nodeDAO.update(currentNode);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        displayNodes(currentNode);
+    }
+
+    //TODO
+    public boolean nameValidation(String name) {
+        if (Character.isDigit(name.charAt(0))) {
+
+        }
+        return false;
+    }
+
+
 }

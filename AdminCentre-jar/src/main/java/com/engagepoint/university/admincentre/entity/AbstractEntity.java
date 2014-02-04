@@ -18,7 +18,7 @@ public abstract class AbstractEntity implements Serializable {
         return parentNodeId;
     }
 
-    public void setParentNodeId(String parentNodeId) {
+    protected void setParentNodeId(String parentNodeId) {
         this.parentNodeId = parentNodeId;
     }
 
