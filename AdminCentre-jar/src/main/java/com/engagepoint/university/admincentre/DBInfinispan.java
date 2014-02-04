@@ -1,15 +1,17 @@
 package com.engagepoint.university.admincentre;
 
+import com.engagepoint.university.admincentre.dao.KeyDAO;
 import com.engagepoint.university.admincentre.dao.NodeDAO;
-
+import com.engagepoint.university.admincentre.entity.Key;
+import com.engagepoint.university.admincentre.entity.KeyType;
 import com.engagepoint.university.admincentre.entity.Node;
-
 
 public class DBInfinispan {
 
 
-    public static void setNodeDAO(){
+    public static void main(String[] args) {
         NodeDAO nodeDAO = new NodeDAO();
+        KeyDAO keyDAO = new KeyDAO();
         Node nodeParent = nodeDAO.getRoot();
 
         Node nodeChild1 = new Node();
@@ -18,8 +20,11 @@ public class DBInfinispan {
 
         nodeChild1.setName("Child1");
         nodeChild2.setName("Child2");
-
-
+        Key key = new Key();
+        key.setName("key1");
+        key.setType(KeyType.String);
+        key.setValue("value");
+        nodeChild1.addKeyId(key);
         nodeParent.addChildNodeId(nodeChild1);
         nodeParent.addChildNodeId(nodeChild2);
 
@@ -29,6 +34,8 @@ public class DBInfinispan {
         try {
             nodeDAO.create(nodeChild2);
             nodeDAO.create(nodeChild1);
+            keyDAO.create(key);
+
             nodeDAO.update(nodeParent);
                    } catch (Exception e) {
             e.printStackTrace();

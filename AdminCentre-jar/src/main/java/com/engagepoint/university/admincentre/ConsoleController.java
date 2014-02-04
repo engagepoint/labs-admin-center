@@ -1,10 +1,13 @@
 package com.engagepoint.university.admincentre;
 
-import com.engagepoint.university.admincentre.dao.NodeDAO;
-import com.engagepoint.university.admincentre.entity.Node;
-
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
+
+import com.engagepoint.university.admincentre.dao.KeyDAO;
+import com.engagepoint.university.admincentre.dao.NodeDAO;
+import com.engagepoint.university.admincentre.entity.Key;
+import com.engagepoint.university.admincentre.entity.Node;
 
 
 public class ConsoleController {
@@ -46,7 +49,7 @@ public class ConsoleController {
     public void displayNodes(Node node) {
         System.out.println(ALIGN_STRING + " name = " + node.getName());
         NodeDAO nodeDAO = new NodeDAO();
-        // displayKeys(node);
+        displayKeys(node);
         if (!node.getChildNodeIdList().isEmpty()) {
             ALIGN_STRING.insert(0, "   ");
             System.out.println(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3) + "|");
@@ -67,18 +70,28 @@ public class ConsoleController {
         }
     }
 
-//    private void displayKeys(Node node) {
-//        List<Key> keyList = node.getKeys();
-//        if (keyList != null) {
-//            for (Key key : keyList) {
-//                System.out.println(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3) + " Key = " + key.getKey() + ";" +
-//                        " Type = " + key.getType() + "; Value = " + key.getValue());
-//
-//            }
-//            System.out.println();
-//        }
-//    }
-//
+    private void displayKeys(Node node) {
+        KeyDAO keyDAO = new KeyDAO();
+        List<String> keyIdList = node.getKeyIdList();
+        if (!keyIdList.isEmpty()) {
+            for (String keyId : keyIdList) {
+                Key key;
+                try {
+                    key = keyDAO.read(keyId);
+                    System.out.println(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3)
+                            + " Key = " + key.getName() + ";" + " Type = " + key.getType()
+                            + "; Value = " + key.getValue());
+
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+
+            }
+            System.out.println();
+        }
+    }
+
 //    public boolean chooseChildNode(String childNodeName) {
 //        List<Node> nodeList = currentNode.getChildNodes();
 //        if (nodeList != null) {

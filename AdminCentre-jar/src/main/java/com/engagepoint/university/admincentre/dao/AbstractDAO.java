@@ -33,22 +33,32 @@ public abstract class AbstractDAO<T extends AbstractEntity> implements GenericDA
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         }
+ finally {
+            stopCacheManager();
+        }
 
     }
 
     public T read(String id) throws IOException {
-
+        try {
             T variable = null;
             Cache<String, T> cache = getCache(CACHE_CONFIG, USED_CACHE);
             if (cache.containsKey(id)) {
                 variable = cache.get(id);
             }
             return variable;
+        } finally {
+            stopCacheManager();
+        }
     }
 
     public void update(T transientObject) throws Exception {
+        try {
         Cache<String, T> cache = getCache(CACHE_CONFIG, USED_CACHE);
         cache.replace(transientObject.getId(), transientObject);
+        } finally {
+            stopCacheManager();
+        }
 
     }
 
@@ -64,14 +74,14 @@ public abstract class AbstractDAO<T extends AbstractEntity> implements GenericDA
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         }
+ finally {
+            stopCacheManager();
+        }
 
     }
 
     private Cache<String, T> getCache(String cacheConfigPath, String cacheName) throws IOException {
-        if (m != null) {
-            cache.stop();
-            m.stop();
-        }
+
         m = new DefaultCacheManager(cacheConfigPath);
         cache = m.getCache(cacheName);
         if (!cache.containsKey("/root")) {
@@ -82,5 +92,12 @@ public abstract class AbstractDAO<T extends AbstractEntity> implements GenericDA
         }
         return cache;
 
+    }
+
+    private void stopCacheManager() {
+        if (m != null) {
+            cache.stop();
+            m.stop();
+        }
     }
 }

@@ -1,14 +1,14 @@
 package com.engagepoint.university.admincentre;
 
-import com.engagepoint.university.admincentre.dao.NodeDAO;
-import com.engagepoint.university.admincentre.entity.Node;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+
+import com.engagepoint.university.admincentre.dao.NodeDAO;
+import com.engagepoint.university.admincentre.entity.Node;
 
 public final class Main {
     private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
