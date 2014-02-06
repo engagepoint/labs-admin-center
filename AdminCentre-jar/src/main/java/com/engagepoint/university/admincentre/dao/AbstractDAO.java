@@ -1,14 +1,22 @@
 package com.engagepoint.university.admincentre.dao;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Observable;
 
 import org.infinispan.Cache;
 import org.infinispan.manager.DefaultCacheManager;
 
 import com.engagepoint.university.admincentre.entity.AbstractEntity;
 import com.engagepoint.university.admincentre.entity.Node;
+import com.engagepoint.university.admincentre.synchronization.CRUDObserver;
+import com.engagepoint.university.admincentre.synchronization.CRUDOperation;
+import com.engagepoint.university.admincentre.synchronization.MessagePayload;
 
-public abstract class AbstractDAO<T extends AbstractEntity> implements GenericDAO<T> {
+public abstract class AbstractDAO<T extends AbstractEntity>
+	extends Observable
+	implements GenericDAO<T> {
 
     private static String CACHE_CONFIG = "infinispan/cache_config.xml";
     private static String USED_CACHE = "evictionCache";
@@ -19,6 +27,7 @@ public abstract class AbstractDAO<T extends AbstractEntity> implements GenericDA
 
     public AbstractDAO(Class<T> type) {
         this.type = type;
+        addObserver(new CRUDObserver());
     }
 
     public void create(T newInstance) throws Exception {
@@ -27,6 +36,9 @@ public abstract class AbstractDAO<T extends AbstractEntity> implements GenericDA
 
             if (!cache.containsKey(newInstance.getId())) {
                 cache.put(newInstance.getId(), newInstance);
+                setChanged();
+                notifyObservers(new MessagePayload(
+                		CRUDOperation.CREATE, newInstance));
             } else {
                 throw new Exception("This entity already exists");
             }
@@ -56,6 +68,9 @@ public abstract class AbstractDAO<T extends AbstractEntity> implements GenericDA
         try {
         Cache<String, T> cache = getCache(CACHE_CONFIG, USED_CACHE);
         cache.replace(transientObject.getId(), transientObject);
+        setChanged();
+        notifyObservers(new MessagePayload(
+        		CRUDOperation.UPDATE, transientObject));
         } finally {
             stopCacheManager();
         }
@@ -68,6 +83,9 @@ public abstract class AbstractDAO<T extends AbstractEntity> implements GenericDA
             if (cache.containsKey(persistentObject.getId())
                     && (!persistentObject.getId().equals("/root"))) {
                 cache.replace(persistentObject.getId(), persistentObject);
+                setChanged();
+                notifyObservers(new MessagePayload(
+                		CRUDOperation.DELETE, persistentObject));
             } else {
                 throw new Exception("This entity doesn`t exist");
             }

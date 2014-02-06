@@ -12,6 +12,12 @@
 
 
     <dependencies>
+    	<!-- JGroups dependency -->
+	    <dependency>
+			<groupId>org.jgroups</groupId>
+			<artifactId>jgroups</artifactId>
+			<version>3.4.1.Final</version>
+		</dependency>
         <!--Infinispan dependencies-->
         <dependency>
             <groupId>org.infinispan</groupId>
