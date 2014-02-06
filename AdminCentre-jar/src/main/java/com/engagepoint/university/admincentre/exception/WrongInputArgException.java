@@ -1,7 +1,17 @@
 package com.engagepoint.university.admincentre.exception;
 
-/**
- * Created by ievgen.abramov on 2/5/14.
- */
-public class WrongInputArgException {
+public class WrongInputArgException  extends Exception{
+
+    public WrongInputArgException() {
+       this("You enter wrong argument. Try to use -help for get information about " +
+               "application commands");
+    }
+
+    public WrongInputArgException(String message) {
+        super(message);
+    }
+
+    public WrongInputArgException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

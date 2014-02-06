@@ -24,9 +24,13 @@ public class DBInfinispan {
         key.setName("key1");
         key.setType(KeyType.String);
         key.setValue("value");
-        nodeChild1.addKeyId(key);
-        nodeParent.addChildNodeId(nodeChild1);
-        nodeParent.addChildNodeId(nodeChild2);
+        try {
+            nodeChild1.addKeyId(key);
+            nodeParent.addChildNodeId(nodeChild1);
+            nodeParent.addChildNodeId(nodeChild2);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
        /* nodeChild1.setParentNodeId(nodeParent.getId());
         nodeChild2.setParentNodeId(nodeParent.getId());*/

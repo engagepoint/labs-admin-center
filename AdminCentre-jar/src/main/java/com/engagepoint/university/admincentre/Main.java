@@ -9,12 +9,15 @@ import java.util.logging.Logger;
 
 import com.engagepoint.university.admincentre.dao.NodeDAO;
 import com.engagepoint.university.admincentre.entity.Node;
+import com.engagepoint.university.admincentre.exception.WrongInputArgException;
+
 
 public final class Main {
+
     private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
 
     private static final ConsoleController CONSOLE_CONTROLLER = new ConsoleController();
-    private static Node root =  new NodeDAO().getRoot();
+    private static final Node root = new NodeDAO().getRoot();
 
     private Main() {
     }
@@ -42,6 +45,9 @@ public final class Main {
         return true;
     }
 
+    /**
+     * Get connection for console input stream
+     */
     private static void connectToInputStream() {
         InputStream is = null;
         BufferedReader br = null;
@@ -55,7 +61,11 @@ public final class Main {
                 if (Commands.EXIT.getName().equals(line)) {
                     break;
                 }
-                analyzeLine(line);
+                try {
+                    analyzeIncomingLine(line);
+                } catch (WrongInputArgException e) {
+                    System.out.println(e.getMessage());
+                }
             }
         } catch (IOException ioe) {
             LOGGER.warning("Exception while reading input " + ioe);
@@ -72,48 +82,46 @@ public final class Main {
         }
     }
 
-    private static void analyzeLine(String line) {
+    private static void analyzeIncomingLine(String line) throws WrongInputArgException {
         String[] arguments = line.split(" ");
+        checkCommand(arguments);
+    }
 
-        // -help command
-        if (Commands.HELP.getName().equals(arguments[0])) {
-            CONSOLE_CONTROLLER.showHelp();
-        }
-
-        // -view command
-        if (Commands.VIEW.getName().equals(arguments[0])) {
-            CONSOLE_CONTROLLER.displayNodes(CONSOLE_CONTROLLER.getCurrentNode());
-        }
-
-        // -choose command
-        if (Commands.CHOOSE.getName().equals(arguments[0])) {
-            if ("-ch".equals(arguments[1])) {
-                if (arguments.length == 3) {
-                    CONSOLE_CONTROLLER.chooseChildNode(arguments[2]);
-                }
-            }
-            if ("-p".equals(arguments[1])) {
-                if (arguments.length == 2) {
-                    CONSOLE_CONTROLLER.chooseParentNode();
-                }
-            }
-        }
-
-        // -create command
-        if (Commands.CREATE.getName().equals(arguments[0])) {
-            if (arguments.length == 3) {
-                if ("-node".equals(arguments[1])) {
-                    CONSOLE_CONTROLLER.createNode(arguments[2]);
-                }
-            }
-
-            if (arguments.length == 5) {
-                if ("-key".equals(arguments[1])) {
-                    {
+    private static void checkCommand(String[] arguments) throws WrongInputArgException {
+        try {
+            switch (Commands.valueOf(arguments[0].toUpperCase().replaceFirst("-", ""))) {
+                case VIEW:
+                    CONSOLE_CONTROLLER.displayNodes(CONSOLE_CONTROLLER.getCurrentNode());
+                    break;
+                case HELP:
+                    CONSOLE_CONTROLLER.showHelp();
+                    break;
+                case VERSION:
+                    CONSOLE_CONTROLLER.showVersion();
+                    break;
+                case CREATE:
+                    if ("-node".equals(arguments[1]) && (arguments.length == 3)) {
+                        CONSOLE_CONTROLLER.createNode(arguments[2]);
+                    } else if ("-key".equals(arguments[1]) && (arguments.length == 5)) {
                         CONSOLE_CONTROLLER.createKey(arguments[2], arguments[3], arguments[4]);
+                    } else{
+                        throw new WrongInputArgException();
                     }
-                }
+                    break;
+                case REMOVE:
+                    //TODO add remove functional
+                    break;
+                case EDIT:
+                    //TODO add edit functional
+                    break;
+                case SELECT:
+                    if (arguments.length == 2) {
+                        CONSOLE_CONTROLLER.selectNode(arguments[1]);
+                    }
+                    break;
             }
+        } catch (IllegalArgumentException e) {
+            throw new WrongInputArgException();
         }
     }
 }

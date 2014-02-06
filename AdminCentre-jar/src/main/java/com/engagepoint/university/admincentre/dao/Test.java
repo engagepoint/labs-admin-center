@@ -2,7 +2,14 @@ package com.engagepoint.university.admincentre.dao;
 
 import com.engagepoint.university.admincentre.entity.Node;
 
+import java.util.logging.Logger;
+
 public class Test {
+
+    private static final Logger LOGGER = Logger.getLogger(Test.class.getName());
+    public Test() {
+    }
+
     public static void main(String[] args) {
         NodeDAO nd = new NodeDAO();
         Node node = new Node();
@@ -18,9 +25,8 @@ public class Test {
             nd.create(node);
             nd.create(node1);
             nd.update(root);
-            System.out.println(nd.getRoot().getChildNodeIdList());
         } catch (Exception e) {
-            // TODO Auto-generated catch block
+            LOGGER.warning(e.getMessage());
             e.printStackTrace();
         }
     }

@@ -1,6 +1,13 @@
+import com.engagepoint.university.admincentre.ConsoleController;
+
 import org.junit.Test;
 
+import static junit.framework.Assert.assertEquals;
+
 public class ConsoleControllerTest {
+
+    ConsoleController controller = new ConsoleController();
+
     @Test
     public void testGetCurrentNode() throws Exception {
 
@@ -53,6 +60,16 @@ public class ConsoleControllerTest {
 
     @Test
     public void testKeyTypeValidation() throws Exception {
+        assertEquals(true, controller.keyTypeValidation("String"));
+        assertEquals(true, controller.keyTypeValidation("Boolean"));
+        assertEquals(true, controller.keyTypeValidation("ByteArray"));
+        assertEquals(true, controller.keyTypeValidation("Integer"));
+        assertEquals(true, controller.keyTypeValidation("Double"));
+        assertEquals(true, controller.keyTypeValidation("Float"));
+        assertEquals(true, controller.keyTypeValidation("Long"));
+
+        assertEquals(false, controller.keyTypeValidation("string"));
+        assertEquals(false, controller.keyTypeValidation("Random_String"));
 
     }
 }

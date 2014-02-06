@@ -35,17 +35,23 @@ public class Node extends AbstractEntity implements Serializable {
     }
 
     //TODO refactor this method
-    public void addChildNodeId(Node childNode) {
-        childNode.setParentNodeId(this.getId());
+    public void addChildNodeId(Node childNode) throws Exception {
+        childNode.setParentNodeId(getId());
         childNode.setId();
-        this.childNodeIdList.add(childNode.getId());
+        if (!childNodeIdList.contains(childNode.getId())) {
+            childNodeIdList.add(childNode.getId());
+        } else {
+            throw new Exception("This node is already exists");
+        }
     }
 
-    public void addKeyId(Key key) {
-        key.setParentNodeId(this.getId());
+    public void addKeyId(Key key) throws Exception {
+        key.setParentNodeId(getId());
         key.setId();
-        this.keyIdList.add(key.getId());
+        if (!keyIdList.contains(key.getId())) {
+            keyIdList.add(key.getId());
+        } else {
+            throw new Exception("This key is already exists");
+        }
     }
-
-
 }
