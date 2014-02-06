@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ezui="http://java.sun.com/jsf/composite/ezui/components"
+      xmlns:uib="http://engagepoint.com/uib">
+
+    <ui:composition template="./bsTemplateNotify.xhtml">
+        <ui:define name="top">
+            <h:outputLabel id ="header"
+                           style="font-size: xx-large"
+                           value="Administration Center"/>
+        </ui:define>
+
+        <ui:define name="left">
+            <uib:pageMenuFacet>
+            <h:outputLabel id="left"
+                           style="font-size: x-large"
+                           value="Menu"/>
+            </uib:pageMenuFacet>
+        </ui:define>
+
+        <ui:define name="content" id="content">
+            <ez:table id="treeTable"/>
+        </ui:define>
+    </ui:composition>
+</html>
+

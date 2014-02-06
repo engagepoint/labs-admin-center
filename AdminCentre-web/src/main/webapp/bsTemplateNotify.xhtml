@@ -1,0 +1,33 @@
+<uib:page xmlns="http://www.w3.org/1999/xhtml"
+          xmlns:ui="http://java.sun.com/jsf/facelets"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:uib="http://engagepoint.com/uib"
+          markupType="html5"
+          contentType="text/html"
+          showHeader="true"
+          showFooter="true"
+          project="notify"
+          pageTitle="Administration Center">
+
+    <h:head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <link href="./resources/css/default.css" rel="stylesheet" type="text/css"/>
+        <link href="./resources/css/cssLayout.css" rel="stylesheet" type="text/css"/>
+    </h:head>
+    <h:body>
+        <div id="top">
+            <ui:insert name="top">                
+            </ui:insert>
+        </div>
+        <div>
+            <div id="left">
+                <ui:insert name="left" class="left_content">                        
+                </ui:insert>
+            </div>
+            <div id="content" class="left_content">
+                <ui:insert name="content">
+                </ui:insert>
+            </div>
+        </div>
+    </h:body>
+</uib:page>
