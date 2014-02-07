@@ -38,12 +38,14 @@ public class Node extends AbstractEntity implements Serializable {
     }
 
     public void addChildNodeId(String childNodeId) {
-
+        if (!childNodeIdList.contains(childNodeId)) {
         this.childNodeIdList.add(childNodeId);
+        }
     }
 
     public void addKeyId(String keyId) {
-
+        if (!keyIdList.contains(keyId)) {
         this.keyIdList.add(keyId);
+        }
     }
 }

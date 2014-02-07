@@ -108,7 +108,7 @@ public class NodePreferences extends Preferences {
      *             if <tt>name</tt> contains a slash (<tt>'/'</tt>), or
      *             <tt>parent</tt> is <tt>null</tt> and name isn't <tt>""</tt>.
      */
-    public NodePreferences(NodePreferences parent, String name) throws IOException {
+    public NodePreferences(NodePreferences parent, String name) {
       
        if (parent==null) {
            if (!name.equals(""))
@@ -129,17 +129,32 @@ public class NodePreferences extends Preferences {
        }
        this.name = name;
        this.parent = parent;
-       currentNode = nodeDAO.read(this.absolutePath);
+       try {
+        currentNode = nodeDAO.read(this.absolutePath);
+   
        if(currentNode==null){
            currentNode = new Node(parent.absolutePath,name);
        nodeDAO.create(currentNode);
+                parent.currentNode.addChildNodeId(this.currentNode.getId());
+       nodeDAO.update(parent.currentNode);
        } 
        //TODO add init of existing value
-       if(!this.name.equals("")){
-           Node parentNode = nodeDAO.read(parent.absolutePath);
-           parentNode.addChildNodeId(this.absolutePath);
-           nodeDAO.update(parentNode);
+            // if(!this.name.equals("")){
+            // Node parentNode = nodeDAO.read(parent.absolutePath);
+            // parentNode.addChildNodeId(this.absolutePath);
+            // nodeDAO.update(parentNode);
+            // }
+        // for (int i = 0; i < currentNode.getChildNodeIdList().size(); i++) {
+        // String currentChildId=currentNode.getChildNodeIdList().get(i);
+        // Node childNode = nodeDAO.read(currentChildId);
+        // kidCache.put(childNode.getName(), new NodePreferences(this,
+        // childNode.getName()));
+        // }
+       } catch (IOException e) {
+           // TODO Auto-generated catch block
+           e.printStackTrace();
        }
+      
    }
 
     /**
@@ -174,7 +189,7 @@ public class NodePreferences extends Preferences {
        synchronized(lock) {
            if (removed)
                throw new IllegalStateException("Node has been removed.");
-           Key persistKey = new Key(parent.absolutePath, key, type, value);
+            Key persistKey = new Key(absolutePath, key, type, value);
            putSpi(persistKey);
            enqueuePreferenceChangeEvent(key, value);
        }
@@ -896,6 +911,7 @@ public class NodePreferences extends Preferences {
                throw new IllegalStateException("Node has been removed.");
            if (path.equals(""))
                return this;
+
            if (path.equals("/"))
                return root;
            if (path.charAt(0) != '/')
@@ -906,22 +922,27 @@ public class NodePreferences extends Preferences {
        return root.node(new StringTokenizer(path.substring(1), "/", true));
    }
 
-   /**
-    * tokenizer contains <name> {'/' <name>}*
-    */
-   private Preferences node(StringTokenizer path) {
+    /**
+     * tokenizer contains <name> {'/' <name>}
+     * 
+     * @throws IOException
+     *             *
+     */
+    private Preferences node(StringTokenizer path)  {
        String token = path.nextToken();
        if (token.equals("/"))  // Check for consecutive slashes
            throw new IllegalArgumentException("Consecutive slashes in path");
        synchronized(lock) {
-            NodePreferences child = kidCache.get(token);
-           if (child == null) {
-               
-               child = childSpi(token);
-               if (child.newNode)
-                   enqueueNodeAddedEvent(child);
-               kidCache.put(token, child);
-           }
+            NodePreferences child = new NodePreferences(this, token);
+
+            // NodePreferences child = kidCache.get(token);
+            // if (child == null) {
+            //
+            // child = childSpi(token);
+            // if (child.newNode)
+            // enqueueNodeAddedEvent(child);
+            // kidCache.put(token, child);
+            // }
            if (!path.hasMoreTokens())
                return child;
            path.nextToken();  // Consume slash
@@ -1219,9 +1240,9 @@ public class NodePreferences extends Preferences {
      */
     protected void putSpi(Key key) throws IOException {
        keyDAO.create(key);
-       Node parentNode = nodeDAO.read(parent.absolutePath);
-       parentNode.addKeyId(key.getId());
-       nodeDAO.update(parentNode);
+
+        currentNode.addKeyId(key.getId());
+        nodeDAO.update(currentNode);
    };
 
     /**
@@ -1412,13 +1433,10 @@ public class NodePreferences extends Preferences {
     */
     protected NodePreferences childSpi(String name) {
        
-        try {
+       
             return new NodePreferences(this, name);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return null;
+        
+
       
        
    };
@@ -1713,7 +1731,12 @@ public class NodePreferences extends Preferences {
 
     @Override
     public void put(String key, String value) {
-        // TODO Auto-generated method stub
+        try {
+            put(key, KeyType.String, value);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
     }
 
