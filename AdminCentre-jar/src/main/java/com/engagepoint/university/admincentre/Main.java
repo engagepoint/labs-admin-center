@@ -90,35 +90,35 @@ public final class Main {
     private static void checkCommand(String[] arguments) throws WrongInputArgException {
         try {
             switch (Commands.valueOf(arguments[0].toUpperCase().replaceFirst("-", ""))) {
-                case VIEW:
-                    CONSOLE_CONTROLLER.displayNodes(CONSOLE_CONTROLLER.getCurrentNode());
-                    break;
-                case HELP:
-                    CONSOLE_CONTROLLER.showHelp();
-                    break;
-                case VERSION:
-                    CONSOLE_CONTROLLER.showVersion();
-                    break;
-                case CREATE:
-                    if ("-node".equals(arguments[1]) && (arguments.length == 3)) {
-                        CONSOLE_CONTROLLER.createNode(arguments[2]);
-                    } else if ("-key".equals(arguments[1]) && (arguments.length == 5)) {
+            case VIEW:
+                CONSOLE_CONTROLLER.displayNodes(CONSOLE_CONTROLLER.getCurrentNode());
+                break;
+            case HELP:
+                CONSOLE_CONTROLLER.showHelp();
+                break;
+            case VERSION:
+                // CONSOLE_CONTROLLER.showVersion();
+                break;
+            case CREATE:
+                if ("-node".equals(arguments[1]) && (arguments.length == 3)) {
+                    CONSOLE_CONTROLLER.createNode(arguments[2]);
+                } else if ("-key".equals(arguments[1]) && (arguments.length == 5)) {
                         CONSOLE_CONTROLLER.createKey(arguments[2], arguments[3], arguments[4]);
-                    } else{
-                        throw new WrongInputArgException();
+                } else {
+                    throw new WrongInputArgException();
                     }
-                    break;
-                case REMOVE:
-                    //TODO add remove functional
-                    break;
-                case EDIT:
-                    //TODO add edit functional
-                    break;
-                case SELECT:
-                    if (arguments.length == 2) {
-                        CONSOLE_CONTROLLER.selectNode(arguments[1]);
-                    }
-                    break;
+                break;
+            case REMOVE:
+                // TODO add remove functional
+                break;
+            case EDIT:
+                // TODO add edit functional
+                break;
+            case SELECT:
+                if (arguments.length == 2) {
+                    // CONSOLE_CONTROLLER.selectNode(arguments[1]);
+                }
+                break;
             }
         } catch (IllegalArgumentException e) {
             throw new WrongInputArgException();

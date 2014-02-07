@@ -14,7 +14,9 @@ public class Key extends AbstractEntity implements Serializable {
 
     }
 
-    public Key(String name, KeyType type, String value) {
+    public Key(String parentNodeId, String name, KeyType type, String value) {
+        this.parentNodeId = parentNodeId;
+        this.id = (parentNodeId.equals("/") ? "/" + name : this.parentNodeId + "/" + name);
         this.name = name;
         this.type = type;
         this.value = value;
