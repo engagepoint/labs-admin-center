@@ -1,0 +1,15 @@
+.page-utility-bar .ui-overlaypanel {
+    z-index: 1000;
+    display: block;
+    visibility: hidden;
+    top: 45px;
+    left: -136px;
+}
+
+.page-utility-bar .ui-overlay-visible {
+    z-index: 1000;
+    display: block;
+    visibility: visible;
+    top: 45px;
+    left: -136px;
+}
