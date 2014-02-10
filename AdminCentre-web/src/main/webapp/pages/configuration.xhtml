@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:uib="http://engagepoint.com/uib"
+                xmlns:ui-paginator="http://java.sun.com/jsf/composite/uibootstrap/components/paginator"
+                template="/WEB-INF/templates/default.xhtml"
+        >
+
+    <ui:define name="page">
+
+        <h:form id="preferencesForm">
+            <h2><h:outputText value="Preferences administration"/></h2>
+                
+            <p:treeTable id="treeTable"
+                             value="#{documentsController.root}"
+                             var="doc" 
+                            
+                             selectionMode="single"
+                             selection="#{documentsController.selectedNode}">  
+
+                    <f:facet name="header">
+                        Properties Viewer
+
+                        <br/>
+                        <p:commandButton value="Edit"  update="treeTable"  action="#{documentsController.selectedNode.data.editAction}" />                  
+                        <p:commandButton value="Save"  update="treeTable" action="#{documentsController.selectedNode.data.saveAction}" />
+
+                      
+                        <p:commandButton value="Add Node" update="treeTable" action="#{documentsController.addNode}"/>
+                        <p:commandButton value="Delete" actionListener="#{documentsController.deleteNode}" update="treeTable"/>
+                        <br/>
+                        <br/>
+                        <br/>
+                    </f:facet>
+
+                    <p:column style="width:32%">
+                        <f:facet name="header">
+                            File
+                       
+                        </f:facet>               
+                      
+                            <p:inputText value="#{doc.name}" style="width:60%" rendered="#{doc.editable}" />  
+                            <h:outputText value="#{doc.name}" rendered="#{not doc.editable}" />
+                            
+                    </p:column>
+
+                    <p:column style="width:32%">
+                        <f:facet name="header">
+                            Value
+                        </f:facet>
+
+                            <p:inputText value="#{doc.value}" style="width:60%" rendered="#{doc.editable}" />  
+                            <h:outputText value="#{doc.value}" rendered="#{not doc.editable}" />           
+                        
+                    </p:column>
+
+                    <p:column style="width:32%">
+                        <f:facet name="header">
+                            Type
+                        </f:facet>
+
+                        
+                            <p:inputText value="#{doc.type}"  style="width:60%" rendered="#{doc.editable}" />  
+                            <h:outputText value="#{doc.type}" rendered="#{not doc.editable}" /> 
+                       
+                    </p:column>
+
+
+                </p:treeTable>             
+
+        </h:form>
+    </ui:define>
+</ui:composition>
