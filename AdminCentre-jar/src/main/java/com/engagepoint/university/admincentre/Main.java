@@ -84,7 +84,7 @@ public final class Main {
         }
 
         // -choose command
-        if (Commands.CHOOSE.getName().equals(arguments[0])) {
+        if (Commands.SELECT.getName().equals(arguments[0])) {
             if ("-ch".equals(arguments[1])) {
                 if (arguments.length == 3) {
                     CONSOLE_CONTROLLER.chooseChildNode(arguments[2]);

@@ -2,15 +2,21 @@ package com.engagepoint.university.admincentre;
 
 public enum Commands {
 
-    VIEW("-view", "Show com.engagepoint.university.admincentre.Node tree"),
+    VIEW("-view", "Show Node tree"),
+   
     EXIT("-exit", "Stop application"),
     HELP("-help", "Show list of all commands"),
     VERSION("-version", "Display version information"),
-    CREATE("-create", "Allows you create new com.engagepoint.university.admincentre.Node or com.engagepoint.university.admincentre.Key"),
-    REMOVE("-remove", "--------------"),
+ CREATE("-create",
+            "Allows you create new Node or Key"),
+ REMOVE("-remove", "--------------"),
     EDIT("-edit", "-------------"),
-    DEBUG("-debug", "Produce execute debug output"),
-    CHOOSE("-choose", "Choose node with the given name");
+ SELECT("-select",
+            "Choose node with the given name"),
+ DEBUG(
+            "-debug",
+ "Produce execute debug output");
+
 
     private String name;
     private String description;
