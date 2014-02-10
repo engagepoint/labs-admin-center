@@ -1,6 +1,7 @@
 package com.engagepoint.university.admincentre.dao;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Observable;
 
 import org.infinispan.Cache;
@@ -56,6 +57,9 @@ public abstract class AbstractDAO<T extends AbstractEntity>
             if (cache.containsKey(id)) {
                 variable = cache.get(id);
             }
+            setChanged();
+            notifyObservers(new MessagePayload(
+            		CRUDOperation.READ, variable));
             return variable;
         } finally {
             stopCacheManager();
@@ -82,7 +86,7 @@ public abstract class AbstractDAO<T extends AbstractEntity>
             cache.remove(keyId);
                 setChanged();
                 notifyObservers(new MessagePayload(
-CRUDOperation.DELETE, temp));
+                		CRUDOperation.DELETE, temp));
             }
 
  finally {
@@ -109,5 +113,35 @@ CRUDOperation.DELETE, temp));
             cache.stop();
             m.stop();
         }
+    }
+    
+    /**
+     * Puts new received cache
+     * @throws UnsupportedOperationException if could not put all
+     */
+    public void putAll(Map<String, T> cacheData){
+    	try {
+			Cache<String, T> cache = getCache(CACHE_CONFIG, USED_CACHE);
+			cache.putAll(cacheData);
+		} catch (IOException e) {
+			throw new UnsupportedOperationException("Could not put all");
+		} finally {
+			stopCacheManager();
+		}
+    }
+    
+    /**
+     * Clears cache
+     * @throws UnsupportedOperationException if cache could not be clear
+     */
+    public void clear(){
+    	try {
+			Cache<String, T> cache = getCache(CACHE_CONFIG, USED_CACHE);
+			cache.clear();
+		} catch (IOException e) {
+			throw new UnsupportedOperationException("Cache could not be clear");
+		} finally {
+			stopCacheManager();
+		}
     }
 }

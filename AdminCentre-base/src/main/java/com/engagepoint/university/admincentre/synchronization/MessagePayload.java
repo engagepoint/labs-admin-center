@@ -21,4 +21,8 @@ public final class MessagePayload {
 		return entity;
 	}
 	
+	@Override
+	public String toString() {
+		return crudOperation + " " + entity.getId();
+	}
 }
