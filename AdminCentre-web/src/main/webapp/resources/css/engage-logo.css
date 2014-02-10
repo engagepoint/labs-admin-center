@@ -1,0 +1,54 @@
+#header-logo-cell {
+    background-color: #FFFFFF;
+   border-color: #000000;
+    border-style: solid;
+    border-width: 1px;
+    padding-right: 80px;
+    padding-left: 10px;
+    padding-bottom: 32px;
+    display: inline-block;
+    margin-top: 5px;
+}
+
+#header-templates-cell {
+    background-color: #2899b7;
+    border-color: #000000;
+    border-style: solid;
+    border-width: 1px;
+    color: #FFFFFF;
+    display: inline-block;
+    font-family: MuseoSans700, sans-serif;
+    font-size: 19px;
+    font-weight: bold;
+    padding-right: 80px;
+    padding-left: 80px;
+    padding-bottom: 25px;
+    padding-top: 25px;
+
+
+}
+#header-templates-cell:hover{
+    background-color: #ffffff;
+    color: #2899b7;
+}
+
+#header-settings-cell {
+    background-color: #FFFFFF;
+    border-color: #000000;
+    border-style: solid;
+    border-width: 1px;
+    color: #000000;
+    display: inline-block;
+    font-family: MuseoSans700, sans-serif;
+    font-size: 19px;
+    font-weight: bold;
+    padding-right: 80px;
+    padding-left: 80px;
+    padding-bottom: 25px;
+    padding-top: 25px;
+}
+
+#header-settings-cell:hover {
+    background-color: #2899b7;
+    color: #FFFFFF;
+}
