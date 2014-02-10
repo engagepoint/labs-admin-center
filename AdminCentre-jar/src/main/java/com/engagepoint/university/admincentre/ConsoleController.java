@@ -10,7 +10,6 @@ import com.engagepoint.university.admincentre.dao.NodeDAO;
 public class ConsoleController {
 
 
-
     private final static int FIX_LENGTH = 30;
     private final static StringBuilder ALIGN_STRING = new StringBuilder("---");
     private final NodeDAO nodeDAO = new NodeDAO();
@@ -46,7 +45,7 @@ public class ConsoleController {
 
                 for (int i = 0; i < preference.childrenNames().length; i++) {
                     displayNodes(preference.node(
-preference.childrenNames()[i]));
+                            preference.childrenNames()[i]));
                 }
                 ALIGN_STRING.delete(0, 3);
 
