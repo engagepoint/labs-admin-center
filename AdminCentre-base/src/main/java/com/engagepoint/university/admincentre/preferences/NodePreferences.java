@@ -1241,7 +1241,7 @@ public class NodePreferences extends Preferences {
     protected void putSpi(Key key) throws IOException {
        keyDAO.create(key);
 
-        currentNode.addKeyId(key.getId());
+        currentNode.addKeyId(key.getName());
         nodeDAO.update(currentNode);
    };
 

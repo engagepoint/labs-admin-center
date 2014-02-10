@@ -16,7 +16,7 @@ public abstract class AbstractDAO<T extends AbstractEntity>
 	extends Observable
 	implements GenericDAO<T> {
 
-    private static String CACHE_CONFIG = "infinispan/cache_config.xml";
+    private static String CACHE_CONFIG = "cache_config.xml";
     private static String USED_CACHE = "evictionCache";
 
     DefaultCacheManager m = null;

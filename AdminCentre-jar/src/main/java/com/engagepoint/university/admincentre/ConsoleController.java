@@ -1,33 +1,20 @@
 package com.engagepoint.university.admincentre;
 
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 import com.engagepoint.university.admincentre.dao.KeyDAO;
 import com.engagepoint.university.admincentre.dao.NodeDAO;
-import com.engagepoint.university.admincentre.entity.Key;
-import com.engagepoint.university.admincentre.entity.KeyType;
-import com.engagepoint.university.admincentre.entity.Node;
 
 
 public class ConsoleController {
 
-    private static Node currentNode = new NodeDAO().getRoot();
+
 
     private final static int FIX_LENGTH = 30;
     private final static StringBuilder ALIGN_STRING = new StringBuilder("---");
     private final NodeDAO nodeDAO = new NodeDAO();
     private final KeyDAO keyDAO = new KeyDAO();
-
-
-    public Node getCurrentNode() {
-        return currentNode;
-    }
-
-    public void setCurrentNode(Node currentNode) {
-        this.currentNode = currentNode;
-    }
 
 
     public void showHelp() {
@@ -48,103 +35,102 @@ public class ConsoleController {
         return stringBuilder;
     }
 
-    public void displayNodes(Node node) {
-        System.out.println(ALIGN_STRING + " name = " + node.getName());
-        displayKeys(node);
-        if (!node.getChildNodeIdList().isEmpty()) {
-            ALIGN_STRING.insert(0, "   ");
-            System.out.println(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3) + "|");
-            System.out.println(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3) + "|");
-            Iterator iterator = node.getChildNodeIdList().iterator();
-            while (iterator.hasNext()) {
-                Node n = null;
-                try {
-                    n = nodeDAO.read((String) iterator.next());
-                } catch (IOException e) {
-                    e.printStackTrace();
+    public void displayNodes(Preferences preference) {
+        System.out.println(ALIGN_STRING + " name = " + preference.name());
+        displayKeys(preference);
+        try {
+            if (preference.childrenNames().length != 0) {
+                ALIGN_STRING.insert(0, "   ");
+                System.out.println(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3) + "|");
+                System.out.println(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3) + "|");
+
+                for (int i = 0; i < preference.childrenNames().length; i++) {
+                    displayNodes(preference.node(
+preference.childrenNames()[i]));
                 }
-                displayNodes(n);
-            }
-            if (!iterator.hasNext()) {
                 ALIGN_STRING.delete(0, 3);
+
             }
+        } catch (BackingStoreException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 
-    private void displayKeys(Node node) {
-        List<String> keyIdList = node.getKeyIdList();
-        if (!keyIdList.isEmpty()) {
-            for (String keyId : keyIdList) {
-                Key key;
-                try {
-                    key = keyDAO.read(keyId);
+    private void displayKeys(Preferences preferance) {
+        String[] keys;
+        try {
+            keys = preferance.keys();
+            if (keys.length != 0) {
+                for (int i = 0; i < keys.length; i++) {
+
                     System.out.println(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3)
-                            + " Key = " + key.getName() + ";" + " Type = " + key.getType()
-                            + "; Value = " + key.getValue());
+                            + " Key = " + keys[i] + ";" + "Value = "
+                            + preferance.get(keys[i], "value wasn`t found"));
 
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
                 }
-
+                System.out.println();
             }
-            System.out.println();
-        }
-    }
-
-    public boolean chooseChildNode(String childNodeId) {
-        try {
-            Node node = nodeDAO.read(childNodeId);
-            displayNodes(node);
-            currentNode = node;
-            return true;
-        } catch (IOException e) {
+        } catch (BackingStoreException e) {
+            // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        return false;
+
     }
 
-
-    public boolean chooseParentNode() {
-        Node node = nodeDAO.getRoot();
-        displayNodes(node);
-        currentNode = node;
-        return true;
-    }
-
-    public void createNode(String nodeName) {
-
-        Node newNode = new Node();
-        newNode.setName(nodeName);
-        currentNode.addChildNodeId("");
-        try {
-            nodeDAO.create(newNode);
-            nodeDAO.update(currentNode);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        displayNodes(currentNode);
-    }
-
-    public void createKey(String keyName, String keyType, String keyValue) {
-        Key newKey = new Key("", keyName, KeyType.valueOf(keyType), keyValue);
-        currentNode.addKeyId(null);
-        try {
-            keyDAO.create(newKey);
-            nodeDAO.update(currentNode);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        displayNodes(currentNode);
-    }
-
-    //TODO
-    public boolean nameValidation(String name) {
-        if (Character.isDigit(name.charAt(0))) {
-
-        }
-        return false;
-    }
+    // public boolean chooseChildNode(String childNodeId) {
+    // try {
+    // Node node = nodeDAO.read(childNodeId);
+    // displayNodes(node);
+    // currentNode = node;
+    // return true;
+    // } catch (IOException e) {
+    // e.printStackTrace();
+    // }
+    // return false;
+    // }
+    //
+    //
+    // public boolean chooseParentNode() {
+    // Node node = nodeDAO.getRoot();
+    // displayNodes(node);
+    // currentNode = node;
+    // return true;
+    // }
+    //
+    // public void createNode(String nodeName) {
+    //
+    // Node newNode = new Node();
+    // newNode.setName(nodeName);
+    // currentNode.addChildNodeId("");
+    // try {
+    // nodeDAO.create(newNode);
+    // nodeDAO.update(currentNode);
+    // } catch (Exception e) {
+    // e.printStackTrace();
+    // }
+    // displayNodes(currentNode);
+    // }
+    //
+    // public void createKey(String keyName, String keyType, String keyValue) {
+    // Key newKey = new Key("", keyName, KeyType.valueOf(keyType), keyValue);
+    // currentNode.addKeyId(null);
+    // try {
+    // keyDAO.create(newKey);
+    // nodeDAO.update(currentNode);
+    // } catch (Exception e) {
+    // e.printStackTrace();
+    // }
+    // displayNodes(currentNode);
+    // }
+    //
+    // //TODO
+    // public boolean nameValidation(String name) {
+    // if (Character.isDigit(name.charAt(0))) {
+    //
+    // }
+    // return false;
+    // }
 
 
 }
