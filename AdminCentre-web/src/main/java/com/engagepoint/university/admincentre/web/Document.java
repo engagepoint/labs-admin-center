@@ -2,22 +2,30 @@ package com.engagepoint.university.admincentre.web;
 
 import java.io.Serializable;
 import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
 
-
-@ManagedBean (name = "document")
+@ManagedBean(name = "document")
+@SessionScoped
 public class Document implements Serializable, Comparable<Document> {
 
     private String name;
     private String value;
     private String type;
-    private String string = "test!!!";
-
-   
+    private boolean editable;
 
     public Document(String name, String value, String type) {
         this.name = name;
         this.value = value;
         this.type = type;
+
+
+    }
+
+    public Document() {
+    }
+
+    Document(String file1, String string, String file, DocumentsController aThis) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     public String getName() {
@@ -43,15 +51,32 @@ public class Document implements Serializable, Comparable<Document> {
     public void setType(String type) {
         this.type = type;
     }
-    
-        public String getString() {
-        return string;
+
+    public boolean isEditable() {
+        return editable;
     }
 
-    public void setString(String string) {
-        this.string = string;
+    public void setEditable(boolean editable) {
+        this.editable = editable;
     }
-    
+
+    public String editAction() {
+        this.setEditable(true);
+        return null;
+    }
+
+    public String saveAction() {
+
+        //get all existing value but set "editable" to false 
+
+        this.setEditable(false);
+
+        //return to current page
+        return null;
+    }
+
+    public void setSelected() {
+    }
 
     //Eclipse Generated hashCode and equals
     @Override

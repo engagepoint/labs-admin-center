@@ -1,22 +1,31 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<parent>
+<parent>
 		<artifactId>AdminCentre</artifactId>
 		<groupId>com.engagepoint.university.admincentre</groupId>
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>AdminCentre-jar</artifactId>
-
-
+	<artifactId>AdminCentre-base</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
 	<dependencies>
-	<!--  database dependency -->
-	<dependency>
-	<groupId>com.engagepoint.university.admincentre</groupId>
-			<artifactId>AdminCentre-base</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-	</dependency>		
+		<!-- JGroups dependency -->
+		<dependency>
+			<groupId>org.jgroups</groupId>
+			<artifactId>jgroups</artifactId>
+			<version>3.4.1.Final</version>
+		</dependency>
+		<!--Infinispan dependencies -->
+		<dependency>
+			<groupId>org.infinispan</groupId>
+			<artifactId>infinispan-core</artifactId>
+			<version>6.0.0.Final</version>
+		</dependency>
+		<dependency>
+			<groupId>org.infinispan</groupId>
+			<artifactId>infinispan-query</artifactId>
+			<version>6.0.1.Final</version>
+		</dependency>
 		<!-- slf4j logging -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -24,11 +33,8 @@
 			<version>1.7.5</version>
 			<scope>compile</scope>
 		</dependency>
-<!--		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-jdk14</artifactId>
-			<version>1.7.5</version>
-		</dependency> -->
+		<!-- <dependency> <groupId>org.slf4j</groupId> <artifactId>slf4j-jdk14</artifactId> 
+			<version>1.7.5</version> </dependency> -->
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-core</artifactId>
@@ -43,18 +49,6 @@
 
 	<build>
 		<plugins>
-			<!--<plugin> -->
-			<!--<groupId>org.apache.maven.plugins</groupId> -->
-			<!--<artifactId>maven-jar-plugin</artifactId> -->
-			<!--<version>2.4</version> -->
-			<!--<configuration> -->
-			<!--<archive> -->
-			<!--<manifest> -->
-			<!--<mainClass>com.engagepoint.university.admincentre.Main</mainClass> -->
-			<!--</manifest> -->
-			<!--</archive> -->
-			<!--</configuration> -->
-			<!--</plugin> -->
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>
@@ -78,7 +72,6 @@
 			</plugin>
 		</plugins>
 		<resources>
-			
 			<resource>
 				<directory>src/main/resources</directory>
 				<includes>

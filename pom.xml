@@ -26,6 +26,7 @@
         </plugins>
     </build>
     <modules>
+    	<module>AdminCentre-base</module>
         <module>AdminCentre-web</module>
         <module>AdminCentre-ejb</module>
         <module>AdminCentre-ear</module>

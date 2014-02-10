@@ -1,8 +1,6 @@
 package com.engagepoint.university.admincentre.dao;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Observable;
 
 import org.infinispan.Cache;
@@ -18,7 +16,7 @@ public abstract class AbstractDAO<T extends AbstractEntity>
 	extends Observable
 	implements GenericDAO<T> {
 
-    private static String CACHE_CONFIG = "infinispan/cache_config.xml";
+    private static String CACHE_CONFIG = "cache_config.xml";
     private static String USED_CACHE = "evictionCache";
 
     DefaultCacheManager m = null;
@@ -30,7 +28,7 @@ public abstract class AbstractDAO<T extends AbstractEntity>
         addObserver(new CRUDObserver());
     }
 
-    public void create(T newInstance) throws Exception {
+    public void create(T newInstance) throws IOException {
         try {
             Cache<String, T> cache = getCache(CACHE_CONFIG, USED_CACHE);
 
@@ -43,7 +41,7 @@ public abstract class AbstractDAO<T extends AbstractEntity>
                 throw new Exception("This entity already exists");
             }
         } catch (Exception e) {
-            throw new Exception(e.getMessage());
+            throw new IOException("This entity already exists");
         }
  finally {
             stopCacheManager();
@@ -64,7 +62,7 @@ public abstract class AbstractDAO<T extends AbstractEntity>
         }
     }
 
-    public void update(T transientObject) throws Exception {
+    public void update(T transientObject) throws IOException {
         try {
         Cache<String, T> cache = getCache(CACHE_CONFIG, USED_CACHE);
         cache.replace(transientObject.getId(), transientObject);
@@ -77,21 +75,16 @@ public abstract class AbstractDAO<T extends AbstractEntity>
 
     }
 
-    public void delete(T persistentObject) throws Exception {
+    public void delete(String keyId) throws IOException{
         try {
             Cache<String, T> cache = getCache(CACHE_CONFIG, USED_CACHE);
-            if (cache.containsKey(persistentObject.getId())
-                    && (!persistentObject.getId().equals("/root"))) {
-                cache.replace(persistentObject.getId(), persistentObject);
+            T temp = cache.get(keyId);
+            cache.remove(keyId);
                 setChanged();
                 notifyObservers(new MessagePayload(
-                		CRUDOperation.DELETE, persistentObject));
-            } else {
-                throw new Exception("This entity doesn`t exist");
+CRUDOperation.DELETE, temp));
             }
-        } catch (Exception e) {
-            throw new Exception(e.getMessage());
-        }
+
  finally {
             stopCacheManager();
         }
@@ -102,10 +95,9 @@ public abstract class AbstractDAO<T extends AbstractEntity>
 
         m = new DefaultCacheManager(cacheConfigPath);
         cache = m.getCache(cacheName);
-        if (!cache.containsKey("/root")) {
+        if (!cache.containsKey("/")) {
             Cache<String, Node> startCache = m.getCache(USED_CACHE);
-            Node node = new Node();
-            node.setName("root");
+            Node node = new Node("/", "");
             startCache.put(node.getId(), node);
         }
         return cache;

@@ -18,8 +18,11 @@ public class Node extends AbstractEntity implements Serializable {
     public Node() {
     }
 
-    public Node(String parentNodeId) {
+    public Node(String parentNodeId, String name) {
         this.parentNodeId = parentNodeId;
+        this.id = (parentNodeId.equals("/") ? "/" + name : this.parentNodeId + "/" + name);
+        this.name = name;
+
     }
 
     public List<String> getKeyIdList() {
@@ -34,24 +37,15 @@ public class Node extends AbstractEntity implements Serializable {
         return childNodeIdList;
     }
 
-    //TODO refactor this method
-    public void addChildNodeId(Node childNode) throws Exception {
-        childNode.setParentNodeId(getId());
-        childNode.setId();
-        if (!childNodeIdList.contains(childNode.getId())) {
-            childNodeIdList.add(childNode.getId());
-        } else {
-            throw new Exception("This node is already exists");
+    public void addChildNodeId(String childNodeId) {
+        if (!childNodeIdList.contains(childNodeId)) {
+        this.childNodeIdList.add(childNodeId);
         }
     }
 
-    public void addKeyId(Key key) throws Exception {
-        key.setParentNodeId(getId());
-        key.setId();
-        if (!keyIdList.contains(key.getId())) {
-            keyIdList.add(key.getId());
-        } else {
-            throw new Exception("This key is already exists");
+    public void addKeyId(String keyId) {
+        if (!keyIdList.contains(keyId)) {
+        this.keyIdList.add(keyId);
         }
     }
 }
