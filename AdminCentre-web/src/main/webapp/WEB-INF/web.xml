@@ -33,11 +33,6 @@
         <param-value>-</param-value>
     </context-param>
 
-    <filter-mapping>
-        <filter-name>characterEncodingFilter</filter-name>
-        <servlet-name>facesServlet</servlet-name>
-    </filter-mapping>
-
     <servlet>
         <servlet-name>facesServlet</servlet-name>
         <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
