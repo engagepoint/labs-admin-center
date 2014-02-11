@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
+import com.engagepoint.university.admincentre.exception.WrongInputArgException;
 import com.engagepoint.university.admincentre.preferences.NodePreferences;
 
 public final class Main {
@@ -72,46 +73,49 @@ public final class Main {
 
     private static void analyzeLine(String line) {
         String[] arguments = line.split(" ");
-
-        // -help command
-        if (Commands.HELP.getName().equals(arguments[0])) {
-            CONSOLE_CONTROLLER.showHelp();
+        try {
+            checkCommand(arguments);
+        } catch (WrongInputArgException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
+    }
 
-        // -view command
-        if (Commands.VIEW.getName().equals(arguments[0])) {
-            CONSOLE_CONTROLLER.displayNodes(CONSOLE_CONTROLLER.getCurrentPreferences());
-        }
-
-        // -choose command
-        if (Commands.SELECT.getName().equals(arguments[0])) {
-            if ("-ch".equals(arguments[1])) {
-                if (arguments.length == 3) {
-                    CONSOLE_CONTROLLER.chooseChildNode(arguments[2]);
-                }
-            }
-            if ("-p".equals(arguments[1])) {
-                if (arguments.length == 2) {
-                    CONSOLE_CONTROLLER.chooseParentNode();
-                }
-            }
-        }
-
-        // -create command
-        if (Commands.CREATE.getName().equals(arguments[0])) {
-            if (arguments.length == 3) {
-                if ("-node".equals(arguments[1])) {
+    private static void checkCommand(String[] arguments) throws WrongInputArgException {
+        try {
+            switch (Commands.valueOf(arguments[0].toUpperCase().replaceFirst("-", ""))) {
+            case VIEW:
+                CONSOLE_CONTROLLER.displayNodes(CONSOLE_CONTROLLER.getCurrentPreferences());
+                break;
+            case HELP:
+                CONSOLE_CONTROLLER.showHelp();
+                break;
+            case VERSION:
+                CONSOLE_CONTROLLER.showVersion();
+                break;
+            case CREATE:
+                if ("-node".equals(arguments[1]) && (arguments.length == 3)) {
                     CONSOLE_CONTROLLER.createNode(arguments[2]);
+                } else if ("-key".equals(arguments[1]) && (arguments.length == 5)) {
+                    CONSOLE_CONTROLLER.createKey(arguments[2], arguments[3], arguments[4]);
+                } else {
+                    throw new WrongInputArgException();
                 }
-            }
-
-            if (arguments.length == 5) {
-                if ("-key".equals(arguments[1])) {
-                    {
-                        CONSOLE_CONTROLLER.createKey(arguments[2], arguments[3], arguments[4]);
-                    }
+                break;
+            case REMOVE:
+                // TODO add remove functional
+                break;
+            case EDIT:
+                // TODO add edit functional
+                break;
+            case SELECT:
+                if (arguments.length == 2) {
+                    CONSOLE_CONTROLLER.selectNode(arguments[1]);
                 }
+                break;
             }
+        } catch (IllegalArgumentException e) {
+            throw new WrongInputArgException();
         }
     }
 }

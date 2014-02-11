@@ -1,4 +1,5 @@
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
 import com.engagepoint.university.admincentre.ConsoleController;
@@ -59,16 +60,16 @@ public class ConsoleControllerTest {
 
     @Test
     public void testKeyTypeValidation() throws Exception {
-//        assertEquals(true, controller.keyTypeValidation("String"));
-//        assertEquals(true, controller.keyTypeValidation("Boolean"));
-//        assertEquals(true, controller.keyTypeValidation("ByteArray"));
-//        assertEquals(true, controller.keyTypeValidation("Integer"));
-//        assertEquals(true, controller.keyTypeValidation("Double"));
-//        assertEquals(true, controller.keyTypeValidation("Float"));
-//        assertEquals(true, controller.keyTypeValidation("Long"));
-//
-//        assertEquals(false, controller.keyTypeValidation("string"));
-//        assertEquals(false, controller.keyTypeValidation("Random_String"));
+        assertEquals(true, controller.keyTypeValidation("String"));
+        assertEquals(true, controller.keyTypeValidation("Boolean"));
+        assertEquals(true, controller.keyTypeValidation("ByteArray"));
+        assertEquals(true, controller.keyTypeValidation("Integer"));
+        assertEquals(true, controller.keyTypeValidation("Double"));
+        assertEquals(true, controller.keyTypeValidation("Float"));
+        assertEquals(true, controller.keyTypeValidation("Long"));
+
+        assertEquals(false, controller.keyTypeValidation("string"));
+        assertEquals(false, controller.keyTypeValidation("Random_String"));
 
     }
 }
