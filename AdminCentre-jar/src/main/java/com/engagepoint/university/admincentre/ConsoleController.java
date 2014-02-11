@@ -3,12 +3,12 @@ package com.engagepoint.university.admincentre;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
+import com.engagepoint.university.admincentre.entity.KeyType;
 import com.engagepoint.university.admincentre.preferences.NodePreferences;
 
 public class ConsoleController {
 
 
-    private final static int FIX_LENGTH = 30;
     private final static StringBuilder ALIGN_STRING = new StringBuilder("---");
     private Preferences currentPreferences = new NodePreferences(null, "");
 
@@ -20,20 +20,20 @@ public class ConsoleController {
         this.currentPreferences = currentPreferences;
     }
 
-
     public void showHelp() {
         System.out.println("Options ...");
         for (Commands commands : Commands.values()) {
-            StringBuilder stringBuilder = buildAlignmentString(commands.getName().length());
-            System.out.println("  " + commands.getName() + stringBuilder + commands.getDescription());
+            String name = commands.getName();
+            StringBuilder stringBuilder = buildAlignmentString(name.length());
+            System.out.println("  " + name + stringBuilder + commands.getDescription());
         }
         System.out.println();
     }
 
-
     private StringBuilder buildAlignmentString(int length) {
+        int fixLength = 30;
         StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i < FIX_LENGTH - length; i++) {
+        for (int i = 0; i < fixLength - length; i++) {
             stringBuilder = stringBuilder.append(" ");
         }
         return stringBuilder;
@@ -49,8 +49,7 @@ public class ConsoleController {
                 System.out.println(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3) + "|");
 
                 for (int i = 0; i < preference.childrenNames().length; i++) {
-                    displayNodes(preference.node(
-                            preference.childrenNames()[i]));
+                    displayNodes(preference.node(preference.childrenNames()[i]));
                 }
                 ALIGN_STRING.delete(0, 3);
 
@@ -59,6 +58,10 @@ public class ConsoleController {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+    }
+
+    public void showVersion() {
+        System.out.println("Current application version is " + 1.0);
     }
 
     private void displayKeys(Preferences preferance) {
@@ -82,41 +85,59 @@ public class ConsoleController {
 
     }
 
-    public boolean chooseChildNode(String childNodeId) {
-
-        this.currentPreferences = currentPreferences.node(childNodeId);
+    public boolean selectNode(String nodeId) {
+        this.currentPreferences = currentPreferences.node(nodeId);
         displayNodes(currentPreferences);
-     return true;
-    }
-
-    public boolean chooseParentNode() {
-        this.currentPreferences = currentPreferences.parent();
-        displayNodes(this.currentPreferences);
-
         return true;
+
     }
 
     public void createNode(String nodeName) {
-       String newPath =  (currentPreferences.absolutePath().equals("/") ? "/" + nodeName
-                : currentPreferences.absolutePath() + "/" + nodeName);
-        currentPreferences.node(newPath);
-        currentPreferences.node(currentPreferences.absolutePath());
+        if (nameValidation(nodeName)) {
+            String newPath = (currentPreferences.absolutePath().equals("/") ? "/" + nodeName
+                    : currentPreferences.absolutePath() + "/" + nodeName);
+            currentPreferences.node(newPath);
+            currentPreferences.node(currentPreferences.absolutePath());
+        }
         displayNodes(this.currentPreferences);
     }
 
     public void createKey(String keyName, String keyType, String keyValue) {
-        currentPreferences.put(keyName, keyValue);
+        if (nameValidation(keyName) && keyTypeValidation(keyType)) {
+            currentPreferences.put(keyName, keyValue);
+        }
         displayNodes(currentPreferences);
 
     }
 
-    // //TODO
     public boolean nameValidation(String name) {
-        if (Character.isDigit(name.charAt(0))) {
-
+        boolean value = name.matches("^[A-Z][a-z0-9]+([A-Z][a-z0-9]+|[A-Z]$)*$");
+        if (!value) {
+            System.out.println("You enter not valid name...");
         }
-        return false;
+        return value;
     }
 
+    /**
+     * Allows to verify entered key type from console
+     * 
+     * @param keyType
+     *            String param which comes from console
+     * @return true if key type exist in enum KeyType
+     */
+    public boolean keyTypeValidation(String keyType) {
+        try {
+            KeyType.valueOf(keyType);
+        } catch (IllegalArgumentException e) {
+            KeyType[] keyTypeList = KeyType.values();
+            System.out.println("You enter wrong key type. Use one of the next types :");
+            for (KeyType keyTypeTemp : keyTypeList) {
+                System.out.println("  " + keyTypeTemp.toString());
+            }
+            return false;
+        }
+        return true;
+
+    }
 
 }
