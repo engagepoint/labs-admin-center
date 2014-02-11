@@ -1072,10 +1072,11 @@ public class NodePreferences extends Preferences {
 
            // Ensure that all children are cached
            String[] kidNames = childrenNamesSpi();
-           for (int i=0; i<kidNames.length; i++)
+            for (int i = 0; i < kidNames.length; i++) {
+                String kidName = kidNames[i].split("/")[kidNames[i].split("/").length - 1];
                if (!kidCache.containsKey(kidNames[i]))
-                   kidCache.put(kidNames[i], childSpi(kidNames[i]));
-
+                    kidCache.put(kidNames[i], childSpi(kidName));
+            }
            // Recursively remove all cached children
             for (Iterator<NodePreferences> i = kidCache.values().iterator();
                 i.hasNext();) {
@@ -1281,7 +1282,10 @@ public class NodePreferences extends Preferences {
      * @throws IOException
      */
     protected void removeSpi(String key) throws IOException {
+
        keyDAO.delete(absolutePath+"/"+key);
+        this.parent.currentNode.getKeyIdList().remove(key);
+        nodeDAO.update(this.parent.currentNode);
    };
 
     /**
@@ -1311,6 +1315,8 @@ public class NodePreferences extends Preferences {
      */
     protected void removeNodeSpi() throws BackingStoreException, IOException {
        nodeDAO.delete(absolutePath);
+        this.parent.currentNode.getChildNodeIdList().remove(this.absolutePath);
+        nodeDAO.update(this.parent.currentNode);
        for(int i =0; i<keys().length; i++){
            keyDAO.delete(absolutePath+"/"+keys()[i]);
        }
