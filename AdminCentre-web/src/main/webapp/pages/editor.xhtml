@@ -7,70 +7,93 @@
                 xmlns:uib="http://engagepoint.com/uib"
                 xmlns:ui-paginator="http://java.sun.com/jsf/composite/uibootstrap/components/paginator"
                 template="/WEB-INF/templates/default.xhtml"
-        >
+                >
 
     <ui:define name="page">
 
         <h:form id="preferencesForm">
             <h2><h:outputText value="Preferences administration"/></h2>
-                
+
             <p:treeTable id="treeTable"
-                             value="#{documentsController.root}"
-                             var="doc" 
-                            
-                             selectionMode="single"
-                             selection="#{documentsController.selectedNode}">  
+                         value="#{documentsController.root}"
+                         var="doc"
+                         selectionMode="single"
+                         selection="#{documentsController.selectedNode}">  
 
-                    <f:facet name="header">
-                        Properties Viewer
+                <f:facet name="header">
+                    Properties Viewer
 
-                        <br/>
-                        <p:commandButton value="Edit"  update="treeTable"  action="#{documentsController.selectedNode.data.editAction}" />                  
-                        <p:commandButton value="Save"  update="treeTable" action="#{documentsController.selectedNode.data.saveAction}" />
+                    <br/>
+                    <p:commandButton value="Edit"  update="treeTable"  action="#{documentsController.selectedNode.data.editAction}" />                  
+                    <p:commandButton value="Save"  update="treeTable" action="#{documentsController.selectedNode.data.saveAction}" />
+                    <p:commandButton value="Add Node" update="treeTable" action="#{documentsController.addNode}"/>
+                    <p:commandButton value="Delete" actionListener="#{documentsController.deleteNode}" update="treeTable"/>
+                    <br/>
+                    <br/>
+                    <br/>
+                </f:facet>
 
-                      
-                        <p:commandButton value="Add Node" update="treeTable" action="#{documentsController.addNode}"/>
-                        <p:commandButton value="Delete" actionListener="#{documentsController.deleteNode}" update="treeTable"/>
-                        <br/>
-                        <br/>
-                        <br/>
+                <p:column style="width:30%">
+                    <f:facet name="header1">
+                        File
+
+                    </f:facet>               
+
+                    <p:inputText value="#{doc.name}" style="width:60%" rendered="#{doc.editable}" />  
+                    <h:outputText value="#{doc.name}" rendered="#{not doc.editable}" />
+
+                </p:column>
+
+                <p:column style="width:30%">
+                    <f:facet name="header2">
+                        Value
                     </f:facet>
 
-                    <p:column style="width:32%">
-                        <f:facet name="header">
-                            File
-                       
-                        </f:facet>               
-                      
-                            <p:inputText value="#{doc.name}" style="width:60%" rendered="#{doc.editable}" />  
-                            <h:outputText value="#{doc.name}" rendered="#{not doc.editable}" />
-                            
-                    </p:column>
+                    <p:inputText value="#{doc.value}" style="width:60%" rendered="#{doc.editable}" />  
+                    <h:outputText value="#{doc.value}" rendered="#{not doc.editable}" />           
 
-                    <p:column style="width:32%">
-                        <f:facet name="header">
-                            Value
-                        </f:facet>
+                </p:column>
 
-                            <p:inputText value="#{doc.value}" style="width:60%" rendered="#{doc.editable}" />  
-                            <h:outputText value="#{doc.value}" rendered="#{not doc.editable}" />           
-                        
-                    </p:column>
+                <p:column style="width:30%">
+                    <f:facet name="header3">
+                        Type
+                    </f:facet>
 
-                    <p:column style="width:32%">
-                        <f:facet name="header">
-                            Type
-                        </f:facet>
+                    <p:inputText value="#{doc.type}"  style="width:60%" rendered="#{doc.editable}" />  
+                    <h:outputText value="#{doc.type}" rendered="#{not doc.editable}" /> 
+                </p:column>
 
-                        
-                            <p:inputText value="#{doc.type}"  style="width:60%" rendered="#{doc.editable}" />  
-                            <h:outputText value="#{doc.type}" rendered="#{not doc.editable}" /> 
-                       
-                    </p:column>
+                <p:column style="width:10%">
+                    <f:facet name="header4">
+                        Delete
+                    </f:facet>
 
+                    <p:dialog id="delDialog" header="Delete preference" widgetVar="delDlg"  modal="true" height="100" closable="false">
 
-                </p:treeTable>             
+                        <h:outputText value="Realy delete?"/>
+                        <br/> 
+                        <h:outputText value="#{documentsController.selectedNode.data.name}"/>
+                        <br/>
 
+                        <p:commandButton value="Ok"
+                                         action="#{documentsController.deleteNode}"
+                                         update="treeTable"
+                                         oncomplete="delDlg.hide()"/>                        
+
+                        <p:commandButton value="Cancel"
+                                         update="treeTable"
+                                         oncomplete="delDlg.hide()"/>
+                    </p:dialog>
+
+                    <p:commandButton value="Delete"
+                                     immediate="true"
+                                     update="treeTable"
+                                     styleClass="ui-button-icon-only secondary small"
+                                     icon="ui-icon-remove"
+                                     oncomplete="delDlg.show()"/>                    
+                    
+                </p:column>
+            </p:treeTable>
         </h:form>
     </ui:define>
 </ui:composition>
