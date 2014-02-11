@@ -137,6 +137,7 @@ public class NodePreferences extends Preferences {
        nodeDAO.create(currentNode);
                 parent.currentNode.addChildNodeId(this.currentNode.getId());
        nodeDAO.update(parent.currentNode);
+       newNode = true;
        } 
        //TODO add init of existing value
             // if(!this.name.equals("")){
@@ -933,16 +934,17 @@ public class NodePreferences extends Preferences {
        if (token.equals("/"))  // Check for consecutive slashes
            throw new IllegalArgumentException("Consecutive slashes in path");
        synchronized(lock) {
-            NodePreferences child = new NodePreferences(this, token);
+//            NodePreferences child = new NodePreferences(this, token);
 
-            // NodePreferences child = kidCache.get(token);
-            // if (child == null) {
-            //
-            // child = childSpi(token);
-            // if (child.newNode)
-            // enqueueNodeAddedEvent(child);
-            // kidCache.put(token, child);
-            // }
+             NodePreferences child = kidCache.get(token);
+             if (child == null) {
+            
+            	 child = childSpi(token);
+            	 if (child.newNode){
+            		 enqueueNodeAddedEvent(child);
+            	 }
+            	 kidCache.put(token, child);
+             }
            if (!path.hasMoreTokens())
                return child;
            path.nextToken();  // Consume slash
@@ -1072,10 +1074,11 @@ public class NodePreferences extends Preferences {
 
            // Ensure that all children are cached
            String[] kidNames = childrenNamesSpi();
-           for (int i=0; i<kidNames.length; i++)
+            for (int i = 0; i < kidNames.length; i++) {
+                String kidName = kidNames[i].split("/")[kidNames[i].split("/").length - 1];
                if (!kidCache.containsKey(kidNames[i]))
-                   kidCache.put(kidNames[i], childSpi(kidNames[i]));
-
+                    kidCache.put(kidNames[i], childSpi(kidName));
+            }
            // Recursively remove all cached children
             for (Iterator<NodePreferences> i = kidCache.values().iterator();
                 i.hasNext();) {
@@ -1281,7 +1284,10 @@ public class NodePreferences extends Preferences {
      * @throws IOException
      */
     protected void removeSpi(String key) throws IOException {
+
        keyDAO.delete(absolutePath+"/"+key);
+        this.parent.currentNode.getKeyIdList().remove(key);
+        nodeDAO.update(this.parent.currentNode);
    };
 
     /**
@@ -1311,6 +1317,8 @@ public class NodePreferences extends Preferences {
      */
     protected void removeNodeSpi() throws BackingStoreException, IOException {
        nodeDAO.delete(absolutePath);
+        this.parent.currentNode.getChildNodeIdList().remove(this.absolutePath);
+        nodeDAO.update(this.parent.currentNode);
        for(int i =0; i<keys().length; i++){
            keyDAO.delete(absolutePath+"/"+keys()[i]);
        }
