@@ -34,7 +34,7 @@
                 </f:facet>
 
                 <p:column style="width:30%">
-                    <f:facet name="header1">
+                    <f:facet name="header">
                         File
 
                     </f:facet>               
@@ -45,7 +45,7 @@
                 </p:column>
 
                 <p:column style="width:30%">
-                    <f:facet name="header2">
+                    <f:facet name="header">
                         Value
                     </f:facet>
 
@@ -55,7 +55,7 @@
                 </p:column>
 
                 <p:column style="width:30%">
-                    <f:facet name="header3">
+                    <f:facet name="header">
                         Type
                     </f:facet>
 
@@ -64,8 +64,8 @@
                 </p:column>
 
                 <p:column style="width:10%">
-                    <f:facet name="header4">
-                        Delete
+                    <f:facet name="header">
+                        
                     </f:facet>
 
                     <p:dialog id="delDialog" header="Delete preference" widgetVar="delDlg"  modal="true" height="100" closable="false">
@@ -85,12 +85,40 @@
                                          oncomplete="delDlg.hide()"/>
                     </p:dialog>
 
+                  
+                    <p:commandButton value="Edit" 
+                                     update="editDial" 
+                                     oncomplete="edDlg.show()" 
+                                     styleClass="ui-button-icon-only secondary small"  
+                                     icon="ui-icon-edit" />
+                    
+                    
                     <p:commandButton value="Delete"
                                      immediate="true"
                                      update="treeTable"
                                      styleClass="ui-button-icon-only secondary small"
                                      icon="ui-icon-remove"
-                                     oncomplete="delDlg.show()"/>                    
+                                     oncomplete="delDlg.show()"/>    
+                    
+                    
+                    
+                    <p:dialog id="editDial" header="Edit" widgetVar="edDlg"  modal="true" height="200" closable="false">
+                        <h:panelGrid  columns="2" cellpadding="5" >  
+                            <h:outputLabel for="name" value="Name: " />  
+                            <h:outputLabel  value="#{documentsController.selectedNode.data.name}" />  
+                            <p:inputText id="name" value="#{documentsController.selectedNode.data.name}" style="font-weight:bold" />  
+
+                            <h:outputLabel for="value" value="Size: " />  
+                            <p:inputText id="value" value="#{documentsController.selectedNode.data.value}" style="font-weight:bold" />  
+
+                            <h:outputLabel for="type" value="Type " />  
+                            <p:inputText id="type" value="#{documentsController.selectedNode.data.type}" style="font-weight:bold" />  
+                        </h:panelGrid>  
+
+
+                        <p:commandButton value="Ok" oncomplete="edDlg.hide()" update="treeTable"/>
+
+                    </p:dialog>
                     
                 </p:column>
             </p:treeTable>
