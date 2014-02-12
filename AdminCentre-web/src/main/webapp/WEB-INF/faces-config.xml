@@ -6,6 +6,11 @@
     <render-kit>
         <renderer>
             <component-family>org.primefaces.component</component-family>
+            <renderer-type>org.primefaces.component.TreeTableRenderer</renderer-type>
+            <renderer-class>com.engagepoint.renderer.primefaces.BootStrapTreeTableRenderer</renderer-class>
+        </renderer>
+        <renderer>
+            <component-family>org.primefaces.component</component-family>
             <renderer-type>org.primefaces.component.SubTableRenderer</renderer-type>
             <renderer-class>com.engagepoint.renderer.primefaces.BootStrapSubTableRenderer</renderer-class>
         </renderer>
