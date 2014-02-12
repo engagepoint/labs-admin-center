@@ -137,6 +137,7 @@ public class NodePreferences extends Preferences {
        nodeDAO.create(currentNode);
                 parent.currentNode.addChildNodeId(this.currentNode.getId());
        nodeDAO.update(parent.currentNode);
+       newNode = true;
        } 
        //TODO add init of existing value
             // if(!this.name.equals("")){
@@ -933,16 +934,17 @@ public class NodePreferences extends Preferences {
        if (token.equals("/"))  // Check for consecutive slashes
            throw new IllegalArgumentException("Consecutive slashes in path");
        synchronized(lock) {
-            NodePreferences child = new NodePreferences(this, token);
+//            NodePreferences child = new NodePreferences(this, token);
 
-            // NodePreferences child = kidCache.get(token);
-            // if (child == null) {
-            //
-            // child = childSpi(token);
-            // if (child.newNode)
-            // enqueueNodeAddedEvent(child);
-            // kidCache.put(token, child);
-            // }
+             NodePreferences child = kidCache.get(token);
+             if (child == null) {
+            
+            	 child = childSpi(token);
+            	 if (child.newNode){
+            		 enqueueNodeAddedEvent(child);
+            	 }
+            	 kidCache.put(token, child);
+             }
            if (!path.hasMoreTokens())
                return child;
            path.nextToken();  // Consume slash
