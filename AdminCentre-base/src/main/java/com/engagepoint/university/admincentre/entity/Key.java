@@ -1,8 +1,8 @@
 package com.engagepoint.university.admincentre.entity;
 
-import java.io.Serializable;
 
-public class Key extends AbstractEntity implements Serializable {
+
+public class Key extends AbstractEntity {
 
     private static final long serialVersionUID = -5430748795395302687L;
 
@@ -15,9 +15,7 @@ public class Key extends AbstractEntity implements Serializable {
     }
 
     public Key(String parentNodeId, String name, KeyType type, String value) {
-        this.parentNodeId = parentNodeId;
-        this.id = (parentNodeId.equals("/") ? "/" + name : this.parentNodeId + "/" + name);
-        this.name = name;
+        super(name, parentNodeId);
         this.type = type;
         this.value = value;
     }

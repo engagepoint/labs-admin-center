@@ -20,6 +20,9 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.engagepoint.university.admincentre.dao.KeyDAO;
 import com.engagepoint.university.admincentre.dao.NodeDAO;
 import com.engagepoint.university.admincentre.entity.Key;
@@ -27,9 +30,25 @@ import com.engagepoint.university.admincentre.entity.KeyType;
 import com.engagepoint.university.admincentre.entity.Node;
 
 public class NodePreferences extends Preferences {
-    KeyDAO keyDAO = new KeyDAO();
-    NodeDAO nodeDAO = new NodeDAO();
-    Node currentNode;
+    /**
+     * 
+     */
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(NodePreferences.class);
+    private KeyDAO keyDAO = new KeyDAO();
+    private NodeDAO nodeDAO = new NodeDAO();
+    private Node currentNode;
+    private final static String REMOVED_NODE = "Node has been removed.";
+    private final static String NOTREGISTRD_LISTENER = "Listener not registered.";
+    public Node getCurrentNode() {
+        return currentNode;
+    }
+
+    public void setCurrentNode(Node currentNode) {
+        this.currentNode = currentNode;
+    }
+
+
     
     /**
     * Our name relative to parent.
@@ -44,11 +63,15 @@ public class NodePreferences extends Preferences {
    /**
     * Our parent node.
     */
-    final NodePreferences parent;
+    private final NodePreferences parent;
 
-   /**
-    * Our root node.
-    */
+    public NodePreferences getParent() {
+        return parent;
+    }
+
+    /**
+     * Our root node.
+     */
     private final NodePreferences root; // Relative to this node
 
    /**
@@ -59,7 +82,7 @@ public class NodePreferences extends Preferences {
     * indicates whether a node change event should be fired when
     * creation is complete.
     */
-   protected boolean newNode = false;
+    private boolean newNode = false;
 
    /**
     * All known unremoved children of this node.  (This "cache" is consulted
@@ -91,7 +114,7 @@ public class NodePreferences extends Preferences {
     * To avoid deadlock, a node is <i>never</i> locked by a thread that
     * holds a lock on a descendant of that node.
     */
-   protected final Object lock = new Object();
+    private final Object lock = new Object();
 
     /**
      * Creates a preference node with the specified parent and the specified
@@ -124,7 +147,7 @@ public class NodePreferences extends Preferences {
              throw new IllegalArgumentException("Illegal name: empty string");
 
            root = parent.root;
-           absolutePath = (parent==root ? "/" + name
+            absolutePath = (parent.equals(root) ? "/" + name
                                         : parent.absolutePath() + "/" + name);
        }
        this.name = name;
@@ -139,21 +162,9 @@ public class NodePreferences extends Preferences {
        nodeDAO.update(parent.currentNode);
        newNode = true;
        } 
-       //TODO add init of existing value
-            // if(!this.name.equals("")){
-            // Node parentNode = nodeDAO.read(parent.absolutePath);
-            // parentNode.addChildNodeId(this.absolutePath);
-            // nodeDAO.update(parentNode);
-            // }
-        // for (int i = 0; i < currentNode.getChildNodeIdList().size(); i++) {
-        // String currentChildId=currentNode.getChildNodeIdList().get(i);
-        // Node childNode = nodeDAO.read(currentChildId);
-        // kidCache.put(childNode.getName(), new NodePreferences(this,
-        // childNode.getName()));
-        // }
+
        } catch (IOException e) {
-           // TODO Auto-generated catch block
-           e.printStackTrace();
+            LOGGER.warn(e.getMessage());
        }
       
    }
@@ -183,13 +194,13 @@ public class NodePreferences extends Preferences {
      *             if this node (or an ancestor) has been removed with the
      *             {@link #removeNode()} method.
      */
-    public void put(String key, KeyType type, String value) throws IOException {
+    private void put(String key, KeyType type, String value) throws IOException {
        if (key==null || value==null)
-           throw new NullPointerException();
+            throw new IllegalArgumentException("key and value can't be null");
       
        synchronized(lock) {
            if (removed)
-               throw new IllegalStateException("Node has been removed.");
+                throw new IllegalStateException(REMOVED_NODE);
             Key persistKey = new Key(absolutePath, key, type, value);
            putSpi(persistKey);
            enqueuePreferenceChangeEvent(key, value);
@@ -220,17 +231,17 @@ public class NodePreferences extends Preferences {
     */
    public String get(String key, String def) {
        if (key==null)
-           throw new NullPointerException("Null key");
+            throw new IllegalArgumentException("key can't be null");
        synchronized(lock) {
            if (removed)
-               throw new IllegalStateException("Node has been removed.");
+                throw new IllegalStateException(REMOVED_NODE);
 
           Key result= null;
            try {
                String keyId= absolutePath+"/"+key;
              result = getSpi(keyId);
-           } catch (Exception e) {
-               // Ignoring exception causes default to be returned
+            } catch (Exception e) {
+                LOGGER.warn(e.getMessage());
            }
            return ((result==null) ? def : result.getValue());
        }
@@ -250,16 +261,15 @@ public class NodePreferences extends Preferences {
     * @throws IllegalStateException if this node (or an ancestor) has been
     *         removed with the {@link #removeNode()} method.
     */
-    public void remove(String key) {
+    public void remove(String key) throws IllegalStateException {
        synchronized(lock) {
            if (removed)
-               throw new IllegalStateException("Node has been removed.");
+                throw new IllegalStateException(REMOVED_NODE);
 
             try {
                 removeSpi(key);
             } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                throw new IllegalStateException("Key was removed");
             }
            enqueuePreferenceChangeEvent(key, null);
        }
@@ -282,8 +292,9 @@ public class NodePreferences extends Preferences {
    public void clear() throws BackingStoreException {
        synchronized(lock) {
            String[] keys = keys();
-           for (int i=0; i<keys.length; i++)
+            for (int i = 0; i < keys.length; i++) {
                remove(keys[i]);
+            }
        }
    }
 
@@ -308,7 +319,7 @@ public class NodePreferences extends Preferences {
             put(key, KeyType.Integer, Integer.toString(value));
         } catch (IOException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOGGER.warn(e.getMessage());
         }
    }
 
@@ -368,7 +379,7 @@ public class NodePreferences extends Preferences {
             put(key, KeyType.Long, Long.toString(value));
         } catch (IOException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOGGER.warn(e.getMessage());
         }
    }
 
@@ -401,7 +412,7 @@ public class NodePreferences extends Preferences {
            if (value != null)
                result = Long.parseLong(value);
        } catch (NumberFormatException e) {
-           // Ignoring exception causes specified default to be returned
+            LOGGER.warn(e.getMessage());
        }
 
        return result;
@@ -427,8 +438,7 @@ public class NodePreferences extends Preferences {
         try {
             put(key, KeyType.Boolean, String.valueOf(value));
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOGGER.warn(e.getMessage());
         }
    }
 
@@ -461,10 +471,11 @@ public class NodePreferences extends Preferences {
        boolean result = def;
        String value = get(key, null);
        if (value != null) {
-           if (value.equalsIgnoreCase("true"))
+            if (value.equalsIgnoreCase("true")) {
                result = true;
-           else if (value.equalsIgnoreCase("false"))
+            } else if (value.equalsIgnoreCase("false")) {
                result = false;
+            }
        }
 
        return result;
@@ -490,8 +501,7 @@ public class NodePreferences extends Preferences {
         try {
             put(key, KeyType.Float, Float.toString(value));
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOGGER.warn(e.getMessage());
         }
    }
 
@@ -524,7 +534,7 @@ public class NodePreferences extends Preferences {
            if (value != null)
                result = Float.parseFloat(value);
        } catch (NumberFormatException e) {
-           // Ignoring exception causes specified default to be returned
+            LOGGER.warn(e.getMessage());
        }
 
        return result;
@@ -550,8 +560,7 @@ public class NodePreferences extends Preferences {
         try {
             put(key, KeyType.Double, Double.toString(value));
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOGGER.warn(e.getMessage());
         }
    }
 
@@ -584,7 +593,7 @@ public class NodePreferences extends Preferences {
            if (value != null)
                result = Double.parseDouble(value);
        } catch (NumberFormatException e) {
-           // Ignoring exception causes specified default to be returned
+            LOGGER.warn(e.getMessage());
        }
 
        return result;
@@ -606,8 +615,7 @@ public class NodePreferences extends Preferences {
         try {
             put(key, KeyType.ByteArray, byteArrayToBase64(value));
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOGGER.warn(e.getMessage());
         }
    }
      
@@ -689,7 +697,7 @@ public class NodePreferences extends Preferences {
                result = base64ToByteArray(value);
        }
        catch (RuntimeException e) {
-           // Ignoring exception causes specified default to be returned
+            LOGGER.warn(e.getMessage());
        }
 
        return result;
@@ -789,7 +797,7 @@ public class NodePreferences extends Preferences {
    public String[] keys() throws BackingStoreException {
        synchronized(lock) {
            if (removed)
-               throw new IllegalStateException("Node has been removed.");
+                throw new IllegalStateException(REMOVED_NODE);
 
            return keysSpi();
        }
@@ -818,16 +826,17 @@ public class NodePreferences extends Preferences {
    public String[] childrenNames() throws BackingStoreException {
        synchronized(lock) {
            if (removed)
-               throw new IllegalStateException("Node has been removed.");
+                throw new IllegalStateException(REMOVED_NODE);
 
            Set<String> s = new TreeSet<String>(kidCache.keySet());
-           for (String kid : childrenNamesSpi())
+            for (String kid : childrenNamesSpi()) {
                s.add(kid);
-           return s.toArray(EMPTY_STRING_ARRAY);
+            }
+            return childrenNamesSpi();
        }
    }
 
-   private static final String[] EMPTY_STRING_ARRAY = new String[0];
+
 
    /**
     * Returns all known unremoved children of this node.
@@ -855,7 +864,7 @@ public class NodePreferences extends Preferences {
    public Preferences parent() {
        synchronized(lock) {
            if (removed)
-               throw new IllegalStateException("Node has been removed.");
+                throw new IllegalStateException(REMOVED_NODE);
 
            return parent;
        }
@@ -909,7 +918,7 @@ public class NodePreferences extends Preferences {
    public Preferences node(String path) {
        synchronized(lock) {
            if (removed)
-               throw new IllegalStateException("Node has been removed.");
+                throw new IllegalStateException(REMOVED_NODE);
            if (path.equals(""))
                return this;
 
@@ -943,7 +952,7 @@ public class NodePreferences extends Preferences {
             	 if (child.newNode){
             		 enqueueNodeAddedEvent(child);
             	 }
-            	 kidCache.put(token, child);
+                 kidCache.put(token, child);
              }
            if (!path.hasMoreTokens())
                return child;
@@ -981,7 +990,7 @@ public class NodePreferences extends Preferences {
            if (path.equals(""))
                return !removed;
            if (removed)
-               throw new IllegalStateException("Node has been removed.");
+                throw new IllegalStateException(REMOVED_NODE);
            if (path.equals("/"))
                return true;
            if (path.charAt(0) != '/')
@@ -1056,8 +1065,7 @@ public class NodePreferences extends Preferences {
             try {
                 removeNode2();
             } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                LOGGER.warn(e.getMessage());
             }
            parent.kidCache.remove(name);
        }
@@ -1085,7 +1093,9 @@ public class NodePreferences extends Preferences {
                try {
                    i.next().removeNode2();
                    i.remove();
-               } catch (BackingStoreException x) { }
+                } catch (BackingStoreException e) {
+                    LOGGER.warn(e.getMessage());
+                }
            }
 
            // Now we have no descendants - it's time to die!
@@ -1147,10 +1157,10 @@ public class NodePreferences extends Preferences {
 
    public void addPreferenceChangeListener(PreferenceChangeListener pcl) {
        if (pcl==null)
-           throw new NullPointerException("Change listener is null.");
+            throw new IllegalArgumentException("PreferenceChangeListener can`t be null");
        synchronized(lock) {
            if (removed)
-               throw new IllegalStateException("Node has been removed.");
+                throw new IllegalStateException(REMOVED_NODE);
 
            // Copy-on-write
            PreferenceChangeListener[] old = prefListeners;
@@ -1164,31 +1174,32 @@ public class NodePreferences extends Preferences {
    public void removePreferenceChangeListener(PreferenceChangeListener pcl) {
        synchronized(lock) {
            if (removed)
-               throw new IllegalStateException("Node has been removed.");
+                throw new IllegalStateException(REMOVED_NODE);
            if ((prefListeners == null) || (prefListeners.length == 0))
-               throw new IllegalArgumentException("Listener not registered.");
+                throw new IllegalArgumentException(NOTREGISTRD_LISTENER);
 
            // Copy-on-write
            PreferenceChangeListener[] newPl =
                new PreferenceChangeListener[prefListeners.length - 1];
            int i = 0;
-           while (i < newPl.length && prefListeners[i] != pcl)
+            while (i < newPl.length && prefListeners[i] != pcl) {
                newPl[i] = prefListeners[i++];
-
+            }
            if (i == newPl.length &&  prefListeners[i] != pcl)
-               throw new IllegalArgumentException("Listener not registered.");
-           while (i < newPl.length)
+                throw new IllegalArgumentException(NOTREGISTRD_LISTENER);
+            while (i < newPl.length) {
                newPl[i] = prefListeners[++i];
+            }
            prefListeners = newPl;
        }
    }
 
    public void addNodeChangeListener(NodeChangeListener ncl) {
        if (ncl==null)
-           throw new NullPointerException("Change listener is null.");
+            throw new IllegalArgumentException("Change listener is null.");
        synchronized(lock) {
            if (removed)
-               throw new IllegalStateException("Node has been removed.");
+                throw new IllegalStateException(REMOVED_NODE);
 
            // Copy-on-write
            if (nodeListeners == null) {
@@ -1207,16 +1218,17 @@ public class NodePreferences extends Preferences {
    public void removeNodeChangeListener(NodeChangeListener ncl) {
        synchronized(lock) {
            if (removed)
-               throw new IllegalStateException("Node has been removed.");
+                throw new IllegalStateException(REMOVED_NODE);
            if ((nodeListeners == null) || (nodeListeners.length == 0))
-               throw new IllegalArgumentException("Listener not registered.");
+                throw new IllegalArgumentException(NOTREGISTRD_LISTENER);
 
            // Copy-on-write
            int i = 0;
-           while (i < nodeListeners.length && nodeListeners[i] != ncl)
+            while (i < nodeListeners.length && nodeListeners[i] != ncl) {
                i++;
+            }
            if (i == nodeListeners.length)
-               throw new IllegalArgumentException("Listener not registered.");
+                throw new IllegalArgumentException(NOTREGISTRD_LISTENER);
            NodeChangeListener[] newNl =
                new NodeChangeListener[nodeListeners.length - 1];
            if (i != 0)
@@ -1242,8 +1254,12 @@ public class NodePreferences extends Preferences {
      * @throws IOException
      */
     protected void putSpi(Key key) throws IOException {
-       keyDAO.create(key);
-
+    	 if(keyDAO.read(key.getId())==null){   
+    	keyDAO.create(key);
+    	 }
+    	 else{
+    		 keyDAO.update(key);
+    	 }
         currentNode.addKeyId(key.getName());
         nodeDAO.update(currentNode);
    };
@@ -1272,6 +1288,10 @@ public class NodePreferences extends Preferences {
        return keyDAO.read(keyId);
    };
 
+    public Key getKey(String keyName) throws IOException {
+        return getSpi(absolutePath + "/" + keyName);
+    }
+
     /**
      * Remove the association (if any) for the specified key at this preference
      * node. It is guaranteed that <tt>key</tt> is non-null. Also, it is
@@ -1286,8 +1306,8 @@ public class NodePreferences extends Preferences {
     protected void removeSpi(String key) throws IOException {
 
        keyDAO.delete(absolutePath+"/"+key);
-        this.parent.currentNode.getKeyIdList().remove(key);
-        nodeDAO.update(this.parent.currentNode);
+       currentNode.getKeyIdList().remove(key);
+       nodeDAO.update(this.currentNode);
    };
 
     /**
@@ -1401,9 +1421,11 @@ public class NodePreferences extends Preferences {
        synchronized(lock) {
            // assert kidCache.get(nodeName)==null;
            String[] kidNames = childrenNames();
-           for (int i=0; i<kidNames.length; i++)
-               if (kidNames[i].equals(nodeName))
+            for (int i = 0; i < kidNames.length; i++) {
+                if (kidNames[i].equals(nodeName)) {
                    return childSpi(kidNames[i]);
+                }
+            }
        }
        return null;
    }
@@ -1491,8 +1513,9 @@ public class NodePreferences extends Preferences {
            cachedKids = cachedChildren();
        }
 
-       for (int i=0; i<cachedKids.length; i++)
+       for (int i=0; i<cachedKids.length; i++){
            cachedKids[i].sync2();
+        }
    }
 
    /**
@@ -1551,8 +1574,9 @@ public class NodePreferences extends Preferences {
            cachedKids = cachedChildren();
        }
 
-       for (int i = 0; i < cachedKids.length; i++)
+        for (int i = 0; i < cachedKids.length; i++) {
            cachedKids[i].flush2();
+        }
    }
 
    /**
@@ -1606,14 +1630,15 @@ public class NodePreferences extends Preferences {
     * eventQueue so the event dispatch thread knows whether to call
     * childAdded or childRemoved.
     */
-   private class NodeAddedEvent extends NodeChangeEvent {
-       private static final long serialVersionUID = -6743557530157328528L;
-       NodeAddedEvent(Preferences parent, Preferences child) {
+    private static class NodeAddedEvent extends NodeChangeEvent {
+
+        NodeAddedEvent(Preferences parent, Preferences child) {
            super(parent, child);
        }
    }
-   private class NodeRemovedEvent extends NodeChangeEvent {
-       private static final long serialVersionUID = 8735497392918824837L;
+
+    private static class NodeRemovedEvent extends NodeChangeEvent {
+
        NodeRemovedEvent(Preferences parent, Preferences child) {
            super(parent, child);
        }
@@ -1630,8 +1655,9 @@ public class NodePreferences extends Preferences {
                EventObject event = null;
                synchronized(eventQueue) {
                    try {
-                       while (eventQueue.isEmpty())
+                        while (eventQueue.isEmpty()) {
                            eventQueue.wait();
+                        }
                        event = eventQueue.remove(0);
                    } catch (InterruptedException e) {
                        // XXX Log "Event dispatch thread interrupted. Exiting"
@@ -1644,18 +1670,23 @@ public class NodePreferences extends Preferences {
                if (event instanceof PreferenceChangeEvent) {
                    PreferenceChangeEvent pce = (PreferenceChangeEvent)event;
                    PreferenceChangeListener[] listeners = src.prefListeners();
-                   for (int i=0; i<listeners.length; i++)
-                       listeners[i].preferenceChange(pce);
+                    for (int i = 0; i < listeners.length; i++) {
+                        listeners[i].preferenceChange(pce);
+                    }
+
                } else {
                    NodeChangeEvent nce = (NodeChangeEvent)event;
                    NodeChangeListener[] listeners = src.nodeListeners();
                    if (nce instanceof NodeAddedEvent) {
                        for (int i=0; i<listeners.length; i++)
+ {
                            listeners[i].childAdded(nce);
+                        }
                    } else {
                        // assert nce instanceof NodeRemovedEvent;
-                       for (int i=0; i<listeners.length; i++)
+                        for (int i = 0; i < listeners.length; i++) {
                            listeners[i].childRemoved(nce);
+                        }
                    }
                }
            }
@@ -1704,7 +1735,7 @@ public class NodePreferences extends Preferences {
        if (prefListeners.length != 0) {
            synchronized(eventQueue) {
                eventQueue.add(new PreferenceChangeEvent(this, key, newValue));
-               eventQueue.notify();
+                eventQueue.notifyAll();
            }
        }
    }
@@ -1718,7 +1749,7 @@ public class NodePreferences extends Preferences {
        if (nodeListeners.length != 0) {
            synchronized(eventQueue) {
                eventQueue.add(new NodeAddedEvent(this, child));
-               eventQueue.notify();
+                eventQueue.notifyAll();
            }
        }
    }
@@ -1732,7 +1763,7 @@ public class NodePreferences extends Preferences {
        if (nodeListeners.length != 0) {
            synchronized(eventQueue) {
                eventQueue.add(new NodeRemovedEvent(this, child));
-               eventQueue.notify();
+                eventQueue.notifyAll();
            }
        }
    }
@@ -1742,8 +1773,7 @@ public class NodePreferences extends Preferences {
         try {
             put(key, KeyType.String, value);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOGGER.warn(e.getMessage());
         }
 
     }

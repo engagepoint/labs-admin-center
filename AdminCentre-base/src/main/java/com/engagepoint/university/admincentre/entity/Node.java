@@ -1,13 +1,13 @@
 package com.engagepoint.university.admincentre.entity;
 
-import java.io.Serializable;
+
 import java.util.LinkedList;
 import java.util.List;
 
 import org.hibernate.search.annotations.Indexed;
 
 @Indexed
-public class Node extends AbstractEntity implements Serializable {
+public class Node extends AbstractEntity {
 
     private static final long serialVersionUID = 7481984532481844209L;
 
@@ -19,9 +19,7 @@ public class Node extends AbstractEntity implements Serializable {
     }
 
     public Node(String parentNodeId, String name) {
-        this.parentNodeId = parentNodeId;
-        this.id = (parentNodeId.equals("/") ? "/" + name : this.parentNodeId + "/" + name);
-        this.name = name;
+        super(name, parentNodeId);
 
     }
 

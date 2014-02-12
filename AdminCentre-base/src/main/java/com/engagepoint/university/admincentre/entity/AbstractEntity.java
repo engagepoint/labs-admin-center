@@ -8,11 +8,22 @@ import org.hibernate.search.annotations.Indexed;
 @Indexed
 public abstract class AbstractEntity implements Serializable {
     @Field(analyze = Analyze.NO)
-    protected String id;
+    private String id;
     @Field(analyze = Analyze.NO)
-    protected String name;
+    private String name;
     @Field(analyze = Analyze.NO)
-    protected String parentNodeId = "";
+    private String parentNodeId = "";
+
+    public AbstractEntity() {
+
+    }
+
+    public AbstractEntity(String name, String parentNodeId) {
+        super();
+        this.id = (parentNodeId.equals("/") ? "/" + name : this.parentNodeId + "/" + name);
+        this.name = name;
+        this.parentNodeId = parentNodeId;
+    }
 
     public String getParentNodeId() {
         return parentNodeId;

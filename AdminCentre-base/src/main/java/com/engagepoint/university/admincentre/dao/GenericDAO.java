@@ -1,11 +1,13 @@
 package com.engagepoint.university.admincentre.dao;
 
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.List;
 
 import com.engagepoint.university.admincentre.entity.AbstractEntity;
 
 
-public interface GenericDAO<T extends AbstractEntity> {
+public interface GenericDAO<T extends AbstractEntity> extends Serializable {
     /** Put the newInstance object into storage */
     void create(T newInstance) throws IOException;
 
@@ -21,4 +23,6 @@ public interface GenericDAO<T extends AbstractEntity> {
     /** Remove an object from storage */
     void delete(String keyId) throws IOException;
 
+    /** Try to find an entity */
+    List<T> search(String name) throws IOException;
 }

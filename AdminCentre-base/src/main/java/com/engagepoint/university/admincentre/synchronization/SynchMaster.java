@@ -2,19 +2,14 @@ package com.engagepoint.university.admincentre.synchronization;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.infinispan.Cache;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
@@ -26,9 +21,9 @@ import org.slf4j.LoggerFactory;
 
 import com.engagepoint.university.admincentre.dao.KeyDAO;
 import com.engagepoint.university.admincentre.dao.NodeDAO;
-import com.engagepoint.university.admincentre.entity.AbstractEntity;
 import com.engagepoint.university.admincentre.entity.Key;
 import com.engagepoint.university.admincentre.entity.Node;
+import com.engagepoint.university.admincentre.preferences.NodePreferences;
 
 /**
  * Used for synchronization. It's possible to create new cluster, connect to
@@ -230,7 +225,7 @@ public class SynchMaster extends ReceiverAdapter {
 	}
 
 	private void loadAllDataFromLocalCache() {
-		Node rootNode = nodeDAO.getRoot();
+        Node rootNode = new NodePreferences(null, "").getCurrentNode();
 		cacheNodeData.put(rootNode.getId(), rootNode);
 		readAllData(rootNode);
 	}
