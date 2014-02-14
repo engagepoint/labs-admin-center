@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -53,12 +54,12 @@ public class NodePreferences extends Preferences {
     /**
     * Our name relative to parent.
     */
-   private final String name;
+    private String name;
 
    /**
     * Our absolute path name.
     */
-   private final String absolutePath;
+    private String absolutePath;
 
    /**
     * Our parent node.
@@ -194,7 +195,7 @@ public class NodePreferences extends Preferences {
      *             if this node (or an ancestor) has been removed with the
      *             {@link #removeNode()} method.
      */
-    private void put(String key, KeyType type, String value) throws IOException {
+    public void put(String key, KeyType type, String value) throws IOException {
        if (key==null || value==null)
             throw new IllegalArgumentException("key and value can't be null");
       
@@ -1788,6 +1789,44 @@ public class NodePreferences extends Preferences {
     public void exportSubtree(OutputStream os) throws IOException, BackingStoreException {
         // TODO Auto-generated method stub
 
+    }
+    
+    public void changeNodeName(String name) {
+        String oldId = absolutePath;
+        List<String> childList = this.parent.currentNode.getChildNodeIdList();
+        childList.remove(oldId);
+        absolutePath = (parent.equals(root) ? "/" + name : parent.absolutePath() + "/" + name);
+        childList.add(absolutePath);
+        this.name = name;
+        this.currentNode.setName(name);
+        List<String> newNodeChildList = new ArrayList<String>();
+        for (String childNodeId : currentNode.getChildNodeIdList()) {
+            try {
+                Node node = nodeDAO.read(childNodeId);
+                node.setParentNodeId(absolutePath);
+                nodeDAO.update(node);
+                newNodeChildList.add(node.getId());
+            } catch (IOException e) {
+                LOGGER.warn("Couldn't read/update node with id" + childNodeId);
+            }
+        }
+        this.currentNode.setChildNodeIdList(newNodeChildList);
+        for (String keyId : currentNode.getKeyIdList()) {
+            try {
+                Key key = keyDAO.read(oldId + "/" + keyId);
+                key.setParentNodeId(absolutePath);
+                keyDAO.update(key);
+            } catch (IOException e) {
+                LOGGER.warn("Couldn't read/update key with id" + keyId);
+            }
+        }
+
+        try {
+            nodeDAO.update(this.parent.currentNode);
+            nodeDAO.update(this.currentNode);
+        } catch (IOException e) {
+            LOGGER.warn("Exception was occured while node name" + name + "was updating");
+        }
     }
 
    /**

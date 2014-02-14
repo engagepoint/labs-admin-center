@@ -29,8 +29,9 @@ public abstract class AbstractEntity implements Serializable {
         return parentNodeId;
     }
 
-    protected void setParentNodeId(String parentNodeId) {
+    public void setParentNodeId(String parentNodeId) {
         this.parentNodeId = parentNodeId;
+        this.id = (parentNodeId.equals("/") ? "/" + name : this.parentNodeId + "/" + name);
     }
 
     public String getName() {
@@ -39,6 +40,7 @@ public abstract class AbstractEntity implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+        this.id = (parentNodeId.equals("/") ? "/" + name : this.parentNodeId + "/" + name);
     }
 
     public String getId() {

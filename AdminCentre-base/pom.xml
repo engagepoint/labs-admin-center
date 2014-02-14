@@ -26,6 +26,11 @@
 			<artifactId>infinispan-query</artifactId>
 			<version>6.0.1.Final</version>
 		</dependency>
+		<dependency>
+    <groupId>org.infinispan</groupId>
+    <artifactId>infinispan-cdi</artifactId>
+    <version>6.0.1.Final</version>
+</dependency>
 		<!-- slf4j logging -->
 		<dependency>
 			<groupId>org.slf4j</groupId>

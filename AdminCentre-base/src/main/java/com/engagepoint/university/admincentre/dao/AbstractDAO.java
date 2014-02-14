@@ -107,15 +107,15 @@ public abstract class AbstractDAO<T extends AbstractEntity>
 
     public List<T> search(String name) throws IOException {
         try {
-        getCache(CACHE_CONFIG, USED_CACHE);
-        SearchManager searchManager = Search.getSearchManager(cache);
-        QueryFactory qf = searchManager.getQueryFactory();
-        Query query = qf.from(type).having("name").like("*" + name + "*").toBuilder().build();
-        List<T> resultList = query.list();
-        if (resultList.size() != 0) {
-            return resultList;
-        }
-        return new LinkedList<T>();
+            getCache(CACHE_CONFIG, USED_CACHE);
+            SearchManager searchManager = Search.getSearchManager(cache);
+            QueryFactory qf = searchManager.getQueryFactory();
+            Query query = qf.from(type).having("name").like("*" + name + "*").toBuilder().build();
+            List<T> resultList = query.list();
+            if (resultList.size() != 0) {
+                return resultList;
+            }
+            return new LinkedList<T>();
         }
 
         finally {

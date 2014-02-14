@@ -1,14 +1,23 @@
 package com.engagepoint.university.admincentre.web;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
+
+import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
+import javax.faces.event.ActionEvent;
 
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
+
+import com.engagepoint.university.admincentre.entity.Key;
+import com.engagepoint.university.admincentre.entity.KeyType;
+import com.engagepoint.university.admincentre.preferences.NodePreferences;
 
 @ManagedBean(name = "documentsController")
 @SessionScoped
@@ -19,6 +28,56 @@ public class DocumentsController implements Serializable {
     private Document selectedDoc = new Document();
     private TreeNode selectedNode;
 
+    // @Inject
+    // DataBean dataBean;
+
+    @PostConstruct
+    private void init() {
+        NodePreferences preferences = new NodePreferences(null, "");
+        // TreeProperties treeProperties =
+        // dataBean.getPreferencesTree(preferences);
+        root = new DefaultTreeNode("root", null);
+
+        buildTree(preferences, root);
+    }
+
+    private void buildTree(NodePreferences preferences, TreeNode parentTreeNode) {
+
+        TreeNode treeNode = new DefaultTreeNode(new Document(preferences.absolutePath(),
+                preferences.name(), "-", "File"), parentTreeNode);
+
+        addLeaves(preferences, treeNode);
+        try {
+            if (preferences.childrenNames().length != 0) {
+                for (int i = 0; i < preferences.childrenNames().length; i++) {
+                    buildTree((NodePreferences) preferences.node(preferences.childrenNames()[i]),
+                            treeNode);
+                }
+
+            }
+        } catch (BackingStoreException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    };
+
+    private void addLeaves(NodePreferences nodePreferences, TreeNode parentTreeNode) {
+        try {
+
+            for (int i = 0; i < nodePreferences.keys().length; i++) {
+                Key key = nodePreferences.getKey(nodePreferences.keys()[i]);
+                new DefaultTreeNode(new Document(nodePreferences.absolutePath(), key.getName(),
+                        key.getValue(), key.getType().toString()), parentTreeNode);
+            }
+        } catch (BackingStoreException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
     public TreeNode getSelectedNode() {
         return selectedNode;
     }
@@ -27,51 +86,8 @@ public class DocumentsController implements Serializable {
         this.selectedNode = selectedNode;
     }
 
-
     public DocumentsController() {
 
-        root = new DefaultTreeNode("root", null);
-
-        //Nodes
-
-        TreeNode file1 = new DefaultTreeNode(new Document("/File1", "-", "File"), root);
-        TreeNode file2 = new DefaultTreeNode(new Document("/File2", "-", "File"), root);
-        TreeNode file3 = new DefaultTreeNode(new Document("/File3", "-", "File"), root);
-
-        TreeNode file2_1 = new DefaultTreeNode(new Document("/File2/File2.1", "-", "File"), file2);
-        TreeNode file2_2 = new DefaultTreeNode(new Document("/File2/File2.2", "-", "File"), file2);
-
-        TreeNode file2_1_1 = new DefaultTreeNode(new Document("File2.1.1", "-", "File"), file2_1);
-        TreeNode file2_2_1 = new DefaultTreeNode(new Document("File2.1.1", "-", "File"), file2_2);
-
-        //SubNodes of file1
-        TreeNode subFile1_1 = new DefaultTreeNode(new Document("SubFile1.1", "-", "SubFile"), file1);
-        TreeNode subFile1_2 = new DefaultTreeNode(new Document("SubFile1.2", "-", "SubFile"), file1);
-
-        //Keys in file1 including the file1's subfiles
-        TreeNode key1_1_1 = new DefaultTreeNode(new Document("Key1.1.1", "key1.1 value", "String"), subFile1_1);
-        TreeNode key1_1_2 = new DefaultTreeNode(new Document("Key1.1.2", "true", "Boolean"), subFile1_1);
-        TreeNode key1_2_1 = new DefaultTreeNode(new Document("Key1.2.1", "123456789", "Int"), subFile1_2);
-
-        //Keys in file2
-        TreeNode key2_1 = new DefaultTreeNode(new Document("Key2.1", "??? view of Byte Array", "Byte[]"), file2);
-        TreeNode key2_2 = new DefaultTreeNode(new Document("Key2.2", "9999999999.9", "Double"), file2);
-        TreeNode key2_3 = new DefaultTreeNode(new Document("Key2.3", "0.123", "Float"), file2);
-
-        //file3
-        TreeNode subFile3_1 = new DefaultTreeNode(new Document("SubFile3.1", "-", "SubFile"), file3);
-        TreeNode subFile3_1_1 = new DefaultTreeNode(new Document("SubFile3.1.1", "-", "SubFile"), subFile3_1);
-        TreeNode subFile3_1_2 = new DefaultTreeNode(new Document("SubFile3.1.2", "-", "SubFile"), subFile3_1);
-        TreeNode subFile3_1_3 = new DefaultTreeNode(new Document("SubFile3.1.3", "-", "SubFile"), subFile3_1);
-
-        TreeNode key3_1_1_1 = new DefaultTreeNode(new Document("Key3.1.1.1", "9999999999", "Long"), subFile3_1_1);
-        TreeNode key3_1_1_2 = new DefaultTreeNode(new Document("Key3.1.1.2", "123456789", "Int"), subFile3_1_1);
-
-        TreeNode key3_1_2_1 = new DefaultTreeNode(new Document("Key3.1.2.1", "James Gosling", "String"), subFile3_1_2);
-        TreeNode key3_1_2_2 = new DefaultTreeNode(new Document("Key3.1.2.2", "Linus Torvalds", "String"), subFile3_1_2);
-
-        TreeNode key3_1_3_1 = new DefaultTreeNode(new Document("Key3.1.3.1", "0.12345", "Float"), subFile3_1_3);
-        TreeNode key3_1_3_2 = new DefaultTreeNode(new Document("Key3.1.3.2", "0.123456789", "Double"), subFile3_1_3);
     }
 
     public TreeNode getRoot() {
@@ -86,27 +102,62 @@ public class DocumentsController implements Serializable {
         this.selectedDoc = selectedDoc;
     }
 
+    public void editDocument(ActionEvent event) {
+        if (selectedDoc != null) {
+            String absPath = selectedDoc.getAbsolutePath();
+            if ("File".equals(selectedDoc.getType())) {
+
+                ((NodePreferences) new NodePreferences(null, "").node(absPath))
+                        .changeNodeName(selectedDoc.getName());
+
+            } else {
+                try {
+                    ((NodePreferences) new NodePreferences(null, "").node(absPath)).put(
+                            selectedDoc.getName(), KeyType.valueOf(selectedDoc.getType()),
+                            selectedDoc.getValue());
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     public void deleteNode() {
         selectedNode = getNodeByDoc(selectedDoc.getName(), root);
         selectedNode.getParent().getChildren().remove(selectedNode);
+        String absPath = selectedDoc.getAbsolutePath();
+        if ("File".equals(selectedDoc.getType())) {
+            try {
+                new NodePreferences(null, "").node(absPath).removeNode();
+            } catch (BackingStoreException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        } else {
+            new NodePreferences(null, "").node(absPath).remove(selectedDoc.getName());
+        }
+
     }
 
     public void addNode() {
-//        selectedNode = getNodeByDoc(selectedDoc.getName(), root);
-//        selectedNode.toString();
-//
-//        TreeNode newNode;
-//        if (selectedDoc != null)
-//            newNode = new DefaultTreeNode(new Document("New Node", "-", "-"), selectedNode);
-//        else
-//            newNode = new DefaultTreeNode(new Document("New Node", "-", "-"), root);
-//        Document doc1 = (Document) selectedNode.getData();
-//        doc1.saveAction();
-//        selectedNode.setSelected(false);
-//        selectedNode.setExpanded(true);
-//        newNode.setSelected(true);
-//        Document doc = (Document) newNode.getData();
-//        doc.setEditable(true);
+        // selectedNode = getNodeByDoc(selectedDoc.getName(), root);
+        // selectedNode.toString();
+        //
+        // TreeNode newNode;
+        // if (selectedDoc != null)
+        // newNode = new DefaultTreeNode(new Document("New Node", "-", "-"),
+        // selectedNode);
+        // else
+        // newNode = new DefaultTreeNode(new Document("New Node", "-", "-"),
+        // root);
+        // Document doc1 = (Document) selectedNode.getData();
+        // doc1.saveAction();
+        // selectedNode.setSelected(false);
+        // selectedNode.setExpanded(true);
+        // newNode.setSelected(true);
+        // Document doc = (Document) newNode.getData();
+        // doc.setEditable(true);
     }
 
     public TreeNode getNodeByDoc(String name, TreeNode root) {
@@ -140,7 +191,6 @@ public class DocumentsController implements Serializable {
 
     }
 
-
     public List<TreeNode> searchByKeyValue(String keyName, String keyValue, TreeNode node) {
         if (node.getChildren() != null) {
             for (TreeNode treeNode : node.getChildren()) {
@@ -160,7 +210,8 @@ public class DocumentsController implements Serializable {
     public List<TreeNode> buttonSearch(String keyName, String keyValue) {
         if (keyValue != null) {
             for (TreeNode a : searchByKeyValue(keyName, keyValue, root)) {
-                System.out.println("KeyName = " + keyName + "; KeyValue = " + keyValue + " lies in such folders: ");
+                System.out.println("KeyName = " + keyName + "; KeyValue = " + keyValue
+                        + " lies in such folders: ");
                 Document document = (Document) a.getData();
                 System.out.println(document.getName());
             }
@@ -168,7 +219,8 @@ public class DocumentsController implements Serializable {
             if (keyName != null) {
                 searchByKeyName(keyName, root);
                 for (TreeNode a : keyFolder) {
-                    System.out.println("KeyName = " + keyName + "; KeyValue = " + keyValue + " lies in such folders: ");
+                    System.out.println("KeyName = " + keyName + "; KeyValue = " + keyValue
+                            + " lies in such folders: ");
                     Document document = (Document) a.getData();
                     System.out.println(document.getName());
                 }
@@ -176,10 +228,11 @@ public class DocumentsController implements Serializable {
         }
         return null;
     }
-//
-//
-//    public static void main(String[] args) {
-//        DocumentsController documentsController = new DocumentsController();
-//        documentsController.buttonSearch("Key3.1.3.1", "0.12345");
-//    }
+    //
+    //
+    // public static void main(String[] args) {
+    // DocumentsController documentsController = new DocumentsController();
+    // documentsController.buttonSearch("Key3.1.3.1", "0.12345");
+    // }
+
 }

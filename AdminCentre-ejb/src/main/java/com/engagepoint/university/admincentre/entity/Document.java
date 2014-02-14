@@ -1,42 +1,34 @@
-package com.engagepoint.university.admincentre.web;
+package com.engagepoint.university.admincentre.entity;
 
 import java.io.Serializable;
 
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
 
-@ManagedBean(name = "document")
-@SessionScoped
 public class Document implements Serializable, Comparable<Document> {
-    private String absolutePath;
+
+    private String id;
     private String name;
     private String value;
     private String type;
     private boolean editable;
 
-    public Document(String absolutePath, String name, String value, String type) {
-        this.absolutePath = absolutePath;
+    public Document(String id, String name, String value, String type) {
+        this.id = id;
         this.name = name;
         this.value = value;
         this.type = type;
-
-
     }
 
     public Document() {
     }
 
-    Document(String file1, String string, String file, DocumentsController aThis) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+
+
+    public String getId() {
+        return id;
     }
 
-
-    public String getAbsolutePath() {
-        return absolutePath;
-    }
-
-    public void setAbsolutePath(String absolutePath) {
-        this.absolutePath = absolutePath;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getName() {
