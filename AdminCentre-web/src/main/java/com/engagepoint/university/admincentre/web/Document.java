@@ -12,6 +12,7 @@ public class Document implements Serializable, Comparable<Document> {
     private String name;
     private String value;
     private String type;
+    private String oldName;
     private boolean editable;
 
     public Document(String absolutePath, String name, String value, String type) {
@@ -19,6 +20,7 @@ public class Document implements Serializable, Comparable<Document> {
         this.name = name;
         this.value = value;
         this.type = type;
+        this.oldName=name;
 
 
     }
@@ -44,10 +46,15 @@ public class Document implements Serializable, Comparable<Document> {
     }
 
     public void setName(String name) {
+    	this.oldName=this.name;
         this.name = name;
     }
 
-    public String getValue() {
+    public String getOldName() {
+		return oldName;
+	}
+
+	public String getValue() {
         return value;
     }
 

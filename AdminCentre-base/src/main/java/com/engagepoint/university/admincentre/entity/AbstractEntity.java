@@ -20,9 +20,10 @@ public abstract class AbstractEntity implements Serializable {
 
     public AbstractEntity(String name, String parentNodeId) {
         super();
+        this.parentNodeId = parentNodeId;
         this.id = (parentNodeId.equals("/") ? "/" + name : this.parentNodeId + "/" + name);
         this.name = name;
-        this.parentNodeId = parentNodeId;
+       
     }
 
     public String getParentNodeId() {

@@ -103,12 +103,13 @@ public class DocumentsController implements Serializable {
     }
 
     public void editDocument(ActionEvent event) {
+    	
         if (selectedDoc != null) {
             String absPath = selectedDoc.getAbsolutePath();
             if ("File".equals(selectedDoc.getType())) {
-
-                ((NodePreferences) new NodePreferences(null, "").node(absPath))
-                        .changeNodeName(selectedDoc.getName());
+            	NodePreferences currentNode= (NodePreferences) new NodePreferences(null, "").node(absPath);
+            	currentNode.changeNodeName(selectedDoc.getName());
+            	currentNode.remove(selectedDoc.getOldName());
 
             } else {
                 try {

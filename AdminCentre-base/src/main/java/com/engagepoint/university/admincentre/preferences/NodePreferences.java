@@ -1804,7 +1804,8 @@ public class NodePreferences extends Preferences {
             try {
                 Node node = nodeDAO.read(childNodeId);
                 node.setParentNodeId(absolutePath);
-                nodeDAO.update(node);
+                nodeDAO.create(node);
+                nodeDAO.delete(oldId+"/"+node.getName());
                 newNodeChildList.add(node.getId());
             } catch (IOException e) {
                 LOGGER.warn("Couldn't read/update node with id" + childNodeId);
@@ -1813,9 +1814,11 @@ public class NodePreferences extends Preferences {
         this.currentNode.setChildNodeIdList(newNodeChildList);
         for (String keyId : currentNode.getKeyIdList()) {
             try {
-                Key key = keyDAO.read(oldId + "/" + keyId);
+            	String oldKeyPath=oldId + "/" + keyId;
+                Key key = keyDAO.read(oldKeyPath);
                 key.setParentNodeId(absolutePath);
-                keyDAO.update(key);
+                keyDAO.create(key);
+                keyDAO.delete(oldKeyPath);
             } catch (IOException e) {
                 LOGGER.warn("Couldn't read/update key with id" + keyId);
             }
@@ -1823,7 +1826,8 @@ public class NodePreferences extends Preferences {
 
         try {
             nodeDAO.update(this.parent.currentNode);
-            nodeDAO.update(this.currentNode);
+            nodeDAO.create(this.currentNode);
+            nodeDAO.delete(oldId);
         } catch (IOException e) {
             LOGGER.warn("Exception was occured while node name" + name + "was updating");
         }
