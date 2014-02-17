@@ -11,7 +11,7 @@ public class CRUDObserver implements Observer {
 				CRUDPayload payload = (CRUDPayload) arg1;
 				if(payload.getCrudOperation() == CRUDOperation.CREATE
 						&& payload.getEntity() != null){
-//				SynchMaster.getInstance().send(payload);
+				SynchMaster.getInstance().send(payload);
 //					System.out.println(					//temporary, delete it
 //							"CRUDObserver: created  "
 //							+ payload.getEntity().getId());
@@ -27,7 +27,7 @@ public class CRUDObserver implements Observer {
 				}
 				if(payload.getCrudOperation() == CRUDOperation.UPDATE
 						&& payload.getEntity() != null){
-//					SynchMaster.getInstance().send(payload);
+					SynchMaster.getInstance().send(payload);
 //					System.out.println(					//temporary, delete it
 //							"CRUDObserver: updated  "
 //							+ payload.getEntity().getId());
@@ -35,7 +35,7 @@ public class CRUDObserver implements Observer {
 				}
 				if(payload.getCrudOperation() == CRUDOperation.DELETE
 						&& payload.getEntity() != null){
-//					SynchMaster.getInstance().send(payload);
+					SynchMaster.getInstance().send(payload);
 //					System.out.println(					//temporary, delete it
 //							"CRUDObserver: deleted  "
 //							+ payload.getEntity().getId());

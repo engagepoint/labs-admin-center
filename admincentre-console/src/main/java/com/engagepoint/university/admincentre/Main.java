@@ -4,11 +4,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.logging.Handler;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import com.engagepoint.university.admincentre.exception.WrongInputArgException;
 import com.engagepoint.university.admincentre.preferences.NodePreferences;
+import com.engagepoint.university.admincentre.synchronization.SynchMaster;
 
 public final class Main {
     private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
@@ -19,7 +21,10 @@ public final class Main {
     }
 
     public static void main(String[] args) {
-        LogManager.getLogManager().reset();
+    	LogManager.getLogManager().reset();
+    	for(Handler iHandler: LOGGER.getParent().getHandlers()){
+    		LOGGER.getParent().removeHandler(iHandler);
+    	}
         if (checkArgs(args)) {
             CONSOLE_CONTROLLER.displayNodes(new NodePreferences(null, ""));
             connectToInputStream();
@@ -52,6 +57,7 @@ public final class Main {
 
             while ((line = br.readLine()) != null) {
                 if (Commands.EXIT.getName().equals(line)) {
+                	SynchMaster.getInstance().close();		//close channel before exit
                     break;
                 }
                 analyzeLine(line);
@@ -113,6 +119,14 @@ public final class Main {
                     CONSOLE_CONTROLLER.selectNode(arguments[1]);
                 }
                 break;
+            case SYNCH:
+            	if(arguments.length == 2){
+            		CONSOLE_CONTROLLER.synch(arguments[1]);
+            	}
+            	if(arguments.length == 3){
+            		CONSOLE_CONTROLLER.synch(arguments[1], arguments[2]);
+            	}
+            	break;
             }
         } catch (IllegalArgumentException e) {
             throw new WrongInputArgException();

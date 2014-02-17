@@ -15,7 +15,13 @@ public enum Commands {
             "Choose node with the given name"),
  DEBUG(
             "-debug",
- "Produce execute debug output");
+ "Produce execute debug output"),
+ SYNCH("-synch", "Synchronization commands:"
+ 		+ "\n\t\t -connect %cluster_name%"
+ 		+ "\n\t\t -disconnect"
+ 		+ "\n\t\t -obtain (obtain state)"
+ 		+ "\n\t\t -putreceived (put received state)"
+ 		+ "\n\t\t -receiveupdates (true, false)");
 
 
     private String name;

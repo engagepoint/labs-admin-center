@@ -18,7 +18,6 @@ import com.engagepoint.university.admincentre.entity.Node;
 import com.engagepoint.university.admincentre.synchronization.CRUDObserver;
 import com.engagepoint.university.admincentre.synchronization.CRUDOperation;
 import com.engagepoint.university.admincentre.synchronization.CRUDPayload;
-import com.engagepoint.university.admincentre.synchronization.MessagePayload;
 
 public abstract class AbstractDAO<T extends AbstractEntity>
 	extends Observable

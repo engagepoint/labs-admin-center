@@ -5,6 +5,7 @@ import java.util.prefs.Preferences;
 
 import com.engagepoint.university.admincentre.entity.KeyType;
 import com.engagepoint.university.admincentre.preferences.NodePreferences;
+import com.engagepoint.university.admincentre.synchronization.SynchMaster;
 
 
 public class ConsoleController {
@@ -141,4 +142,28 @@ public class ConsoleController {
 
     }
 
+    
+    public void synch(String... args){
+    	if(args.length == 1 && args[0].equals("-connect")){
+    		System.out.println("Please, type the name of the cluster you want to connect");
+    	}
+    	if(args.length == 2 && args[0].equals("-connect")){
+    		SynchMaster.getInstance().connect(args[1]);
+    	}
+    	if(args.length == 1 && args[0].equals("-disconnect")){
+    		SynchMaster.getInstance().disconnect();
+    		System.out.println("Disconnected.");
+    	}
+    	if(args.length == 1 && args[0].equals("-obtain")){
+    		SynchMaster.getInstance().obtainState();
+    		
+    	}
+    	if(args.length == 1 && args[0].equals("-putreceived")){
+    		SynchMaster.getInstance().putAllReceived();
+    	}
+    	if(args.length == 2 && args[0].equals("-receiveupdates")){
+    		boolean value = Boolean.parseBoolean(args[1]);
+    		SynchMaster.getInstance().setReceiveUpdates(value);
+    	}
+    }
 }

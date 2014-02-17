@@ -1,8 +1,12 @@
 package com.engagepoint.university.admincentre.synchronization;
 
+import java.io.Serializable;
+
 import com.engagepoint.university.admincentre.entity.AbstractEntity;
 
-public class CRUDPayload extends MessagePayload {
+public class CRUDPayload implements Serializable {
+
+	private static final long serialVersionUID = -703924255956246679L;
 	private final CRUDOperation crudOperation;
 	private final AbstractEntity entity;
 	

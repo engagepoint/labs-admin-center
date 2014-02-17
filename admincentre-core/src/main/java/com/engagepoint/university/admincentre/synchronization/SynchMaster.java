@@ -180,24 +180,30 @@ public final class SynchMaster extends ReceiverAdapter {
 	 */
 	@Override
 	public void receive(Message msg) {
-		if(!(msg.getObject() instanceof MessagePayload)){
+		if(!(msg.getObject() instanceof CRUDPayload)){
 			throw new IllegalArgumentException("Something wrong has been received");
 		}
-		if(msg.getObject() instanceof CRUDPayload && receiveUpdates){
+		if(receiveUpdates){
 			CRUDPayload crudPayload = (CRUDPayload) msg.getObject();
 			try{
 				switch (crudPayload.getCrudOperation()) {
 				case CREATE:
+					syso("Message received: "
+							+ ((CRUDPayload) msg.getObject()).toString());
 					lastReceivedUpdates.add(crudPayload);
 					abstractDAO.create(crudPayload.getEntity());
 					break;
 				case READ:
 					break;
 				case UPDATE:
+					syso("Message received: "
+							+ ((CRUDPayload) msg.getObject()).toString());
 					lastReceivedUpdates.add(crudPayload);
 					abstractDAO.update(crudPayload.getEntity());
 					break;
 				case DELETE:
+					syso("Message received: "
+							+ ((CRUDPayload) msg.getObject()).toString());
 					lastReceivedUpdates.add(crudPayload);
 					abstractDAO.delete(crudPayload.getEntity().getId());
 					break;
@@ -208,8 +214,6 @@ public final class SynchMaster extends ReceiverAdapter {
 				throw new IllegalStateException("Could not complete CRUD operation", e);
 			}
 		}
-		syso("=========Message received: "
-				+ ((CRUDPayload) msg.getObject()).toString());
 	}
 	
 	/**
@@ -235,8 +239,8 @@ public final class SynchMaster extends ReceiverAdapter {
 	private void send(Message msg) {
 		try {
 			channel.send(msg);
-			syso("=========Message send: "
-					+ ((MessagePayload) msg.getObject()).toString());
+			syso("Message send: "
+					+ ((CRUDPayload) msg.getObject()).toString());
 		} catch (Exception e) {
 			logger.warn("Message was not set!");
 			throw new IllegalStateException(e);
@@ -274,11 +278,19 @@ public final class SynchMaster extends ReceiverAdapter {
 	}
 	
 	public void send(CRUDPayload crudPayload){
-		if(channel.isConnected()
-				&& !lastReceivedUpdates.remove(crudPayload)){
-			send(new Message(null, null, crudPayload));
+		syso("I was called: " + crudPayload.toString());
+		boolean removed = lastReceivedUpdates.remove(crudPayload);
+		syso("removed: " + Boolean.toString(removed));
+		if(channel.isConnected()){
+			if(!removed){
+				syso("wanna send: " + crudPayload.toString());
+				send(new Message(null, null, crudPayload));
+				syso("Sended, " + crudPayload.toString());
+			}else{	
+				syso("Will not be sent, was received before " + crudPayload.toString());
+			}
 		}else{
-			syso("======Will not be sent, was received before");
+			syso("Channel is not connected " + crudPayload.toString());
 		}
 	}
 	
