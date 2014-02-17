@@ -2,10 +2,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.engagepoint.university.admincentre</groupId>
-    <artifactId>AdminCentre</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>admincentre-bom</artifactId>
+    <version>1.0-M2-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>AdminCentre</name>
+    <name>EngagePoint University Admin Centre</name>
 
     <build>
         <plugins>
@@ -26,11 +26,11 @@
         </plugins>
     </build>
     <modules>
-    	<module>AdminCentre-base</module>
-        <module>AdminCentre-web</module>
-        <module>AdminCentre-ejb</module>
-        <module>AdminCentre-ear</module>
-        <module>AdminCentre-jar</module>
+    	<module>admincentre-core</module>
+        <module>admincentre-ejb</module>
+        <module>admincentre-web</module>
+        <module>admincentre-ear</module>
+        <module>admincentre-console</module>                
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

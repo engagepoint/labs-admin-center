@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<uib:page xmlns="http://www.w3.org/1999/xhtml"
+          xmlns:h="http://java.sun.com/jsf/html"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:p="http://primefaces.org/ui"
+          xmlns:ui="http://java.sun.com/jsf/facelets"
+          xmlns:uib="http://engagepoint.com/uib"
+          markupType="html5"
+          contentType="text/html"
+          showFooter="false"
+          project="notify"
+          pageTitle="EngagePoint Admin Centre"
+          xmlns:ui-headerUtilityBar="http://java.sun.com/jsf/composite/uibootstrap/components/headerUtilityBar"
+        >
+    <h:outputStylesheet library="css" name="screen.css"/>
+    <uib:pageLayout id="pageLayoutId">
+
+        <uib:pageHeaderFacet logo="#{resource['gfx/logo.png']}">
+            <p:menubar model="#{topMenu.model}"/>
+        </uib:pageHeaderFacet>
+
+        <ui-headerUtilityBar:headerUtilityBar id="headerUtilityBarId">
+            <p:ajaxStatus id="ajaxLoader" styleClass="ajax-loader">
+                <f:facet name="start">
+                    <h:panelGroup id="ajaxVisible" styleClass="ajax-loader-visible"/>
+                </f:facet>
+                <f:facet name="complete">
+                    <h:outputText id="ajaxInvisible" value=""/>
+                </f:facet>
+            </p:ajaxStatus>
+        </ui-headerUtilityBar:headerUtilityBar>
+
+        <uib:pageBodyFacet>
+            <p:messages id="messagesBlockId" showDetail="false"/>
+            <ui:insert name="page"/>            
+        </uib:pageBodyFacet>
+        
+    </uib:pageLayout>
+</uib:page>
