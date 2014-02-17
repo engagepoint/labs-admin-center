@@ -1860,9 +1860,10 @@ public class NodePreferences extends Preferences {
         childList.remove(oldId);
         absolutePath = (parent.equals(root) ? "/" + name : parent.absolutePath() + "/" + name);
         childList.add(absolutePath);
+        changeIdPath(this.currentNode, oldId);
         this.name = name;
         this.currentNode.setName(name);
-        changeIdPath(this.currentNode, oldId);
+
         try {
             nodeDAO.update(this.parent.currentNode);
             nodeDAO.create(this.currentNode);
@@ -1880,17 +1881,14 @@ public class NodePreferences extends Preferences {
         for (String childNodeId : parentNode.getChildNodeIdList()) {
             try {
                 Node node = nodeDAO.read(childNodeId);
-                childNodeId.replaceFirst(oldPath, absolutePath);
-                childNodeIdList.add(childNodeId);
+                childNodeIdList.add(childNodeId.replaceFirst(oldPath, absolutePath));
                 nodeDAO.delete(node.getId());
-                // if (!node.getKeyIdList().isEmpty()) {
-                // changeNodeKeyId(node);
-                // }
+                changeIdPath(node, oldPath);
                 node.setParentNodeId(absolutePath);
                 nodeDAO.create(node);
-                if (!node.getChildNodeIdList().isEmpty()) {
-                    changeIdPath(node, oldPath);
-                }
+
+
+
             } catch (IOException e) {
                 LOGGER.warn("Couldn't read/update node with id" + childNodeId);
             }
@@ -1909,15 +1907,15 @@ public class NodePreferences extends Preferences {
 
         for (String keyId : node.getKeyIdList()) {
             try {
-                String oldId = node.getId();
+                String fullOldId = "/".equals(node.getId()) ? "/" + keyId : node.getId() + "/"
+                        + keyId;
 
-                oldId.replaceFirst(absolutePath, oldPath);
-                Key key = keyDAO.read("/".equals(oldId) ? "/" + keyId : oldId + "/"
-                        + keyId);
+               
+                Key key = keyDAO.read(fullOldId);
 
-                key.setParentNodeId(node.getId());
+                key.setParentNodeId(node.getId().replaceFirst(oldPath, absolutePath));
                 keyDAO.create(key);
-                keyDAO.delete(keyId);
+                keyDAO.delete(fullOldId);
             } catch (IOException e) {
                 LOGGER.warn("Couldn't read/update key with id" + keyId);
             }
