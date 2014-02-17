@@ -107,8 +107,8 @@ public class DocumentsController implements Serializable {
             String absPath = selectedDoc.getAbsolutePath();
             NodePreferences currentNode= (NodePreferences) new NodePreferences(null, "").node(absPath);        
             if ("File".equals(selectedDoc.getType())) {
-            	
-            	currentNode.changeNodeName(selectedDoc.getName());
+
+                currentNode.changeNodeName(selectedDoc.getName());
             	
             } else {
                 try {

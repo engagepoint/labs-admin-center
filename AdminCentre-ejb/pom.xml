@@ -24,8 +24,8 @@
 		<!--  database dependency -->
 	<dependency>
 	<groupId>com.engagepoint.university.admincentre</groupId>
-			<artifactId>AdminCentre-base</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<artifactId>admincentre-core</artifactId>
+			 <version>${project.version}</version>
 	</dependency>		
 		<!-- slf4j logging -->
 		<dependency>
