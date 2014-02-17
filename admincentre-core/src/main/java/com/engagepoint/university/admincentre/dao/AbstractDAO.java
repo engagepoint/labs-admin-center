@@ -17,6 +17,7 @@ import com.engagepoint.university.admincentre.entity.AbstractEntity;
 import com.engagepoint.university.admincentre.entity.Node;
 import com.engagepoint.university.admincentre.synchronization.CRUDObserver;
 import com.engagepoint.university.admincentre.synchronization.CRUDOperation;
+import com.engagepoint.university.admincentre.synchronization.CRUDPayload;
 import com.engagepoint.university.admincentre.synchronization.MessagePayload;
 
 public abstract class AbstractDAO<T extends AbstractEntity>
@@ -42,8 +43,7 @@ public abstract class AbstractDAO<T extends AbstractEntity>
             if (!cache.containsKey(newInstance.getId())) {
                 cache.put(newInstance.getId(), newInstance);
                 setChanged();
-                notifyObservers(new MessagePayload(
-                		CRUDOperation.CREATE, newInstance));
+                notifyObservers(new CRUDPayload(CRUDOperation.CREATE, newInstance));
             } else {
                 throw new Exception("This entity already exists");
             }
@@ -64,8 +64,7 @@ public abstract class AbstractDAO<T extends AbstractEntity>
                 variable = cache.get(id);
             }
             setChanged();
-            notifyObservers(new MessagePayload(
-            		CRUDOperation.READ, variable));
+            notifyObservers(new CRUDPayload(CRUDOperation.READ, variable));
             return variable;
         } finally {
             stopCacheManager();
@@ -77,8 +76,7 @@ public abstract class AbstractDAO<T extends AbstractEntity>
             getCache(CACHE_CONFIG, USED_CACHE);
         cache.replace(transientObject.getId(), transientObject);
         setChanged();
-        notifyObservers(new MessagePayload(
-        		CRUDOperation.UPDATE, transientObject));
+        notifyObservers(new CRUDPayload(CRUDOperation.UPDATE, transientObject));
         } finally {
             stopCacheManager();
         }
@@ -94,8 +92,7 @@ public abstract class AbstractDAO<T extends AbstractEntity>
             }
             cache.remove(keyId);
                 setChanged();
-                notifyObservers(new MessagePayload(
-                		CRUDOperation.DELETE, temp));
+                notifyObservers(new CRUDPayload(CRUDOperation.DELETE, temp));
 
             }
 
@@ -170,5 +167,9 @@ public abstract class AbstractDAO<T extends AbstractEntity>
 		} finally {
 			stopCacheManager();
 		}
+    }
+    
+    public Map<String, T> obtainCache() throws IOException{
+    	return getCache(CACHE_CONFIG, USED_CACHE);
     }
 }
