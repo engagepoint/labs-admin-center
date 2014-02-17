@@ -3,17 +3,16 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<artifactId>AdminCentre</artifactId>
+		<artifactId>admincentre-bom</artifactId>
 		<groupId>com.engagepoint.university.admincentre</groupId>
-		<version>1.0-SNAPSHOT</version>
+		<version>1.0-M2-SNAPSHOT</version>
 	</parent>
 
 	<groupId>com.engagepoint.university.admincentre</groupId>
-	<artifactId>AdminCentre-ejb</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<artifactId>admincentre-ejb</artifactId>
 	<packaging>ejb</packaging>
 
-	<name>AdminCentre-ejb</name>
+	<name>EngagePoint University Admin Centre EJB module</name>
 
 	<dependencies>
 		<dependency>
