@@ -14,6 +14,7 @@ public class Document implements Serializable, Comparable<Document> {
     private String type;
     private String oldName;
     private boolean editable;
+    private boolean file;
 
     public Document(String absolutePath, String name, String value, String type) {
         this.absolutePath = absolutePath;
@@ -32,6 +33,10 @@ public class Document implements Serializable, Comparable<Document> {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    
+    public boolean isFile() {
+        return ("File".equals(type));
+    }
 
     public String getAbsolutePath() {
         return absolutePath;
