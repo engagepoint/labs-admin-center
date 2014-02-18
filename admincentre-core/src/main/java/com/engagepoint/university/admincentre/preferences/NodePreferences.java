@@ -1884,7 +1884,7 @@ public class NodePreferences extends Preferences {
                 childNodeIdList.add(childNodeId.replaceFirst(oldPath, absolutePath));
                 nodeDAO.delete(node.getId());
                 changeIdPath(node, oldPath);
-                node.setParentNodeId(absolutePath);
+                node.setParentNodeId(parentNode.getId().replace(oldPath, absolutePath));
                 nodeDAO.create(node);
 
 

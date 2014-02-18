@@ -130,6 +130,7 @@ public class DocumentsController implements Serializable {
     }
 
     public void deleteNode() {
+        if (selectedDoc != null) {
         selectedNode = getNodeByDoc(selectedDoc.getName(), root);
         selectedNode.getParent().getChildren().remove(selectedNode);
         String absPath = selectedDoc.getAbsolutePath();
@@ -143,7 +144,7 @@ public class DocumentsController implements Serializable {
         } else {
             new NodePreferences(null, "").node(absPath).remove(selectedDoc.getName());
         }
-
+        }
     }
 
     public void addNode() {
