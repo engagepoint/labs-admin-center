@@ -89,7 +89,7 @@ public final class SynchMaster extends ReceiverAdapter {
 		try {
 			channel.connect(cluster_name);
 		} catch (Exception e) {
-			throw new UnsupportedOperationException("Could not connect to " + cluster_name, e);
+			throw new IllegalStateException("Could not connect to " + cluster_name, e);
 		}
 	}
 
@@ -132,7 +132,7 @@ public final class SynchMaster extends ReceiverAdapter {
 	@Override
 	public void getState(OutputStream output) { // SEND
 		try {
-			cacheData = (HashMap<String, AbstractEntity>) abstractDAO.obtainCache();
+			cacheData =  new HashMap<String, AbstractEntity>(abstractDAO.obtainCache());
 		} catch (IOException e1) {
 			throw new IllegalStateException(e1);
 		}
@@ -268,7 +268,7 @@ public final class SynchMaster extends ReceiverAdapter {
 	public void obtainState(){
 		if (channel.getView().getMembers().size() > 1) {
 			try {
-				channel.getState(null, 10000);
+				channel.getState(null, 40000);
 			} catch (Exception e) {
 				throw new IllegalStateException(e);
 			}
