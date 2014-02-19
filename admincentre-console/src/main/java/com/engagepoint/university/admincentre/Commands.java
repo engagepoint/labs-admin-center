@@ -21,7 +21,8 @@ public enum Commands {
  		+ "\n\t\t -disconnect"
  		+ "\n\t\t -obtain (obtain state)"
  		+ "\n\t\t -putreceived (put received state)"
- 		+ "\n\t\t -receiveupdates (true, false)");
+ 		+ "\n\t\t -receiveupdates (true, false)"),
+ REFRESH("-refresh", "useful during synch to resresh after obtaining new message or state");
 
 
     private String name;

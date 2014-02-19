@@ -127,6 +127,9 @@ public final class Main {
             		CONSOLE_CONTROLLER.synch(arguments[1], arguments[2]);
             	}
             	break;
+            case REFRESH:
+            	CONSOLE_CONTROLLER.refresh();
+            	break;
             }
         } catch (IllegalArgumentException e) {
             throw new WrongInputArgException();

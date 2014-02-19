@@ -143,6 +143,10 @@ public class ConsoleController {
     }
 
     
+    public void refresh(){
+    	currentPreferences = new NodePreferences(null, "");
+    }
+    
     public void synch(String... args){
     	if(args.length == 1 && args[0].equals("-connect")){
     		System.out.println("Please, type the name of the cluster you want to connect");
