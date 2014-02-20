@@ -1,7 +1,10 @@
 package com.engagepoint.university.admincentre;
 
+import java.util.Iterator;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+
+import org.jgroups.Address;
 
 import com.engagepoint.university.admincentre.entity.KeyType;
 import com.engagepoint.university.admincentre.preferences.NodePreferences;
@@ -113,9 +116,9 @@ public class ConsoleController {
     }
 
     public boolean nameValidation(String name) {
-        boolean value = name.matches("^[A-Z][a-z0-9]+([A-Z][a-z0-9]+|[A-Z]$)*$");
+        boolean value = name.matches("^\\w+$");
         if (!value) {
-            System.out.println("You enter not valid name...");
+            System.out.println("You enter not valid name... Only a-zA-Z_0-9");
         }
         return value;
     }
@@ -168,6 +171,36 @@ public class ConsoleController {
     	if(args.length == 2 && args[0].equals("-receiveupdates")){
     		boolean value = Boolean.parseBoolean(args[1]);
     		SynchMaster.getInstance().setReceiveUpdates(value);
+    	}
+    	if(args.length == 1 && args[0].equals("-receiveupdates")){
+    		System.out.println("Receive updates status: " + SynchMaster.getInstance().isReceiveUpdates());
+    	}
+    	if(args.length == 1 && args[0].equals("-name")){
+    		System.out.println("Channel name: " + SynchMaster.getInstance().getChannelName());
+    	}
+    	if(args.length == 2 && args[0].equals("-name")){
+    		if(!SynchMaster.getInstance().isConnected()){
+    			SynchMaster.getInstance().setChannelName(args[1]);
+    			System.out.println("You have set channel name: " + SynchMaster.getInstance().getChannelName());
+    		}else{
+    			System.out.println("Impossible to set channel name when channel is connected");
+    		}
+    	}
+    	if(args.length == 1 && args[0].equals("-status")){
+    		System.out.println("-----------Synch status-----------"
+    						 + "\nChannel name......" + SynchMaster.getInstance().getChannelName()
+    						 + "\nConnected........." + SynchMaster.getInstance().isConnected());
+    		if(SynchMaster.getInstance().isConnected()){
+    			System.out.print("Cluster name......" + SynchMaster.getInstance().getClusterName()
+    				  		 + "\nAddresses:		");
+    			for(Iterator<Address> i = SynchMaster.getInstance().getAddressList().iterator(); i.hasNext();){
+    				String name = SynchMaster.getInstance().getChannelName(i.next());
+    				if(i.hasNext())
+    					System.out.print(name + ", ");
+    				else
+    					System.out.println(name + ".");
+    			}
+    		}
     	}
     }
 }

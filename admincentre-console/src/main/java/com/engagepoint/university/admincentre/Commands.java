@@ -17,12 +17,14 @@ public enum Commands {
             "-debug",
  "Produce execute debug output"),
  SYNCH("-synch", "Synchronization commands:"
- 		+ "\n\t\t -connect %cluster_name%"
- 		+ "\n\t\t -disconnect"
- 		+ "\n\t\t -obtain (obtain state)"
- 		+ "\n\t\t -putreceived (put received state)"
- 		+ "\n\t\t -receiveupdates (true, false)"),
- REFRESH("-refresh", "useful during synch to resresh after obtaining new message or state");
+ 		+ "\n\t -connect %cluster_name%"
+ 		+ "\n\t -disconnect"
+ 		+ "\n\t -obtain         *obtain state"
+ 		+ "\n\t -putreceived    *put received state"
+ 		+ "\n\t -receiveupdates [true|false]     *set or get receive updates status"   
+ 		+ "\n\t -name [new name]    *get or set channel name"
+ 		+ "\n\t -status		*print all info about channel"),
+ REFRESH("-refresh", "*use after obtaining new message or state");
 
 
     private String name;

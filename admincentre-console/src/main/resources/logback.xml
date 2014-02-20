@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-	<logger name="org.infinispan" level="WARN" />
-	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+	<logger name="org.infinispan" level="INFO" />
+	<appender name="FILE" class="ch.qos.logback.core.FileAppender">
+	<file>logout.log</file>
+    <append>true</append>
 		<encoder>
-			<pattern> %msg%n</pattern>
+			<pattern>%-4relative [%thread] %-5level %logger{35} - %msg%n</pattern>
 		</encoder>
 	</appender>
-	<root level="DEBUG">
-		<appender-ref ref="STDOUT" />
+	<root level="INFO">
+		<appender-ref ref="FILE" />
 	</root>
 </configuration>

@@ -4,16 +4,20 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.logging.Handler;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
+//import java.util.logging.Handler;
+//import java.util.logging.LogManager;
+//import java.util.logging.Logger;
+
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.engagepoint.university.admincentre.exception.WrongInputArgException;
 import com.engagepoint.university.admincentre.preferences.NodePreferences;
 import com.engagepoint.university.admincentre.synchronization.SynchMaster;
 
 public final class Main {
-    private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     private static final ConsoleController CONSOLE_CONTROLLER = new ConsoleController();
 
@@ -21,10 +25,10 @@ public final class Main {
     }
 
     public static void main(String[] args) {
-    	LogManager.getLogManager().reset();
-    	for(Handler iHandler: LOGGER.getParent().getHandlers()){
-    		LOGGER.getParent().removeHandler(iHandler);
-    	}
+//    	LogManager.getLogManager().reset();
+//    	for(Handler iHandler: LOGGER.getParent().getHandlers()){
+//    		LOGGER.getParent().removeHandler(iHandler);
+//    	}
         if (checkArgs(args)) {
             CONSOLE_CONTROLLER.displayNodes(new NodePreferences(null, ""));
             connectToInputStream();
@@ -36,11 +40,11 @@ public final class Main {
             if (Commands.VIEW.getName().equals(args[0]) && args.length == 1) {
                 LOGGER.info("Welcome to EngagePoint Admin Centre...");
             } else {
-                LOGGER.warning("Illegal arguments");
+                LOGGER.warn("Illegal arguments");
                 return false;
             }
         } catch (ArrayIndexOutOfBoundsException e) {
-            LOGGER.warning("Illegal arguments");
+            LOGGER.warn("Illegal arguments");
             return false;
         }
         return true;
@@ -63,7 +67,7 @@ public final class Main {
                 analyzeLine(line);
             }
         } catch (IOException ioe) {
-            LOGGER.warning("Exception while reading input " + ioe);
+            LOGGER.warn("Exception while reading input " + ioe);
         } finally {
             // close the streams using close method
             try {
@@ -72,13 +76,13 @@ public final class Main {
                     br.close();
                 }
             } catch (IOException ioe) {
-                LOGGER.warning("Error while closing stream: " + ioe);
+                LOGGER.warn("Error while closing stream: " + ioe);
             }
         }
     }
 
     private static void analyzeLine(String line) {
-        String[] arguments = line.split(" ");
+        String[] arguments = line.split("\\s+");
         try {
             checkCommand(arguments);
         } catch (WrongInputArgException e) {

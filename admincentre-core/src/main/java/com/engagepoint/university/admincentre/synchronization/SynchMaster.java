@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.ReceiverAdapter;
@@ -28,10 +29,10 @@ import com.engagepoint.university.admincentre.entity.AbstractEntity;
  * 
  * @author Roman Garkavenko
  */
-public final class SynchMaster extends ReceiverAdapter {
+public final class SynchMaster {
 
 	private static Logger logger = LoggerFactory.getLogger(SynchMaster.class);
-	
+
 	private static volatile SynchMaster instance;
 
 	private boolean receiveUpdates = true;
@@ -40,6 +41,113 @@ public final class SynchMaster extends ReceiverAdapter {
 	private HashMap<String, AbstractEntity> cacheData;
 	private HashMap<String, AbstractEntity> receivedcacheData;
 	private final List<CRUDPayload> lastReceivedUpdates = new ArrayList<CRUDPayload>();
+
+	private class Receiver extends ReceiverAdapter{
+		/**
+		 * Allows an application to write a state through a provided OutputStream.
+		 * After the state has been written the OutputStream doesn't need to be
+		 * closed as stream closing is automatically done when a calling thread
+		 * returns from this callback.
+		 * 
+		 * @param output
+		 *            the OutputStream
+		 * @throws Exception
+		 *             if the streaming fails, any exceptions should be thrown so
+		 *             that the state requester can re-throw them and let the caller
+		 *             know what happened
+		 * @see java.io.OutputStream#close()
+		 */
+		@Override
+		public void getState(OutputStream output) { // SEND
+			try {
+				cacheData = new HashMap<String, AbstractEntity>(
+						abstractDAO.obtainCache());
+			} catch (IOException e1) {
+				throw new IllegalStateException(e1);
+			}
+			synchronized (cacheData) {
+				try {
+					Util.objectToStream(cacheData, new DataOutputStream(output));
+				} catch (Exception e) {
+					throw new IllegalStateException(e);
+				}
+			}
+
+			logger.info("getState: SENT " + cacheData.size() + " items");
+		}
+
+		/**
+		 * Allows an application to read a state through a provided InputStream.
+		 * After the state has been read the InputStream doesn't need to be closed
+		 * as stream closing is automatically done when a calling thread returns
+		 * from this callback.
+		 * 
+		 * @param input
+		 *            the InputStream
+		 * @throws Exception
+		 *             if the streaming fails, any exceptions should be thrown so
+		 *             that the state requester can catch them and thus know what
+		 *             happened
+		 * @see java.io.InputStream#close()
+		 */
+		@Override
+		public void setState(InputStream input) { // receive
+			try {
+				receivedcacheData = (HashMap<String, AbstractEntity>) Util
+						.objectFromStream(new DataInputStream(input));
+				syso("=========setState: RECEIVED " + receivedcacheData.size()
+						+ " items");
+			} catch (Exception e) {
+				throw new IllegalStateException(e);
+			}
+		}
+
+		/**
+		 * Called when a message is received.
+		 * 
+		 * @param msg
+		 */
+		@Override
+		public void receive(Message msg) {
+			if (!(msg.getObject() instanceof CRUDPayload)) {
+				throw new IllegalArgumentException(
+						"Something wrong has been received");
+			}
+			if (receiveUpdates) {
+				CRUDPayload crudPayload = (CRUDPayload) msg.getObject();
+				try {
+					switch (crudPayload.getCrudOperation()) {
+					case CREATE:
+						syso("Message received: "
+								+ ((CRUDPayload) msg.getObject()).toString());
+						lastReceivedUpdates.add(crudPayload);
+						abstractDAO.create(crudPayload.getEntity());
+						break;
+					case READ:
+						break;
+					case UPDATE:
+						syso("Message received: "
+								+ ((CRUDPayload) msg.getObject()).toString());
+						lastReceivedUpdates.add(crudPayload);
+						abstractDAO.update(crudPayload.getEntity());
+						break;
+					case DELETE:
+						syso("Message received: "
+								+ ((CRUDPayload) msg.getObject()).toString());
+						lastReceivedUpdates.add(crudPayload);
+						abstractDAO.delete(crudPayload.getEntity().getId());
+						break;
+					default:
+						break;
+					}
+				} catch (IOException e) {
+					throw new IllegalStateException(
+							"Could not complete CRUD operation", e);
+				}
+			}
+		}
+
+	}
 	
 	/**
 	 * Private constructor, used in realization of singleton pattern.
@@ -49,14 +157,14 @@ public final class SynchMaster extends ReceiverAdapter {
 		abstractDAO = new AbstractDAO<AbstractEntity>(AbstractEntity.class) {
 		};
 		try {
-			syso("Start constructing...");			// delete
+			syso("Start constructing..."); // delete
 			channel = new JChannel();
 			channel.setDiscardOwnMessages(true);
-			channel.setReceiver(this);
-//	connect("testCluster");							// delete
-//	obtainState();									// delete
-//	putAllReceived(); 								// delete
-			syso("CONSTRUCTED");					// delete
+			channel.setReceiver(new Receiver());
+			// connect("testCluster"); // delete
+			// obtainState(); // delete
+			// putAllReceived(); // delete
+			syso("CONSTRUCTED"); // delete
 		} catch (Exception e) {
 			throw new IllegalStateException("Something wrong with channel", e);
 		}
@@ -83,13 +191,15 @@ public final class SynchMaster extends ReceiverAdapter {
 	 * All channels with the same name form a group, that means all messages
 	 * sent to the group will be received by all channels connected to the same
 	 * cluster name.
+	 * 
 	 * @param cluster_name
 	 */
 	public void connect(String cluster_name) {
 		try {
 			channel.connect(cluster_name);
 		} catch (Exception e) {
-			throw new IllegalStateException("Could not connect to " + cluster_name, e);
+			throw new IllegalStateException("Could not connect to "
+					+ cluster_name, e);
 		}
 	}
 
@@ -115,107 +225,7 @@ public final class SynchMaster extends ReceiverAdapter {
 		channel.close();
 	}
 
-	/**
-	 * Allows an application to write a state through a provided OutputStream.
-	 * After the state has been written the OutputStream doesn't need to be
-	 * closed as stream closing is automatically done when a calling thread
-	 * returns from this callback.
-	 * 
-	 * @param output
-	 *            the OutputStream
-	 * @throws Exception
-	 *             if the streaming fails, any exceptions should be thrown so
-	 *             that the state requester can re-throw them and let the caller
-	 *             know what happened
-	 * @see java.io.OutputStream#close()
-	 */
-	@Override
-	public void getState(OutputStream output) { // SEND
-		try {
-			cacheData =  new HashMap<String, AbstractEntity>(abstractDAO.obtainCache());
-		} catch (IOException e1) {
-			throw new IllegalStateException(e1);
-		}
-		synchronized (cacheData) {
-			try {
-				Util.objectToStream(cacheData, new DataOutputStream(output));
-			} catch (Exception e) {
-				throw new IllegalStateException(e);
-			}
-		}
 
-		logger.info("getState: SENT " + cacheData.size() + " items");
-	}
-
-	/**
-	 * Allows an application to read a state through a provided InputStream.
-	 * After the state has been read the InputStream doesn't need to be closed
-	 * as stream closing is automatically done when a calling thread returns
-	 * from this callback.
-	 * 
-	 * @param input
-	 *            the InputStream
-	 * @throws Exception
-	 *             if the streaming fails, any exceptions should be thrown so
-	 *             that the state requester can catch them and thus know what
-	 *             happened
-	 * @see java.io.InputStream#close()
-	 */
-	@Override
-	public void setState(InputStream input) { // receive
-		try {
-			receivedcacheData = (HashMap<String, AbstractEntity>) Util
-					.objectFromStream(new DataInputStream(input));
-			syso("=========setState: RECEIVED "
-					+ receivedcacheData.size() + " items");
-		} catch (Exception e) {
-			throw new IllegalStateException(e);
-		}
-	}
-
-	/**
-	 * Called when a message is received.
-	 * 
-	 * @param msg
-	 */
-	@Override
-	public void receive(Message msg) {
-		if(!(msg.getObject() instanceof CRUDPayload)){
-			throw new IllegalArgumentException("Something wrong has been received");
-		}
-		if(receiveUpdates){
-			CRUDPayload crudPayload = (CRUDPayload) msg.getObject();
-			try{
-				switch (crudPayload.getCrudOperation()) {
-				case CREATE:
-					syso("Message received: "
-							+ ((CRUDPayload) msg.getObject()).toString());
-					lastReceivedUpdates.add(crudPayload);
-					abstractDAO.create(crudPayload.getEntity());
-					break;
-				case READ:
-					break;
-				case UPDATE:
-					syso("Message received: "
-							+ ((CRUDPayload) msg.getObject()).toString());
-					lastReceivedUpdates.add(crudPayload);
-					abstractDAO.update(crudPayload.getEntity());
-					break;
-				case DELETE:
-					syso("Message received: "
-							+ ((CRUDPayload) msg.getObject()).toString());
-					lastReceivedUpdates.add(crudPayload);
-					abstractDAO.delete(crudPayload.getEntity().getId());
-					break;
-				default:
-					break;
-				}
-			}catch(IOException e){
-				throw new IllegalStateException("Could not complete CRUD operation", e);
-			}
-		}
-	}
-	
 	/**
 	 * Sends a message. The message contains
 	 * <ol>
@@ -239,14 +249,13 @@ public final class SynchMaster extends ReceiverAdapter {
 	private void send(Message msg) {
 		try {
 			channel.send(msg);
-			syso("Message send: "
-					+ ((CRUDPayload) msg.getObject()).toString());
+			syso("Message send: " + ((CRUDPayload) msg.getObject()).toString());
 		} catch (Exception e) {
 			logger.warn("Message was not set!");
 			throw new IllegalStateException(e);
 		}
 	}
-	
+
 	public void setReceiveUpdates(boolean receiveUpdates) {
 		this.receiveUpdates = receiveUpdates;
 	}
@@ -254,9 +263,9 @@ public final class SynchMaster extends ReceiverAdapter {
 	public boolean isReceiveUpdates() {
 		return receiveUpdates;
 	}
-	
-	public void putAllReceived(){
-		if(receivedcacheData == null){
+
+	public void putAllReceived() {
+		if (receivedcacheData == null) {
 			syso("NO data received");
 			return;
 		}
@@ -264,37 +273,67 @@ public final class SynchMaster extends ReceiverAdapter {
 		abstractDAO.putAll(receivedcacheData);
 
 	}
-	
-	public void obtainState(){
+
+	public void obtainState() {
 		if (channel.getView().getMembers().size() > 1) {
 			try {
 				channel.getState(null, 40000);
 			} catch (Exception e) {
 				throw new IllegalStateException(e);
 			}
-		}else{
+		} else {
 			syso("=======You are the only one in the cluster and cannot obtain state");
 		}
 	}
-	
-	public void send(CRUDPayload crudPayload){
+
+	public void send(CRUDPayload crudPayload) {
 		syso("I was called: " + crudPayload.toString());
 		boolean removed = lastReceivedUpdates.remove(crudPayload);
 		syso("removed: " + Boolean.toString(removed));
-		if(channel.isConnected()){
-			if(!removed){
+		if (channel.isConnected()) {
+			if (!removed) {
 				syso("wanna send: " + crudPayload.toString());
 				send(new Message(null, null, crudPayload));
 				syso("Sended, " + crudPayload.toString());
-			}else{	
-				syso("Will not be sent, was received before " + crudPayload.toString());
+			} else {
+				syso("Will not be sent, was received before "
+						+ crudPayload.toString());
 			}
-		}else{
+		} else {
 			syso("Channel is not connected " + crudPayload.toString());
 		}
 	}
+
+	public void setChannelName(String channelName) {
+		if (channel.isConnected()) {
+			throw new IllegalStateException(
+					"Channel is connected, you cannot set name " + channelName);
+		} else{
+			channel.setName(channelName);
+		}
+	}
+
+	public String getChannelName() {
+		return channel.getName();
+	}
+
+	public String getChannelName(Address member){
+		return channel.getName(member);
+	}
 	
-	private void syso(String s){
+	public String getClusterName(){
+		return channel.getClusterName();
+	}
+	
+	public boolean isConnected(){
+		return channel.isConnected();
+	}
+	
+	public List<Address> getAddressList(){
+		return channel.getView().getMembers();
+	}
+	
+	private void syso(String s) {
 		System.out.println(s);
 	}
 }
