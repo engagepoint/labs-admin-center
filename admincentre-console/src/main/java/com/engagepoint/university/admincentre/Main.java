@@ -9,7 +9,6 @@ import java.util.logging.Handler;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-
 import com.engagepoint.university.admincentre.exception.WrongInputArgException;
 import com.engagepoint.university.admincentre.preferences.NodePreferences;
 import com.engagepoint.university.admincentre.synchronization.SynchMaster;
@@ -120,6 +119,9 @@ public final class Main {
                 case REFRESH:
                     CONSOLE_CONTROLLER.refresh();
                     break;
+            case EXPORT:
+                CONSOLE_CONTROLLER.export(cis);
+                break;
                 default:
                     CONSOLE_CONTROLLER.showHelp();
             }

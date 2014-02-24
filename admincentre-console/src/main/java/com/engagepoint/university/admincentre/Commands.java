@@ -24,7 +24,9 @@ public enum Commands {
  		+ "\n\t -receiveupdates [true|false]     *set or get receive updates status"   
  		+ "\n\t -name [new name]    *get or set channel name"
  		+ "\n\t -status		*print all info about channel"),
- REFRESH("-refresh", "*use after obtaining new message or state");
+ REFRESH("-refresh", "*use after obtaining new message or state"),
+ EXPORT("-export",
+            "exports current base into zip located in entered path");
 
 
     private String name;

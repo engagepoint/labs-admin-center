@@ -116,6 +116,15 @@ public class ConsoleController {
 
     }
 
+    public void export(ConsoleInputString cis) {
+        String path = cis.getSecondArg();
+        try {
+            new NodePreferences(null, "").exportNode(path);
+        } catch (Exception e) {
+            System.out.println("Can`t export using path" + path);
+        }
+    }
+
     public boolean nameValidation(String name) {
         boolean value = name.matches("^\\w+$");
         if (!value) {

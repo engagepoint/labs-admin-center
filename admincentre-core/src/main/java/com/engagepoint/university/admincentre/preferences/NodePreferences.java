@@ -1926,6 +1926,9 @@ public class NodePreferences extends Preferences {
         exportSubtree(os);
     }
 
+    public void exportNode(String path) throws IOException, BackingStoreException {
+        new ZipFiles().exportZipPreferences(this, path);
+    }
     /**
      * Method exports Node with all it SubNodes
      * 
