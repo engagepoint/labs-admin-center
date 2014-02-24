@@ -103,9 +103,10 @@ public class DocumentsController implements Serializable {
     }
 
     public void editDocument(ActionEvent event) {
-    	 if (selectedDoc != null) {
+        if (selectedDoc != null) {
             String absPath = selectedDoc.getAbsolutePath();
-            NodePreferences currentNode= (NodePreferences) new NodePreferences(null, "").node(absPath);        
+            NodePreferences currentNode = (NodePreferences) new NodePreferences(null, "")
+                    .node(absPath);
             if ("File".equals(selectedDoc.getType())) {
                 selectedNode = getNodeByDoc(selectedDoc.getName(), root);
                 selectedNode.getParent().getChildren().remove(selectedNode);
@@ -113,13 +114,13 @@ public class DocumentsController implements Serializable {
                 currentNode.changeNodeName(selectedDoc.getName());
                 selectedDoc.setAbsolutePath(currentNode.absolutePath());
                 buildTree(currentNode, selectedNode.getParent());
-            	
+
             } else {
                 try {
-                	currentNode.put(
+                    currentNode.put(
                             selectedDoc.getName(), KeyType.valueOf(selectedDoc.getType()),
                             selectedDoc.getValue());
-                	currentNode.remove(selectedDoc.getOldName());
+                    currentNode.remove(selectedDoc.getOldName());
 
                 } catch (IOException e) {
                     // TODO Auto-generated catch block

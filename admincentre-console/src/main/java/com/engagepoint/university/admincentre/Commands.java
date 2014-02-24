@@ -3,25 +3,28 @@ package com.engagepoint.university.admincentre;
 public enum Commands {
 
     VIEW("-view", "Show Node tree"),
-
+   
     EXIT("-exit", "Stop application"),
     HELP("-help", "Show list of all commands"),
     VERSION("-version", "Display version information"),
-    CREATE("-create",
+ CREATE("-create",
             "Allows you create new Node or Key"),
-    REMOVE("-remove", "--------------"),
+ REMOVE("-remove", "--------------"),
     EDIT("-edit", "-------------"),
-    SELECT("-select",
+ SELECT("-select",
             "Choose node with the given name"),
-    DEBUG(
+ DEBUG(
             "-debug",
-            "Produce execute debug output"),
-    SYNCH("-synch", "Synchronization commands:"
-            + "\n\t\t -connect %cluster_name%"
-            + "\n\t\t -disconnect"
-            + "\n\t\t -obtain (obtain state)"
-            + "\n\t\t -putreceived (put received state)"
-            + "\n\t\t -receiveupdates (true, false)");
+ "Produce execute debug output"),
+ SYNCH("-synch", "Synchronization commands:"
+ 		+ "\n\t -connect %cluster_name%"
+ 		+ "\n\t -disconnect"
+ 		+ "\n\t -obtain         *obtain state"
+ 		+ "\n\t -putreceived    *put received state"
+ 		+ "\n\t -receiveupdates [true|false]     *set or get receive updates status"   
+ 		+ "\n\t -name [new name]    *get or set channel name"
+ 		+ "\n\t -status		*print all info about channel"),
+ REFRESH("-refresh", "*use after obtaining new message or state");
 
 
     private String name;

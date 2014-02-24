@@ -1,8 +1,11 @@
 package com.engagepoint.university.admincentre;
 
+import java.util.Iterator;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+
+import org.jgroups.Address;
 
 import com.engagepoint.university.admincentre.entity.KeyType;
 import com.engagepoint.university.admincentre.exception.WrongInputArgException;
@@ -116,9 +119,9 @@ public class ConsoleController {
     }
 
     public boolean nameValidation(String name) {
-        boolean value = name.matches("^[A-Z][a-z0-9]+([A-Z][a-z0-9]+|[A-Z]$)*$");
+        boolean value = name.matches("^\\w+$");
         if (!value) {
-            System.out.println("You enter not valid name...");
+            System.out.println("You enter not valid name... Only a-zA-Z_0-9");
         }
         return value;
     }
@@ -142,6 +145,10 @@ public class ConsoleController {
         }
         return true;
 
+    }
+
+    public void refresh(){
+        currentPreferences = new NodePreferences(null, "");
     }
 
 

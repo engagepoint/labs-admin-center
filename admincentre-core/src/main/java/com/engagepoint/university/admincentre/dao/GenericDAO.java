@@ -1,13 +1,12 @@
 package com.engagepoint.university.admincentre.dao;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.List;
 
 import com.engagepoint.university.admincentre.entity.AbstractEntity;
 
 
-public interface GenericDAO<T extends AbstractEntity> extends Serializable {
+public interface GenericDAO<T extends AbstractEntity> {
     /** Put the newInstance object into storage */
     void create(T newInstance) throws IOException;
 

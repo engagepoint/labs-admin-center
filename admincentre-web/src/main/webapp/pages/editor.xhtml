@@ -10,77 +10,39 @@
     <ui:define name="page">
 
         <h:form id="preferencesForm">
-            <h2>
-                <h:outputText value="Preferences administration" />
-            </h2>
+            <h2><h:outputText value="Preferences administration"/></h2>
 
             <p:treeTable id="treeTable" value="#{documentsController.root}"
                          var="doc">
-
-
-                <f:facet name="header">
-                    Properties Viewer
-
-                </f:facet>
+                <f:facet name="header">Properties Viewer</f:facet>
 
                 <p:column style="width:32%">
-                    <f:facet name="header">
-                        File
-
-                    </f:facet>
-
-
+                    <f:facet name="header">File</f:facet>
                     <h:outputText value="#{doc.name}" />
-
-
-
                 </p:column>
 
                 <p:column style="width:32%">
-                    <f:facet name="header">
-                        Value
-                    </f:facet>
-
-
-                    <h:outputText value="#{doc.value}" />
-
+                    <f:facet name="header">Value</f:facet>
+                    <h:outputText value="#{doc.value}"/>
                 </p:column>
 
                 <p:column style="width:10%">
-                    <f:facet name="header">
-                        Type
-                    </f:facet>
-
-
-
-                    <h:outputText value="#{doc.type}" />
-
+                    <f:facet name="header">Type</f:facet>
+                    <h:outputText value="#{doc.type}"/>
                 </p:column>
+                
                 <p:column id="column" style="width:10%">
-                    <f:facet name="header">
-                    </f:facet>
+                    <f:facet name="header"></f:facet>
+                    
+                    <!--Edit button-->
                     <p:commandButton value="Edit" id="editButton" title="Edit"
                                      update="treeTable" oncomplete="editDialog.show()"
                                      styleClass="ui-button-icon-only secondary small"
                                      icon="ui-icon-edit">
                         <f:setPropertyActionListener value="#{doc}"
-                                                     target="#{documentsController.selectedDoc}" />
+                                                     target="#{documentsController.selectedDoc}"/>
                     </p:commandButton>
-
-                    <p:commandButton value="Delete" title="Delete" update="treeTable"
-                                     oncomplete="deleteDialog.show()"
-                                     styleClass="ui-button-icon-only secondary small"
-                                     icon="ui-icon-remove">
-                        <f:setPropertyActionListener value="#{doc}"
-                                                     target="#{documentsController.selectedDoc}" />
-                    </p:commandButton>
-
-                   
-
-
-
-                   
-
+                    
                     <!--Edit dialog-->
                     <p:dialog header="Edit" widgetVar="editDialog" resizable="false"
                               id="editDlg" showEffect="fade" hideEffect="explode" modal="true">
@@ -101,35 +63,58 @@
                         </h:panelGrid>
                     </p:dialog>
 
+                    <!--Delete button-->
+                    <p:commandButton 
+                        id="delButton"
+                        value="Delete"
+                        alt="Delete"
+                        styleClass="ui-button-icon-only secondary small"
+                        icon="ui-icon-remove"
+                        update="treeTable"
+                        oncomplete="delDialog.show()">
+                        <f:setPropertyActionListener value="#{doc}"
+                                                     target="#{documentsController.selectedDoc}"/>
+                    </p:commandButton>
+
                     <!--Delete dialog-->
-                    <p:dialog header="Delete" widgetVar="deleteDialog"
-                              resizable="false" id="delDlg" showEffect="fade"
-                              hideEffect="explode" modal="true">
-                        <h:panelGrid columns="1" cellpadding="4">
-                            <h:outputText
-                                value="Name: #{documentsController.selectedDoc.name}" />
-                            <h:outputText
-                                value="Value: #{documentsController.selectedDoc.value}" rendered="#{not documentsController.selectedDoc.file}"/>
-                            <h:outputText
-                                value="Type: #{documentsController.selectedDoc.type}" />
-                        </h:panelGrid>
+                    <p:dialog id="delDialog"
+                              header="Deletion Confirmation"
+                              widgetVar="delDialog"
+                              position="center center"
+                              showEffect="fade"
+                              hideEffect="explode"
+                              modal="true"                              
+                              closable="false">
 
-                        <p:commandButton value="Ok"
-                                         action="#{documentsController.deleteNode()}" ajax="false"
-                                         oncomplete="deleteDialog.hide()"
-                                         styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
-                        <p:commandButton value="Cancel" oncomplete="deleteDialog.hide()"
-                                         styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                        <h:outputText value="Do you really want to delete the preference group
+                                             and all related nodes and preferences?"/>
+                        <br/>
+                        <h:outputText value="Name: #{documentsController.selectedDoc.name} &lt;br/&gt;
+                                             Value:  #{documentsController.selectedDoc.value} &lt;br/&gt; 
+                                             Type: #{documentsController.selectedDoc.type}"
+                                      escape="false"/>
+                        <br/>
 
-                    </p:dialog>
+                        <p:commandButton 
+                            id="delOkButton"
+                            value="Ok"
+                            styleClass="ui-state-focus ui-state-active"
+                            style="float: right"
+                            action="#{documentsController.deleteNode()}"
+                            ajax="false"                            
+                            oncomplete="delDialog.hide()"/>                        
+
+                        <p:commandButton
+                            id="delCancelButton"
+                            value="Cancel"
+                            styleClass="ui-confirmdialog-no"
+                            style="float: right"
+                            action="cancel"
+                            update="treeTable"
+                            oncomplete="delDialog.hide()"/>
+                    </p:dialog>                    
                 </p:column>
-
-
             </p:treeTable>
-
-
-
-
         </h:form>
     </ui:define>
 </ui:composition>

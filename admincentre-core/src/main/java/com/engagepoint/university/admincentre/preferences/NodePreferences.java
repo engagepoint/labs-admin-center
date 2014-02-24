@@ -2,17 +2,13 @@ package com.engagepoint.university.admincentre.preferences;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.TreeSet;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.NodeChangeEvent;
 import java.util.prefs.NodeChangeListener;
@@ -38,8 +34,8 @@ public class NodePreferences extends Preferences {
     private KeyDAO keyDAO = new KeyDAO();
     private NodeDAO nodeDAO = new NodeDAO();
     private Node currentNode;
-    private final static String REMOVED_NODE = "Node has been removed.";
-    private final static String NOTREGISTRD_LISTENER = "Listener not registered.";
+    private static final String REMOVED_NODE = "Node has been removed: ";
+    private static final String NOTREGISTRD_LISTENER = "Listener not registered in node: ";
 
     public Node getCurrentNode() {
         return currentNode;
@@ -131,15 +127,15 @@ public class NodePreferences extends Preferences {
     public NodePreferences(NodePreferences parent, String name) {
 
         if (parent == null) {
-            if (!name.equals(""))
+            if (!"".equals(name))
                 throw new IllegalArgumentException("Root name '" + name + "' must be \"\"");
             this.absolutePath = "/";
             root = this;
         } else {
             if (name.indexOf('/') != -1)
                 throw new IllegalArgumentException("Name '" + name + "' contains '/'");
-            if (name.equals(""))
-                throw new IllegalArgumentException("Illegal name: empty string");
+            if ("".equals(name))
+                throw new IllegalArgumentException("Illegal name: empty string" + name);
 
             root = parent.root;
             absolutePath = (parent.equals(root) ? "/" + name : parent.absolutePath() + "/" + name);
@@ -190,11 +186,12 @@ public class NodePreferences extends Preferences {
      */
     public void put(String key, KeyType type, String value) throws IOException {
         if (key == null || value == null)
-            throw new IllegalArgumentException("key and value can't be null");
+            throw new IllegalArgumentException(
+                    "key and value can't be null, trying to put key on preferences" + name);
 
         synchronized (lock) {
             if (removed)
-                throw new IllegalStateException(REMOVED_NODE);
+                throw new IllegalStateException(REMOVED_NODE + name);
             Key persistKey = new Key(absolutePath, key, type, value);
             putSpi(persistKey);
             enqueuePreferenceChangeEvent(key, value);
@@ -229,10 +226,11 @@ public class NodePreferences extends Preferences {
      */
     public String get(String key, String def) {
         if (key == null)
-            throw new IllegalArgumentException("key can't be null");
+            throw new IllegalArgumentException(
+                    "key can't be null, trying to get key on preferences" + name);
         synchronized (lock) {
             if (removed)
-                throw new IllegalStateException(REMOVED_NODE);
+                throw new IllegalStateException(REMOVED_NODE + name);
 
             Key result = null;
             try {
@@ -261,15 +259,15 @@ public class NodePreferences extends Preferences {
      *             if this node (or an ancestor) has been removed with the
      *             {@link #removeNode()} method.
      */
-    public void remove(String key) throws IllegalStateException {
+    public void remove(String key) {
         synchronized (lock) {
             if (removed)
-                throw new IllegalStateException(REMOVED_NODE);
+                throw new IllegalStateException(REMOVED_NODE + name);
 
             try {
                 removeSpi(key);
             } catch (IOException e) {
-                throw new IllegalStateException("Key was removed");
+                throw new IllegalStateException("Key was removed" + key, e);
             }
             enqueuePreferenceChangeEvent(key, null);
         }
@@ -503,9 +501,9 @@ public class NodePreferences extends Preferences {
         boolean result = def;
         String value = get(key, null);
         if (value != null) {
-            if (value.equalsIgnoreCase("true")) {
+            if ("true".equalsIgnoreCase(value)) {
                 result = true;
-            } else if (value.equalsIgnoreCase("false")) {
+            } else if ("false".equalsIgnoreCase(value)) {
                 result = false;
             }
         }
@@ -676,13 +674,13 @@ public class NodePreferences extends Preferences {
         }
     }
 
-    private static String byteArrayToBase64(byte[] a) {
+    private static String byteArrayToBase64(byte... a) {
         int aLen = a.length;
         int numFullGroups = aLen / 3;
         int numBytesInPartialGroup = aLen - 3 * numFullGroups;
         int resultLen = 4 * ((aLen + 2) / 3);
-        StringBuffer result = new StringBuffer(resultLen);
-        char[] intToAlpha = intToBase64;
+        StringBuilder result = new StringBuilder(resultLen);
+        char[] intToAlpha = INT_TO_BASE64;
 
         // Translate all full groups from byte array elements to Base64
         int inCursor = 0;
@@ -721,7 +719,7 @@ public class NodePreferences extends Preferences {
      * values into their "Base64 Alphabet" equivalents as specified in Table 1
      * of RFC 2045.
      */
-    private static final char intToBase64[] = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+    private static final char INT_TO_BASE64[] = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
             'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a',
             'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
             's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8',
@@ -762,11 +760,12 @@ public class NodePreferences extends Preferences {
     }
 
     private static byte[] base64ToByteArray(String s) {
-        byte[] alphaToInt = base64ToInt;
+        byte[] alphaToInt = BASE64_TO_INT;
         int sLen = s.length();
         int numGroups = sLen / 4;
         if (4 * numGroups != sLen)
-            throw new IllegalArgumentException("String length must be a multiple of four.");
+            throw new IllegalArgumentException(
+                    "String length must be a multiple of four, its length" + sLen);
         int missingBytesInLastGroup = 0;
         int numFullGroups = numGroups;
         if (sLen != 0) {
@@ -814,7 +813,7 @@ public class NodePreferences extends Preferences {
      * @throw IllegalArgumentException or ArrayOutOfBoundsException if c is not
      *        in the Base64 Alphabet.
      */
-    private static int base64toInt(char c, byte[] alphaToInt) {
+    private static int base64toInt(char c, byte... alphaToInt) {
         int result = alphaToInt[c];
         if (result < 0)
             throw new IllegalArgumentException("Illegal character " + c);
@@ -828,7 +827,8 @@ public class NodePreferences extends Preferences {
      * Base64 alphabet but fall within the bounds of the array are translated to
      * -1.
      */
-    private static final byte base64ToInt[] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    private static final byte BASE64_TO_INT[] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+            -1,
             -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
             -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1, 63, 52, 53, 54, 55, 56, 57, 58, 59, 60,
             61, -1, -1, -1, -1, -1, -1, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
@@ -888,10 +888,10 @@ public class NodePreferences extends Preferences {
             if (removed)
                 throw new IllegalStateException(REMOVED_NODE);
 
-            Set<String> s = new TreeSet<String>(kidCache.keySet());
-            for (String kid : childrenNamesSpi()) {
-                s.add(kid);
-            }
+            // Set<String> s = new TreeSet<String>(kidCache.keySet());
+            // for (String kid : childrenNamesSpi()) {
+            // s.add(kid);
+            // }
             return childrenNamesSpi();
         }
     }
@@ -982,11 +982,11 @@ public class NodePreferences extends Preferences {
     public Preferences node(String path) {
         synchronized (lock) {
             if (removed)
-                throw new IllegalStateException(REMOVED_NODE);
-            if (path.equals(""))
+                throw new IllegalStateException(REMOVED_NODE + name);
+            if ("".equals(path))
                 return this;
 
-            if (path.equals("/"))
+            if ("/".equals(path))
                 return root;
             if (path.charAt(0) != '/')
                 return node(new StringTokenizer(path, "/", true));
@@ -1004,8 +1004,8 @@ public class NodePreferences extends Preferences {
      */
     private Preferences node(StringTokenizer path) {
         String token = path.nextToken();
-        if (token.equals("/")) // Check for consecutive slashes
-            throw new IllegalArgumentException("Consecutive slashes in path");
+        if ("/".equals(token)) // Check for consecutive slashes
+            throw new IllegalArgumentException("Consecutive slashes in path: " + path);
         synchronized (lock) {
             // NodePreferences child = new NodePreferences(this, token);
 
@@ -1022,7 +1022,7 @@ public class NodePreferences extends Preferences {
                 return child;
             path.nextToken(); // Consume slash
             if (!path.hasMoreTokens())
-                throw new IllegalArgumentException("Path ends with slash");
+                throw new IllegalArgumentException("Path ends with slash: " + path);
             return child.node(path);
         }
     }
@@ -1052,11 +1052,11 @@ public class NodePreferences extends Preferences {
      */
     public boolean nodeExists(String path) throws BackingStoreException {
         synchronized (lock) {
-            if (path.equals(""))
+            if ("".equals(path))
                 return !removed;
             if (removed)
-                throw new IllegalStateException(REMOVED_NODE);
-            if (path.equals("/"))
+                throw new IllegalStateException(REMOVED_NODE + name);
+            if ("/".equals(path))
                 return true;
             if (path.charAt(0) != '/')
                 return nodeExists(new StringTokenizer(path, "/", true));
@@ -1071,8 +1071,8 @@ public class NodePreferences extends Preferences {
      */
     private boolean nodeExists(StringTokenizer path) throws BackingStoreException {
         String token = path.nextToken();
-        if (token.equals("/")) // Check for consecutive slashes
-            throw new IllegalArgumentException("Consecutive slashes in path");
+        if ("/".equals(token)) // Check for consecutive slashes
+            throw new IllegalArgumentException("Consecutive slashes in path: " + path);
         synchronized (lock) {
             NodePreferences child = kidCache.get(token);
             if (child == null)
@@ -1083,7 +1083,7 @@ public class NodePreferences extends Preferences {
                 return true;
             path.nextToken(); // Consume slash
             if (!path.hasMoreTokens())
-                throw new IllegalArgumentException("Path ends with slash");
+                throw new IllegalArgumentException("Path ends with slash: " + path);
             return child.nodeExists(path);
         }
     }
@@ -1212,19 +1212,17 @@ public class NodePreferences extends Preferences {
      *         tree, <tt>false</tt> if it's in the system preference tree.
      */
     public boolean isUserNode() {
-        return AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
-            public Boolean run() {
-                return root == Preferences.userRoot();
-            }
-        }).booleanValue();
+        return root.equals(Preferences.userRoot());
+
     }
 
     public void addPreferenceChangeListener(PreferenceChangeListener pcl) {
         if (pcl == null)
-            throw new IllegalArgumentException("PreferenceChangeListener can`t be null");
+            throw new IllegalArgumentException(
+                    "PreferenceChangeListener can`t be null in preferences: " + name);
         synchronized (lock) {
             if (removed)
-                throw new IllegalStateException(REMOVED_NODE);
+                throw new IllegalStateException(REMOVED_NODE + name);
 
             // Copy-on-write
             PreferenceChangeListener[] old = prefListeners;
@@ -1238,9 +1236,9 @@ public class NodePreferences extends Preferences {
     public void removePreferenceChangeListener(PreferenceChangeListener pcl) {
         synchronized (lock) {
             if (removed)
-                throw new IllegalStateException(REMOVED_NODE);
+                throw new IllegalStateException(REMOVED_NODE + name);
             if ((prefListeners == null) || (prefListeners.length == 0))
-                throw new IllegalArgumentException(NOTREGISTRD_LISTENER);
+                throw new IllegalArgumentException(NOTREGISTRD_LISTENER + name);
 
             // Copy-on-write
             PreferenceChangeListener[] newPl = new PreferenceChangeListener[prefListeners.length - 1];
@@ -1249,7 +1247,7 @@ public class NodePreferences extends Preferences {
                 newPl[i] = prefListeners[i++];
             }
             if (i == newPl.length && prefListeners[i] != pcl)
-                throw new IllegalArgumentException(NOTREGISTRD_LISTENER);
+                throw new IllegalArgumentException(NOTREGISTRD_LISTENER + name);
             while (i < newPl.length) {
                 newPl[i] = prefListeners[++i];
             }
@@ -1259,10 +1257,10 @@ public class NodePreferences extends Preferences {
 
     public void addNodeChangeListener(NodeChangeListener ncl) {
         if (ncl == null)
-            throw new IllegalArgumentException("Change listener is null.");
+            throw new IllegalArgumentException("Change listener is null on preferences " + name);
         synchronized (lock) {
             if (removed)
-                throw new IllegalStateException(REMOVED_NODE);
+                throw new IllegalStateException(REMOVED_NODE + name);
 
             // Copy-on-write
             if (nodeListeners == null) {
@@ -1281,9 +1279,9 @@ public class NodePreferences extends Preferences {
     public void removeNodeChangeListener(NodeChangeListener ncl) {
         synchronized (lock) {
             if (removed)
-                throw new IllegalStateException(REMOVED_NODE);
+                throw new IllegalStateException(REMOVED_NODE + name);
             if ((nodeListeners == null) || (nodeListeners.length == 0))
-                throw new IllegalArgumentException(NOTREGISTRD_LISTENER);
+                throw new IllegalArgumentException(NOTREGISTRD_LISTENER + name);
 
             // Copy-on-write
             int i = 0;
@@ -1291,7 +1289,7 @@ public class NodePreferences extends Preferences {
                 i++;
             }
             if (i == nodeListeners.length)
-                throw new IllegalArgumentException(NOTREGISTRD_LISTENER);
+                throw new IllegalArgumentException(NOTREGISTRD_LISTENER + name);
             NodeChangeListener[] newNl = new NodeChangeListener[nodeListeners.length - 1];
             if (i != 0)
                 System.arraycopy(nodeListeners, 0, newNl, 0, i);
@@ -1423,7 +1421,8 @@ public class NodePreferences extends Preferences {
      *             backing store, or inability to communicate with it.
      */
     protected String[] keysSpi() throws BackingStoreException {
-        return currentNode.getKeyIdList().toArray(new String[currentNode.getKeyIdList().size()]);
+        List<String> keyIdList = currentNode.getKeyIdList();
+        return keyIdList.toArray(new String[keyIdList.size()]);
     };
 
     /**
@@ -1446,8 +1445,8 @@ public class NodePreferences extends Preferences {
      *             backing store, or inability to communicate with it.
      */
     protected String[] childrenNamesSpi() {
-        return currentNode.getChildNodeIdList().toArray(
-                new String[currentNode.getChildNodeIdList().size()]);
+        List<String> childNodeIdList = currentNode.getChildNodeIdList();
+        return childNodeIdList.toArray(new String[childNodeIdList.size()]);
     }
 
     /**
@@ -1688,7 +1687,7 @@ public class NodePreferences extends Preferences {
      * preference activity, greatly simplifying locking and reducing opportunity
      * for deadlock.
      */
-    private static final List<EventObject> eventQueue = new LinkedList<EventObject>();
+    private static final List<EventObject> EVENT_QUEUE = new LinkedList<EventObject>();
 
     /**
      * These two classes are used to distinguish NodeChangeEvents on eventQueue
@@ -1718,12 +1717,12 @@ public class NodePreferences extends Preferences {
             while (true) {
                 // Wait on eventQueue till an event is present
                 EventObject event = null;
-                synchronized (eventQueue) {
+                synchronized (EVENT_QUEUE) {
                     try {
-                        while (eventQueue.isEmpty()) {
-                            eventQueue.wait();
+                        while (EVENT_QUEUE.isEmpty()) {
+                            EVENT_QUEUE.wait();
                         }
-                        event = eventQueue.remove(0);
+                        event = EVENT_QUEUE.remove(0);
                     } catch (InterruptedException e) {
                         // XXX Log "Event dispatch thread interrupted. Exiting"
                         return;
@@ -1797,9 +1796,9 @@ public class NodePreferences extends Preferences {
      */
     private void enqueuePreferenceChangeEvent(String key, String newValue) {
         if (prefListeners.length != 0) {
-            synchronized (eventQueue) {
-                eventQueue.add(new PreferenceChangeEvent(this, key, newValue));
-                eventQueue.notifyAll();
+            synchronized (EVENT_QUEUE) {
+                EVENT_QUEUE.add(new PreferenceChangeEvent(this, key, newValue));
+                EVENT_QUEUE.notifyAll();
             }
         }
     }
@@ -1811,9 +1810,9 @@ public class NodePreferences extends Preferences {
      */
     private void enqueueNodeAddedEvent(Preferences child) {
         if (nodeListeners.length != 0) {
-            synchronized (eventQueue) {
-                eventQueue.add(new NodeAddedEvent(this, child));
-                eventQueue.notifyAll();
+            synchronized (EVENT_QUEUE) {
+                EVENT_QUEUE.add(new NodeAddedEvent(this, child));
+                EVENT_QUEUE.notifyAll();
             }
         }
     }
@@ -1825,9 +1824,9 @@ public class NodePreferences extends Preferences {
      */
     private void enqueueNodeRemovedEvent(Preferences child) {
         if (nodeListeners.length != 0) {
-            synchronized (eventQueue) {
-                eventQueue.add(new NodeRemovedEvent(this, child));
-                eventQueue.notifyAll();
+            synchronized (EVENT_QUEUE) {
+                EVENT_QUEUE.add(new NodeRemovedEvent(this, child));
+                EVENT_QUEUE.notifyAll();
             }
         }
     }

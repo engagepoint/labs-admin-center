@@ -1,5 +1,6 @@
 package com.engagepoint.university.admincentre.web;
 
+
 import java.io.Serializable;
 
 import javax.faces.bean.ManagedBean;
@@ -51,15 +52,15 @@ public class Document implements Serializable, Comparable<Document> {
     }
 
     public void setName(String name) {
-    	this.oldName=this.name;
+     this.oldName=this.name;
         this.name = name;
     }
 
     public String getOldName() {
-		return oldName;
-	}
+return oldName;
+}
 
-	public String getValue() {
+public String getValue() {
         return value;
     }
 
@@ -90,7 +91,7 @@ public class Document implements Serializable, Comparable<Document> {
 
     public String saveAction() {
 
-        //get all existing value but set "editable" to false 
+        //get all existing value but set "editable" to false
 
         this.setEditable(false);
 
