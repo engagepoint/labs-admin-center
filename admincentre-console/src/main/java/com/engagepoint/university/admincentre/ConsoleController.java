@@ -147,7 +147,7 @@ public class ConsoleController {
 
     }
 
-    public void refresh(){
+    public void refresh() {
         currentPreferences = new NodePreferences(null, "");
     }
 
@@ -175,6 +175,29 @@ public class ConsoleController {
             case PUTRECEIVED:
                 SynchMaster.getInstance().putAllReceived();
                 break;
+            case RECEIVEUPDATES:
+                System.out.println("Receive updates status: " + SynchMaster.getInstance().isReceiveUpdates());
+                break;
+            case STATUS:
+
+                System.out.println("-----------Synch status-----------"
+                        + "\nChannel name......" + SynchMaster.getInstance().getChannelName()
+                        + "\nConnected........." + SynchMaster.getInstance().isConnected());
+                if (SynchMaster.getInstance().isConnected()) {
+                    System.out.print("Cluster name......" + SynchMaster.getInstance().getClusterName()
+                            + "\nAddresses:		");
+                    for (Iterator<Address> i = SynchMaster.getInstance().getAddressList().iterator(); i.hasNext(); ) {
+                        String name = SynchMaster.getInstance().getChannelName(i.next());
+                        if (i.hasNext())
+                            System.out.print(name + ", ");
+                        else
+                            System.out.println(name + ".");
+                    }
+                }
+                break;
+            case NAME:
+                System.out.println("Channel name: " + SynchMaster.getInstance().getChannelName());
+                break;
             default: //TODO
         }
     }
@@ -188,6 +211,14 @@ public class ConsoleController {
                 boolean value = Boolean.parseBoolean(args[1]);
                 SynchMaster.getInstance().setReceiveUpdates(value);
                 break;
+            case NAME:
+                if (!SynchMaster.getInstance().isConnected()) {
+                    SynchMaster.getInstance().setChannelName(args[1]);
+                    System.out.println("You have set channel name: " + SynchMaster.getInstance().getChannelName());
+                } else {
+                    System.out.println("Impossible to set channel name when channel is connected");
+                }
+                break;
             default: //TODO
         }
     }
@@ -195,7 +226,6 @@ public class ConsoleController {
     public AdditionalCommands getEnumElement(String... args) {
         return AdditionalCommands.valueOf(args[0].toUpperCase().replaceFirst("-", ""));
     }
-
 
 
     public void checkCreateCommand(String[] arguments) throws WrongInputArgException {

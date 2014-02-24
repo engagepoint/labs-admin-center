@@ -87,7 +87,7 @@ public final class Main {
             checkCommand(arguments);
         } catch (WrongInputArgException e) {
             // TODO Auto-generated catch block
-            LOGGER.warning("analyzeLine: message = " + e.getMessage());
+            LOGGER.warn("analyzeLine: message = " + e.getMessage());
         }
     }
 

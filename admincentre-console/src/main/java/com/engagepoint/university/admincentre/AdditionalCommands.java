@@ -7,7 +7,9 @@ public enum AdditionalCommands {
     DISCONECT("-disconnect"),
     OBTAIN("-obtain"),
     PUTRECEIVED("-putreceived"),
-    RECEIVEUPDATES("-receiveupdates");
+    RECEIVEUPDATES("-receiveupdates"),
+    STATUS("-status"),
+    NAME("-name");
 
     private String command;
 
