@@ -1,6 +1,7 @@
 package com.engagepoint.university.admincentre;
 
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -86,9 +87,9 @@ public class ConsoleController {
 
     }
 
-    public boolean selectNode(String... args) {
-        if (args.length == 2) {
-            this.currentPreferences = currentPreferences.node(args[1]);
+    public boolean selectNode(ConsoleInputString cis) {
+        if (cis.getLength() == 2) {
+            this.currentPreferences = currentPreferences.node(cis.getSecondArg());
             displayNodes(currentPreferences);
             return true;
         }
@@ -98,7 +99,7 @@ public class ConsoleController {
 
     public void createNode(String nodeName) {
         if (nameValidation(nodeName)) {
-            String newPath = (currentPreferences.absolutePath().equals("/") ? "/" + nodeName
+            String newPath = (("/").equals(currentPreferences.absolutePath()) ? "/" + nodeName
                     : currentPreferences.absolutePath() + "/" + nodeName);
             currentPreferences.node(newPath);
             currentPreferences.node(currentPreferences.absolutePath());
@@ -148,16 +149,17 @@ public class ConsoleController {
     }
 
 
-    public void synch(String... args) {
-        if (args.length == 1) {
-            synchArgLengthOneElement(args);
-        } else if (args.length == 2) {
-            synchArgLengthTwoElements(args);
+    public void synch(ConsoleInputString cis) {
+        int length =cis.getLength();
+        if (length == 1) {
+            synchArgLengthOneElement(cis);
+        } else if (length == 2) {
+            synchArgLengthTwoElements(cis);
         }
     }
 
-    public void synchArgLengthOneElement(String... args) {
-        switch (getEnumElement(args)) {
+    public void synchArgLengthOneElement(ConsoleInputString cis) {
+        switch (getEnumElement(cis)) {
             case CONNECT:
                 System.out.println("Please, type the name of the cluster you want to connect");
                 break;
@@ -202,18 +204,18 @@ public class ConsoleController {
         }
     }
 
-    public void synchArgLengthTwoElements(String... args) {
-        switch (getEnumElement(args)) {
+    public void synchArgLengthTwoElements(ConsoleInputString cis) {
+        switch (getEnumElement(cis)) {
             case CONNECT:
-                SynchMaster.getInstance().connect(args[1]);
+                SynchMaster.getInstance().connect(cis.getSecondArg());
                 break;
             case RECEIVEUPDATES:
-                boolean value = Boolean.parseBoolean(args[1]);
+                boolean value = Boolean.parseBoolean(cis.getSecondArg());
                 SynchMaster.getInstance().setReceiveUpdates(value);
                 break;
             case NAME:
                 if (!SynchMaster.getInstance().isConnected()) {
-                    SynchMaster.getInstance().setChannelName(args[1]);
+                    SynchMaster.getInstance().setChannelName(cis.getSecondArg());
                     System.out.println("You have set channel name: " + SynchMaster.getInstance().getChannelName());
                 } else {
                     System.out.println("Impossible to set channel name when channel is connected");
@@ -223,16 +225,17 @@ public class ConsoleController {
         }
     }
 
-    public AdditionalCommands getEnumElement(String... args) {
-        return AdditionalCommands.valueOf(args[0].toUpperCase().replaceFirst("-", ""));
+    public AdditionalCommands getEnumElement(ConsoleInputString cis) {
+        return AdditionalCommands.valueOf(cis.getFifthArg().toUpperCase(Locale.US).replaceFirst("-", ""));
     }
 
 
-    public void checkCreateCommand(String[] arguments) throws WrongInputArgException {
-        if (AdditionalCommands.NODE.getCommand().equals(arguments[1]) && (arguments.length == 3)) {
-            createNode(arguments[2]);
-        } else if (AdditionalCommands.KEY.getCommand().equals(arguments[1]) && (arguments.length == 5)) {
-            createKey(arguments[2], arguments[3], arguments[4]);
+    public void checkCreateCommand(ConsoleInputString cis) throws WrongInputArgException {
+        int length = cis.getLength();
+        if (AdditionalCommands.NODE.getCommand().equals(cis.getSecondArg()) && (length == 3)) {
+            createNode(cis.getThirdArg());
+        } else if (AdditionalCommands.KEY.getCommand().equals(cis.getSecondArg()) && (length == 5)) {
+            createKey(cis.getThirdArg(), cis.getFourthArg(), cis.getFirstArg());
         } else {
             throw new WrongInputArgException();
         }
