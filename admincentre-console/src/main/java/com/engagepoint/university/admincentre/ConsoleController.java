@@ -66,10 +66,6 @@ public class ConsoleController {
         }
     }
 
-    public void showVersion() {
-        System.out.println("Current application version is " + 1.0);
-    }
-
     private void displayKeys(Preferences preferance) {
         String[] keys;
         try {
@@ -179,26 +175,30 @@ public class ConsoleController {
                 System.out.println("Receive updates status: " + SynchMaster.getInstance().isReceiveUpdates());
                 break;
             case STATUS:
-
-                System.out.println("-----------Synch status-----------"
-                        + "\nChannel name......" + SynchMaster.getInstance().getChannelName()
-                        + "\nConnected........." + SynchMaster.getInstance().isConnected());
-                if (SynchMaster.getInstance().isConnected()) {
-                    System.out.print("Cluster name......" + SynchMaster.getInstance().getClusterName()
-                            + "\nAddresses:		");
-                    for (Iterator<Address> i = SynchMaster.getInstance().getAddressList().iterator(); i.hasNext(); ) {
-                        String name = SynchMaster.getInstance().getChannelName(i.next());
-                        if (i.hasNext())
-                            System.out.print(name + ", ");
-                        else
-                            System.out.println(name + ".");
-                    }
-                }
+                synchSTATUS();
                 break;
             case NAME:
                 System.out.println("Channel name: " + SynchMaster.getInstance().getChannelName());
                 break;
             default: //TODO
+        }
+    }
+
+    private void synchSTATUS() {
+        System.out.println("-----------Synch status-----------"
+                + "\nChannel name......" + SynchMaster.getInstance().getChannelName()
+                + "\nConnected........." + SynchMaster.getInstance().isConnected());
+        if (SynchMaster.getInstance().isConnected()) {
+            System.out.print("Cluster name......" + SynchMaster.getInstance().getClusterName()
+                    + "\nAddresses:		");
+            for (Iterator<Address> i = SynchMaster.getInstance().getAddressList().iterator(); i.hasNext(); ) {
+                String name = SynchMaster.getInstance().getChannelName(i.next());
+                if (i.hasNext()) {
+                    System.out.print(name + ", ");
+                } else {
+                    System.out.println(name + ".");
+                }
+            }
         }
     }
 
