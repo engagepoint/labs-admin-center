@@ -61,7 +61,7 @@ public final class Main {
 
             while ((line = br.readLine()) != null) {
                 if (Commands.EXIT.getName().equals(line)) {
-                	SynchMaster.getInstance().close();		//close channel before exit
+                    SynchMaster.getInstance().close();        //close channel before exit
                     break;
                 }
                 analyzeLine(line);
@@ -87,56 +87,45 @@ public final class Main {
             checkCommand(arguments);
         } catch (WrongInputArgException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOGGER.warn("analyzeLine: message = " + e.getMessage());
         }
     }
 
-    private static void checkCommand(String[] arguments) throws WrongInputArgException {
+    private static void checkCommand(String... arguments) throws WrongInputArgException {
         try {
             switch (Commands.valueOf(arguments[0].toUpperCase().replaceFirst("-", ""))) {
-            case VIEW:
-                CONSOLE_CONTROLLER.displayNodes(CONSOLE_CONTROLLER.getCurrentPreferences());
-                break;
-            case HELP:
-                CONSOLE_CONTROLLER.showHelp();
-                break;
-            case VERSION:
-                CONSOLE_CONTROLLER.showVersion();
-                break;
-            case CREATE:
-                if ("-node".equals(arguments[1]) && (arguments.length == 3)) {
-                    CONSOLE_CONTROLLER.createNode(arguments[2]);
-                } else if ("-key".equals(arguments[1]) && (arguments.length == 5)) {
-                    CONSOLE_CONTROLLER.createKey(arguments[2], arguments[3], arguments[4]);
-                } else {
-                    throw new WrongInputArgException();
-                }
-                break;
-            case REMOVE:
-                // TODO add remove functional
-                break;
-            case EDIT:
-                // TODO add edit functional
-                break;
-            case SELECT:
-                if (arguments.length == 2) {
-                    CONSOLE_CONTROLLER.selectNode(arguments[1]);
-                }
-                break;
-            case SYNCH:
-            	if(arguments.length == 2){
-            		CONSOLE_CONTROLLER.synch(arguments[1]);
-            	}
-            	if(arguments.length == 3){
-            		CONSOLE_CONTROLLER.synch(arguments[1], arguments[2]);
-            	}
-            	break;
-            case REFRESH:
-            	CONSOLE_CONTROLLER.refresh();
-            	break;
+                case VIEW:
+                    CONSOLE_CONTROLLER.displayNodes(CONSOLE_CONTROLLER.getCurrentPreferences());
+                    break;
+                case HELP:
+                    CONSOLE_CONTROLLER.showHelp();
+                    break;
+                case VERSION:
+                    CONSOLE_CONTROLLER.showVersion();
+                    break;
+                case CREATE:
+                    CONSOLE_CONTROLLER.checkCreateCommand(arguments);
+                    break;
+                case REMOVE:
+                    // TODO add remove functional
+                    break;
+                case EDIT:
+                    // TODO add edit functional
+                    break;
+                case SELECT:
+                    CONSOLE_CONTROLLER.selectNode(arguments);
+                    break;
+                case SYNCH:
+                    CONSOLE_CONTROLLER.synch(arguments);
+                    break;
+                case REFRESH:
+                    CONSOLE_CONTROLLER.refresh();
+                    break;
+                default:
+                    CONSOLE_CONTROLLER.showHelp();
             }
         } catch (IllegalArgumentException e) {
-            throw new WrongInputArgException();
+            throw new WrongInputArgException(e);
         }
     }
 }

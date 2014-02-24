@@ -14,4 +14,8 @@ public class WrongInputArgException  extends Exception{
     public WrongInputArgException(String message, Throwable cause) {
         super(message, cause);
     }
+
+    public WrongInputArgException(IllegalArgumentException e) {
+        super(e);
+    }
 }
