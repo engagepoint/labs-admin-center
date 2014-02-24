@@ -269,8 +269,12 @@ public final class SynchMaster {
 			syso("NO data received");
 			return;
 		}
-		abstractDAO.clear();
-		abstractDAO.putAll(receivedcacheData);
+        try {
+            abstractDAO.clear();
+            abstractDAO.putAll(receivedcacheData);
+        } catch (IOException e) {
+            logger.warn(e.getMessage());
+        }
 
 	}
 

@@ -38,17 +38,15 @@ public abstract class AbstractDAO<T extends AbstractEntity>
     public void create(T newInstance) throws IOException {
         try {
             getCache(CACHE_CONFIG, USED_CACHE);
-
-            if (!cache.containsKey(newInstance.getId())) {
-                cache.put(newInstance.getId(), newInstance);
+            String instanceId = newInstance.getId();
+            if (!cache.containsKey(instanceId)) {
+                cache.put(instanceId, newInstance);
                 setChanged();
                 notifyObservers(new CRUDPayload(CRUDOperation.CREATE, newInstance));
             } else {
-                throw new Exception("This entity already exists");
+                throw new IOException("This entity already exists"+newInstance.getName());
             }
-        } catch (Exception e) {
-            throw new IOException("This entity already exists");
-        }
+       }
  finally {
             stopCacheManager();
         }
@@ -108,7 +106,7 @@ public abstract class AbstractDAO<T extends AbstractEntity>
             QueryFactory qf = searchManager.getQueryFactory();
             Query query = qf.from(type).having("name").like("*" + name + "*").toBuilder().build();
             List<T> resultList = query.list();
-            if (resultList.size() != 0) {
+            if (!resultList.isEmpty()) {
                 return resultList;
             }
             return new LinkedList<T>();
@@ -142,12 +140,12 @@ public abstract class AbstractDAO<T extends AbstractEntity>
      * Puts new received cache
      * @throws UnsupportedOperationException if could not put all
      */
-    public void putAll(Map<String, T> cacheData){
+    public void putAll(Map<String, T> cacheData) throws IOException {
     	try {
             getCache(CACHE_CONFIG, USED_CACHE);
 			cache.putAll(cacheData);
 		} catch (IOException e) {
-			throw new UnsupportedOperationException("Could not put all");
+            throw new IOException("Could not put all, using cache: " + cache.getName(), e);
 		} finally {
 			stopCacheManager();
 		}
@@ -157,12 +155,12 @@ public abstract class AbstractDAO<T extends AbstractEntity>
      * Clears cache
      * @throws UnsupportedOperationException if cache could not be clear
      */
-    public void clear(){
+    public void clear() throws IOException {
     	try {
             getCache(CACHE_CONFIG, USED_CACHE);
 			cache.clear();
 		} catch (IOException e) {
-			throw new UnsupportedOperationException("Cache could not be clear");
+            throw new IOException("Cache could not be cleared", e);
 		} finally {
 			stopCacheManager();
 		}
