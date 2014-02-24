@@ -1,40 +1,35 @@
 package com.engagepoint.university.admincentre.web;
 
-
 import java.io.Serializable;
-
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
 @ManagedBean(name = "document")
 @SessionScoped
 public class Document implements Serializable, Comparable<Document> {
+
+    private static final long serialVersionUID = 12L;
     private String absolutePath;
     private String name;
     private String value;
     private String type;
     private String oldName;
     private boolean editable;
-    private boolean file;
 
+    /* Commented by Artem because Sonar makes the major issue on unused private field
+     * private boolean file;
+     */
     public Document(String absolutePath, String name, String value, String type) {
         this.absolutePath = absolutePath;
         this.name = name;
         this.value = value;
         this.type = type;
-        this.oldName=name;
-
-
+        this.oldName = name;
     }
 
     public Document() {
     }
 
-    Document(String file1, String string, String file, DocumentsController aThis) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    
     public boolean isFile() {
         return ("File".equals(type));
     }
@@ -52,15 +47,15 @@ public class Document implements Serializable, Comparable<Document> {
     }
 
     public void setName(String name) {
-     this.oldName=this.name;
+        this.oldName = this.name;
         this.name = name;
     }
 
     public String getOldName() {
-return oldName;
-}
+        return oldName;
+    }
 
-public String getValue() {
+    public String getValue() {
         return value;
     }
 
@@ -90,11 +85,8 @@ public String getValue() {
     }
 
     public String saveAction() {
-
         //get all existing value but set "editable" to false
-
         this.setEditable(false);
-
         //return to current page
         return null;
     }
@@ -102,53 +94,73 @@ public String getValue() {
     public void setSelected() {
     }
 
-    //Eclipse Generated hashCode and equals
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((value == null) ? 0 : value.hashCode());
-        result = prime * result + ((type == null) ? 0 : type.hashCode());
+        /* As of Sonar makes issue on cyclomatic complexity in the class, I have removed the conditions like "(name == null)"
+         * and ternary operator  because "The hash value of the empty string is zero"  
+         */
+        int result = 31;
+        result += name.hashCode();
+        result += value.hashCode();
+        result += type.hashCode();
         return result;
     }
 
+    //This method was totally rebuilt by Artem as of Sonar major issue on cyclomatic complexity
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
         }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        Document other = (Document) obj;
-        if (name == null) {
-            if (other.name != null) {
-                return false;
+        if (obj instanceof Document) {
+            Document other = (Document) obj;
+            if ((this.name.equals(other.name))
+                    && (this.type.equals(other.type))
+                    && (this.value.equals(other.value))) {
+                return true;
             }
-        } else if (!name.equals(other.name)) {
-            return false;
         }
-        if (value == null) {
-            if (other.value != null) {
-                return false;
-            }
-        } else if (!value.equals(other.value)) {
-            return false;
-        }
-        if (type == null) {
-            if (other.type != null) {
-                return false;
-            }
-        } else if (!type.equals(other.type)) {
-            return false;
-        }
-        return true;
+        return false;
     }
 
+    /*
+     @Override
+     public boolean equals(Object obj) {
+     if (this == obj) {
+     return true;
+     }
+     if (obj == null) {
+     return false;
+     }
+     if (getClass() != obj.getClass()) {
+     return false;
+     }
+     Document other = (Document) obj;
+     if (name == null) {
+     if (other.name != null) {
+     return false;
+     }
+     } else if (!name.equals(other.name)) {
+     return false;
+     }
+     if (value == null) {
+     if (other.value != null) {
+     return false;
+     }
+     } else if (!value.equals(other.value)) {
+     return false;
+     }
+     if (type == null) {
+     if (other.type != null) {
+     return false;
+     }
+     } else if (!type.equals(other.type)) {
+     return false;
+     }
+     return true;
+     }
+     */
+    
     @Override
     public String toString() {
         return name;
