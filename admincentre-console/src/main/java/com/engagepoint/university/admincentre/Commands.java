@@ -6,8 +6,7 @@ public enum Commands {
    
     EXIT("-exit", "Stop application"),
     HELP("-help", "Show list of all commands"),
-    VERSION("-version", "Display version information"),
- CREATE("-create",
+    CREATE("-create",
             "Allows you create new Node or Key"),
  REMOVE("-remove", "--------------"),
     EDIT("-edit", "-------------"),
