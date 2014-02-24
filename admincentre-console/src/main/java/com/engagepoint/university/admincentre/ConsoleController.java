@@ -67,6 +67,7 @@ public class ConsoleController {
         }
     }
 
+
     private void displayKeys(Preferences preferance) {
         String[] keys;
         try {
