@@ -99,10 +99,6 @@ public final class Main {
                 case HELP:
                     CONSOLE_CONTROLLER.showHelp();
                     break;
-            case VERSION:
-                CONSOLE_CONTROLLER.showVersion();
-                break;
-
                 case CREATE:
                     CONSOLE_CONTROLLER.checkCreateCommand(arguments);
                     break;
