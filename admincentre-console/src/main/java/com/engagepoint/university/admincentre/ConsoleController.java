@@ -1,17 +1,19 @@
 package com.engagepoint.university.admincentre;
 
+import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import com.engagepoint.university.admincentre.entity.KeyType;
+import com.engagepoint.university.admincentre.exception.WrongInputArgException;
 import com.engagepoint.university.admincentre.preferences.NodePreferences;
 import com.engagepoint.university.admincentre.synchronization.SynchMaster;
 
 
 public class ConsoleController {
 
-
-    private final static StringBuilder ALIGN_STRING = new StringBuilder("---");
+    private static final Logger LOGGER = Logger.getLogger(ConsoleController.class.getName());
+    private static final StringBuilder ALIGN_STRING = new StringBuilder("---");
     private Preferences currentPreferences = new NodePreferences(null, "");
 
     public Preferences getCurrentPreferences() {
@@ -49,16 +51,15 @@ public class ConsoleController {
                 ALIGN_STRING.insert(0, "   ");
                 System.out.println(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3) + "|");
                 System.out.println(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3) + "|");
-
-                for (int i = 0; i < preference.childrenNames().length; i++) {
-                    displayNodes(preference.node(preference.childrenNames()[i]));
+                String[] preferenceChildrenNames = preference.childrenNames();
+                for (int i = 0; i < preferenceChildrenNames.length; i++) {
+                    displayNodes(preference.node(preferenceChildrenNames[i]));
                 }
                 ALIGN_STRING.delete(0, 3);
 
             }
         } catch (BackingStoreException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOGGER.warning("displayNodes: message" + e.getMessage());
         }
     }
 
@@ -81,16 +82,18 @@ public class ConsoleController {
                 System.out.println();
             }
         } catch (BackingStoreException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOGGER.warning("displayKeys: message" + e.getMessage());
         }
 
     }
 
-    public boolean selectNode(String nodeId) {
-        this.currentPreferences = currentPreferences.node(nodeId);
-        displayNodes(currentPreferences);
-        return true;
+    public boolean selectNode(String... args) {
+        if (args.length == 2) {
+            this.currentPreferences = currentPreferences.node(args[1]);
+            displayNodes(currentPreferences);
+            return true;
+        }
+        return false;
 
     }
 
@@ -122,9 +125,8 @@ public class ConsoleController {
 
     /**
      * Allows to verify entered key type from console
-     * 
-     * @param keyType
-     *            String param which comes from console
+     *
+     * @param keyType String param which comes from console
      * @return true if key type exist in enum KeyType
      */
     public boolean keyTypeValidation(String keyType) {
@@ -142,28 +144,60 @@ public class ConsoleController {
 
     }
 
-    
-    public void synch(String... args){
-    	if(args.length == 1 && args[0].equals("-connect")){
-    		System.out.println("Please, type the name of the cluster you want to connect");
-    	}
-    	if(args.length == 2 && args[0].equals("-connect")){
-    		SynchMaster.getInstance().connect(args[1]);
-    	}
-    	if(args.length == 1 && args[0].equals("-disconnect")){
-    		SynchMaster.getInstance().disconnect();
-    		System.out.println("Disconnected.");
-    	}
-    	if(args.length == 1 && args[0].equals("-obtain")){
-    		SynchMaster.getInstance().obtainState();
-    		
-    	}
-    	if(args.length == 1 && args[0].equals("-putreceived")){
-    		SynchMaster.getInstance().putAllReceived();
-    	}
-    	if(args.length == 2 && args[0].equals("-receiveupdates")){
-    		boolean value = Boolean.parseBoolean(args[1]);
-    		SynchMaster.getInstance().setReceiveUpdates(value);
-    	}
+
+    public void synch(String... args) {
+        if (args.length == 1) {
+            synchArgLengthOneElement(args);
+        } else if (args.length == 2) {
+            synchArgLengthTwoElements(args);
+        }
+    }
+
+    public void synchArgLengthOneElement(String... args) {
+        switch (getEnumElement(args)) {
+            case CONNECT:
+                System.out.println("Please, type the name of the cluster you want to connect");
+                break;
+            case DISCONECT:
+                SynchMaster.getInstance().disconnect();
+                System.out.println("Disconnected.");
+                break;
+            case OBTAIN:
+                SynchMaster.getInstance().obtainState();
+                break;
+            case PUTRECEIVED:
+                SynchMaster.getInstance().putAllReceived();
+                break;
+            default: //TODO
+        }
+    }
+
+    public void synchArgLengthTwoElements(String... args) {
+        switch (getEnumElement(args)) {
+            case CONNECT:
+                SynchMaster.getInstance().connect(args[1]);
+                break;
+            case RECEIVEUPDATES:
+                boolean value = Boolean.parseBoolean(args[1]);
+                SynchMaster.getInstance().setReceiveUpdates(value);
+                break;
+            default: //TODO
+        }
+    }
+
+    public AdditionalCommands getEnumElement(String... args) {
+        return AdditionalCommands.valueOf(args[0].toUpperCase().replaceFirst("-", ""));
+    }
+
+
+
+    public void checkCreateCommand(String[] arguments) throws WrongInputArgException {
+        if (AdditionalCommands.NODE.getCommand().equals(arguments[1]) && (arguments.length == 3)) {
+            createNode(arguments[2]);
+        } else if (AdditionalCommands.KEY.getCommand().equals(arguments[1]) && (arguments.length == 5)) {
+            createKey(arguments[2], arguments[3], arguments[4]);
+        } else {
+            throw new WrongInputArgException();
+        }
     }
 }
