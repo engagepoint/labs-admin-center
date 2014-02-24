@@ -30,7 +30,8 @@
         <module>admincentre-ejb</module>
         <module>admincentre-web</module>
         <module>admincentre-ear</module>
-        <module>admincentre-console</module>                
+        <module>admincentre-console</module>
+        <module>admincentre-acceptancetest</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
