@@ -66,6 +66,10 @@ public class ConsoleController {
         }
     }
 
+    public void showVersion() {
+        System.out.println("Current application version is " + 1.0);
+    }
+
     private void displayKeys(Preferences preferance) {
         String[] keys;
         try {

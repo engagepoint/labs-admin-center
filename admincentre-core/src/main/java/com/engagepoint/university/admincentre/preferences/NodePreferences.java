@@ -1,6 +1,7 @@
 package com.engagepoint.university.admincentre.preferences;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.EventObject;
 import java.util.HashMap;
@@ -1841,17 +1842,6 @@ public class NodePreferences extends Preferences {
 
     }
 
-    @Override
-    public void exportNode(OutputStream os) throws IOException, BackingStoreException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void exportSubtree(OutputStream os) throws IOException, BackingStoreException {
-        // TODO Auto-generated method stub
-
-    }
 
     public void changeNodeName(String name) {
         String oldId = absolutePath;
@@ -1920,39 +1910,49 @@ public class NodePreferences extends Preferences {
             }
         }
     }
+    
     /**
-     * Implements the <tt>exportNode</tt> method as per the specification in
-     * {@link Preferences#exportNode(OutputStream)}.
+     * Method exports Node with all it SubNodes
      * 
      * @param os
-     *            the output stream on which to emit the XML document.
+     *            the output stream on which to emit the ZIP document.
      * @throws IOException
      *             if writing to the specified output stream results in an
      *             <tt>IOException</tt>.
      * @throws BackingStoreException
      *             if preference data cannot be read from backing store.
      */
-    // public void exportNode(OutputStream os)
-    // throws IOException, BackingStoreException
-    // {
-    // XmlSupport.export(os, this, false);
-    // }
+    public void exportNode(OutputStream os) throws IOException, BackingStoreException {
+        exportSubtree(os);
+    }
 
     /**
-     * Implements the <tt>exportSubtree</tt> method as per the specification in
-     * {@link Preferences#exportSubtree(OutputStream)}.
+     * Method exports Node with all it SubNodes
      * 
      * @param os
-     *            the output stream on which to emit the XML document.
+     *            the output stream on which to emit the ZIP document.
      * @throws IOException
      *             if writing to the specified output stream results in an
      *             <tt>IOException</tt>.
      * @throws BackingStoreException
      *             if preference data cannot be read from backing store.
      */
-    // public void exportSubtree(OutputStream os)
-    // throws IOException, BackingStoreException
-    // {
-    // XmlSupport.export(os, this, true);
-    // }
+    public void exportSubtree(OutputStream os) throws IOException, BackingStoreException {
+        new ZipFiles().exportZipPreferences(this, os);
+    }
+
+    /**
+     * Method imports Node with all it SubNodes to current node
+     * 
+     * @param is
+     *            the input stream on which to emit the ZIP document.
+     * @throws IOException
+     *             if writing to the specified output stream results in an
+     *             <tt>IOException</tt>.
+     * @throws BackingStoreException
+     *             if preference data cannot be read from backing store.
+     */
+    public void importNode(InputStream is) throws IOException, BackingStoreException {
+        new ZipFiles().importZipPreferences(is, absolutePath);
+    }
 }

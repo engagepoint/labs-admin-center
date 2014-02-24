@@ -8,7 +8,6 @@ import java.io.InputStreamReader;
 //import java.util.logging.LogManager;
 //import java.util.logging.Logger;
 
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,6 +99,10 @@ public final class Main {
                 case HELP:
                     CONSOLE_CONTROLLER.showHelp();
                     break;
+            case VERSION:
+                CONSOLE_CONTROLLER.showVersion();
+                break;
+
                 case CREATE:
                     CONSOLE_CONTROLLER.checkCreateCommand(arguments);
                     break;
