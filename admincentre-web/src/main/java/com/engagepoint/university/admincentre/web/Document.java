@@ -16,14 +16,25 @@ public class Document implements Serializable, Comparable<Document> {
     private String oldName;
     private boolean editable;
     private boolean file;
+    private boolean directoryForAdding = false;
 
     public Document(String absolutePath, String name, String value, String type) {
         this.absolutePath = absolutePath;
         this.name = name;
         this.value = value;
         this.type = type;
-        this.oldName=name;
+        this.oldName = name;
+        this.file = "File".equals(type);
 
+
+    }
+     public Document(String absolutePath, String name, String value, String type, Boolean file) {
+        this.absolutePath = absolutePath;
+        this.name = name;
+        this.value = value;
+        this.type = type;
+        this.oldName = name;
+        this.file = file;
 
     }
 
@@ -32,6 +43,13 @@ public class Document implements Serializable, Comparable<Document> {
 
     Document(String file1, String string, String file, DocumentsController aThis) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public void setFile(boolean file) {
+        this.file = file;
+        if (file == true)
+            this.type = "File";
+        else this.type = "";
     }
 
     
@@ -101,6 +119,16 @@ public String getValue() {
 
     public void setSelected() {
     }
+
+    public boolean isDirectoryForAdding() {
+        return directoryForAdding;
+    }
+
+    public void setDirectoryForAdding(boolean directoryForAdding) {
+        this.directoryForAdding = directoryForAdding;
+    }
+    
+    
 
     //Eclipse Generated hashCode and equals
     @Override

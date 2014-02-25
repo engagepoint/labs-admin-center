@@ -27,7 +27,7 @@ public class DocumentsController implements Serializable {
     private TreeNode root;
     private Document selectedDoc = new Document();
     private TreeNode selectedNode;
-
+    private Document tempDoc = new Document(null,"","","");
     // @Inject
     // DataBean dataBean;
 
@@ -148,7 +148,7 @@ public class DocumentsController implements Serializable {
         }
     }
 
-    public void addNode() {
+  //  public void addNode() {
         // selectedNode = getNodeByDoc(selectedDoc.getName(), root);
         // selectedNode.toString();
         //
@@ -166,8 +166,50 @@ public class DocumentsController implements Serializable {
         // newNode.setSelected(true);
         // Document doc = (Document) newNode.getData();
         // doc.setEditable(true);
+  //  }
+
+        private TreeNode returnDirectoryForAdding(TreeNode rootNode){
+  
+        
+        for (TreeNode treeNode : rootNode.getChildren()) {
+            if (((Document)treeNode.getData()).isDirectoryForAdding()) {
+                selectedNode = treeNode;
+            }
+            returnDirectoryForAdding(treeNode);
+        }
+        return selectedNode;
+        
+    }
+    
+    public void addNode(){
+        selectedDoc.setDirectoryForAdding(true);
+        String newName = tempDoc.getName();
+        String selectedAbsolutePath =    selectedDoc.getAbsolutePath();           
+        
+        String path = "/".equals(selectedAbsolutePath)? "/"+newName : selectedAbsolutePath+"/"+newName;
+        new NodePreferences(null,"").node(path);
+        TreeNode newNode = new DefaultTreeNode(new Document(path, newName, tempDoc.getValue(), tempDoc.getType()), returnDirectoryForAdding(root));
+        ((Document)newNode.getData()).setFile(tempDoc.isFile());
+        tempDoc = new Document(null,"","","");
+        selectedDoc.setDirectoryForAdding(false);
+    }
+    
+    public void resetTempDoc(){
+        tempDoc = new Document(null,"","","");
     }
 
+    public Document getTempDoc() {
+        return tempDoc;
+    }
+
+    public void setTempDoc(Document tempDoc) {
+        this.tempDoc = tempDoc;
+    }
+    
+    
+    
+    
+    
     public TreeNode getNodeByDoc(String name, TreeNode root) {
         for (TreeNode treeNode : root.getChildren()) {
             Document document = (Document) treeNode.getData();

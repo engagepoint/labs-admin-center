@@ -18,7 +18,38 @@
 
                 <p:column style="width:32%">
                     <f:facet name="header">File</f:facet>
-                    <h:outputText value="#{doc.name}" />
+                    <h:outputText value="#{doc.name}        " />
+                    <p:commandButton update="treeTable" rendered="#{doc.file}" oncomplete="addDlg.show()"  title="Add new node" styleClass="ui-button-icon-only secondary small" icon="ui-icon-add" >  
+                        <f:setPropertyActionListener value="#{doc}"   
+                                                     target="#{documentsController.selectedDoc}" />  
+                    </p:commandButton> 
+                    
+                     <p:dialog id="addDialog" header="Add Node" closable="true" showEffect="fade" widgetVar="addDlg" modal="true">  
+                         <uib:gridContainer id="container" >
+                                <p:selectOneRadio id="addRadio" value="#{documentsController.tempDoc.file}" >  
+                                    <f:selectItem itemLabel="File" itemValue="true" />  
+                                    <f:selectItem itemLabel="Key" itemValue="false" />
+                                    <p:ajax update="container" event="change"/>
+                                </p:selectOneRadio>  <br/>
+
+                                <h:outputLabel value="Name: " />  
+                                <p:inputText  value="#{documentsController.tempDoc.name}" style="font-weight:bold" />  
+
+                                <h:outputLabel  value="Value: "  />  
+                                <p:inputText  disabled="#{documentsController.tempDoc.file}" value="#{documentsController.tempDoc.value}"  style="font-weight:bold" />  
+
+                                <h:outputLabel value="Type "/>  
+                                <p:inputText  value="#{documentsController.tempDoc.type}" disabled="#{documentsController.tempDoc.file}" style="font-weight:bold" />  
+                                <p:commandButton value="Ok" update="treeTable" actionListener="#{documentsController.addNode()}" oncomplete="addDlg.hide()"/>
+                                <p:commandButton value="Cancel" update="treeTable" actionListener="#{documentsController.resetTempDoc()}" oncomplete="addDlg.hide()"/>
+                       
+
+
+                         </uib:gridContainer>            
+
+                     </p:dialog>
+
+                    
                 </p:column>
 
                 <p:column style="width:32%">
