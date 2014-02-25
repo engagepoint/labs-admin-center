@@ -37,6 +37,7 @@ public class ZipFiles {
 			// now zip files one by one
 			// create ZipOutputStream to write to the zip file
             OutputStream fos = new FileOutputStream(zipDirName);
+
             exportZipPreferences(rootPreferences, fos);
 		} catch (IOException e) {
 			e.printStackTrace();

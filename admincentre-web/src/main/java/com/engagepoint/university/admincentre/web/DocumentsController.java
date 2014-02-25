@@ -32,7 +32,7 @@ public class DocumentsController implements Serializable {
     private Document selectedDoc = new Document();
     private TreeNode selectedNode;
 
-    private Document tempDoc = new Document(null,"","","");
+    private Document tempDoc = new Document(null, "", "", "");
     // @Inject
     // DataBean dataBean;
 
@@ -40,7 +40,6 @@ public class DocumentsController implements Serializable {
 
     public DocumentsController() {
     }
-
 
 
     // @Inject
@@ -145,7 +144,7 @@ public class DocumentsController implements Serializable {
         }
     }
 
-  //  public void addNode() {
+    // public void addNode() {
         // selectedNode = getNodeByDoc(selectedDoc.getName(), root);
         // selectedNode.toString();
         //
@@ -163,36 +162,53 @@ public class DocumentsController implements Serializable {
         // newNode.setSelected(true);
         // Document doc = (Document) newNode.getData();
         // doc.setEditable(true);
-  //  }
+    // }
 
-        private TreeNode returnDirectoryForAdding(TreeNode rootNode){
-  
-        
+    private TreeNode returnDirectoryForAdding(TreeNode rootNode) {
+
         for (TreeNode treeNode : rootNode.getChildren()) {
-            if (((Document)treeNode.getData()).isDirectoryForAdding()) {
+            if (((Document) treeNode.getData()).isDirectoryForAdding()) {
                 selectedNode = treeNode;
             }
             returnDirectoryForAdding(treeNode);
         }
         return selectedNode;
-        
+
     }
-    
-    public void addNode(){
+
+    public void addNode() {
         selectedDoc.setDirectoryForAdding(true);
         String newName = tempDoc.getName();
-        String selectedAbsolutePath =    selectedDoc.getAbsolutePath();           
-        
-        String path = "/".equals(selectedAbsolutePath)? "/"+newName : selectedAbsolutePath+"/"+newName;
-        new NodePreferences(null,"").node(path);
-        TreeNode newNode = new DefaultTreeNode(new Document(path, newName, tempDoc.getValue(), tempDoc.getType()), returnDirectoryForAdding(root));
-        ((Document)newNode.getData()).setFile(tempDoc.isFile());
-        tempDoc = new Document(null,"","","");
+        String selectedAbsolutePath = selectedDoc.getAbsolutePath();
+        String path;
+
+        if (tempDoc.isFile()) {
+            path = "/".equals(selectedAbsolutePath) ? "/" + newName : selectedAbsolutePath + "/"
+                + newName;
+            new NodePreferences(null, "").node(path);
+            new DefaultTreeNode(
+                    new Document(path, newName, "-", "File", tempDoc.isFile()),
+                    returnDirectoryForAdding(root));
+        } else {
+            path = selectedAbsolutePath;
+            try {
+                ((NodePreferences) new NodePreferences(null, "").node(path)).put(newName,
+                        KeyType.valueOf(tempDoc.getType()), tempDoc.getValue());
+
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            new DefaultTreeNode(new Document(path, newName, tempDoc.getValue(),
+                    tempDoc.getType(), tempDoc.isFile()), returnDirectoryForAdding(root));
+            System.out.println();
+        }
+        tempDoc = new Document(null, "", "", "");
         selectedDoc.setDirectoryForAdding(false);
     }
-    
-    public void resetTempDoc(){
-        tempDoc = new Document(null,"","","");
+
+    public void resetTempDoc() {
+        tempDoc = new Document(null, "", "", "");
     }
 
     public Document getTempDoc() {
@@ -202,11 +218,7 @@ public class DocumentsController implements Serializable {
     public void setTempDoc(Document tempDoc) {
         this.tempDoc = tempDoc;
     }
-    
-    
-    
-    
-    
+
     public TreeNode getNodeByDoc(String name, TreeNode root) {
         for (TreeNode treeNode : root.getChildren()) {
             Document document = (Document) treeNode.getData();
@@ -248,32 +260,21 @@ public class DocumentsController implements Serializable {
         return keyvsvakueFolder;
     }
 
-    /* Commented by Artem because Sonar makes a critical issue " Dodgy - Dead
+    /*
+     * Commented by Artem because Sonar makes a critical issue " Dodgy - Dead
      * store to local variable " on this method at the point "Document document
      * = (Document) a.getData();" An author of the method should to complete
-     * refactoring
-    public List<TreeNode> buttonSearch(String keyName, String keyValue) {
-        if (keyValue != null) {
-            for (TreeNode a : searchByKeyValue(keyName, keyValue, root)) {
-                System.out.println("KeyName = " + keyName + "; KeyValue = " + keyValue
-                        + " lies in such folders: ");
-                Document document = (Document) a.getData();
-                System.out.println(document.getName());
-            }
-        } else {
-            if (keyName != null) {
-                searchByKeyName(keyName, root);
-                for (TreeNode a : keyFolder) {
-                    System.out.println("KeyName = " + keyName + "; KeyValue = " + keyValue
-                            + " lies in such folders: ");
-                    Document document = (Document) a.getData();
-                    System.out.println(document.getName());
-                }
-            }
-        }
-        return null;
-    }
-    **********/
+     * refactoring public List<TreeNode> buttonSearch(String keyName, String
+     * keyValue) { if (keyValue != null) { for (TreeNode a :
+     * searchByKeyValue(keyName, keyValue, root)) {
+     * System.out.println("KeyName = " + keyName + "; KeyValue = " + keyValue +
+     * " lies in such folders: "); Document document = (Document) a.getData();
+     * System.out.println(document.getName()); } } else { if (keyName != null) {
+     * searchByKeyName(keyName, root); for (TreeNode a : keyFolder) {
+     * System.out.println("KeyName = " + keyName + "; KeyValue = " + keyValue +
+     * " lies in such folders: "); Document document = (Document) a.getData();
+     * System.out.println(document.getName()); } } } return null; }********
+     */
     
     // public static void main(String[] args) {
     // DocumentsController documentsController = new DocumentsController();
