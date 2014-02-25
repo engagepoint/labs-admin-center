@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Locale;
 
+import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -13,13 +14,11 @@ import com.engagepoint.university.admincentre.entity.KeyType;
 import com.engagepoint.university.admincentre.exception.WrongInputArgException;
 import com.engagepoint.university.admincentre.preferences.NodePreferences;
 import com.engagepoint.university.admincentre.synchronization.SynchMaster;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 public class ConsoleController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConsoleController.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ConsoleController.class.getName());
     private static final StringBuilder ALIGN_STRING = new StringBuilder("---");
     private Preferences currentPreferences = new NodePreferences(null, "");
 
@@ -66,7 +65,7 @@ public class ConsoleController {
 
             }
         } catch (BackingStoreException e) {
-            LOGGER.warn("displayNodes: message" + e.getMessage());
+            LOGGER.warning("displayNodes: message" + e.getMessage());
         }
     }
 
@@ -86,7 +85,7 @@ public class ConsoleController {
                 LOGGER.info("");
             }
         } catch (BackingStoreException e) {
-            LOGGER.warn("displayKeys: message" + e.getMessage());
+            LOGGER.warning("displayKeys: message" + e.getMessage());
         }
 
     }
