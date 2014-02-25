@@ -16,7 +16,7 @@
             <groupId>com.engagepoint.university.admincentre</groupId>
             <artifactId>admincentre-core</artifactId>
             <version>${project.version}</version>
-        </dependency>		
+        </dependency>
         <!-- slf4j logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -78,7 +78,7 @@
             </plugin>
         </plugins>
         <resources>
-			
+
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>

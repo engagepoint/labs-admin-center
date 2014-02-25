@@ -1,51 +1,57 @@
 package com.engagepoint.university.admincentre.web;
 
+import com.engagepoint.university.admincentre.entity.Key;
+import com.engagepoint.university.admincentre.entity.KeyType;
+import com.engagepoint.university.admincentre.preferences.NodePreferences;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
-
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.event.ActionEvent;
-
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
-
-import com.engagepoint.university.admincentre.entity.Key;
-import com.engagepoint.university.admincentre.entity.KeyType;
-import com.engagepoint.university.admincentre.preferences.NodePreferences;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ManagedBean(name = "documentsController")
 @SessionScoped
 public class DocumentsController implements Serializable {
 
-    private static final Logger logger = Logger.getLogger(DocumentsController.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(DocumentsController.class.getName());
+    private static final long serialVersionUID = 123L;
+    private static List<TreeNode> keyFolder = new ArrayList<TreeNode>(100);
+    private static List<TreeNode> keyvsvakueFolder = new ArrayList<TreeNode>(100);
     private TreeNode root;
     private Document selectedDoc = new Document();
     private TreeNode selectedNode;
+
     private Document tempDoc = new Document(null,"","","");
     // @Inject
     // DataBean dataBean;
 
+    private String thisClassName = "DocumentsController";
+
+    public DocumentsController() {
+    }
+
+
+    // @Inject
     @PostConstruct
-    private void init() {
+    void init() {
         NodePreferences preferences = new NodePreferences(null, "");
         // TreeProperties treeProperties =
         // dataBean.getPreferencesTree(preferences);
         root = new DefaultTreeNode("root", null);
-
         buildTree(preferences, root);
-    }
+    };
 
     private void buildTree(NodePreferences preferences, TreeNode parentTreeNode) {
-
         TreeNode treeNode = new DefaultTreeNode(new Document(preferences.absolutePath(),
                 preferences.name(), "-", "File"), parentTreeNode);
-
         addLeaves(preferences, treeNode);
         try {
             if (preferences.childrenNames().length != 0) {
@@ -53,28 +59,23 @@ public class DocumentsController implements Serializable {
                     buildTree((NodePreferences) preferences.node(preferences.childrenNames()[i]),
                             treeNode);
                 }
-
             }
-        } catch (BackingStoreException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (BackingStoreException backingStoreException) {
+            logger.error(thisClassName, "private void buildTree(NodePreferences preferences, TreeNode parentTreeNode)", backingStoreException);
         }
-    };
+    }
 
     private void addLeaves(NodePreferences nodePreferences, TreeNode parentTreeNode) {
         try {
-
             for (int i = 0; i < nodePreferences.keys().length; i++) {
                 Key key = nodePreferences.getKey(nodePreferences.keys()[i]);
                 new DefaultTreeNode(new Document(nodePreferences.absolutePath(), key.getName(),
                         key.getValue(), key.getType().toString()), parentTreeNode);
             }
-        } catch (BackingStoreException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (BackingStoreException backingStoreException) {
+            logger.error(thisClassName, "private void addLeaves(NodePreferences nodePreferences, TreeNode parentTreeNode)", backingStoreException);
+        } catch (IOException ioException) {
+            logger.error(thisClassName, "private void addLeaves(NodePreferences nodePreferences, TreeNode parentTreeNode)", ioException);
         }
     }
 
@@ -84,10 +85,6 @@ public class DocumentsController implements Serializable {
 
     public void setSelectedNode(TreeNode selectedNode) {
         this.selectedNode = selectedNode;
-    }
-
-    public DocumentsController() {
-
     }
 
     public TreeNode getRoot() {
@@ -105,8 +102,7 @@ public class DocumentsController implements Serializable {
     public void editDocument(ActionEvent event) {
         if (selectedDoc != null) {
             String absPath = selectedDoc.getAbsolutePath();
-            NodePreferences currentNode = (NodePreferences) new NodePreferences(null, "")
-                    .node(absPath);
+            NodePreferences currentNode = (NodePreferences) new NodePreferences(null, "").node(absPath);
             if ("File".equals(selectedDoc.getType())) {
                 selectedNode = getNodeByDoc(selectedDoc.getName(), root);
                 selectedNode.getParent().getChildren().remove(selectedNode);
@@ -114,17 +110,14 @@ public class DocumentsController implements Serializable {
                 currentNode.changeNodeName(selectedDoc.getName());
                 selectedDoc.setAbsolutePath(currentNode.absolutePath());
                 buildTree(currentNode, selectedNode.getParent());
-
             } else {
                 try {
                     currentNode.put(
                             selectedDoc.getName(), KeyType.valueOf(selectedDoc.getType()),
                             selectedDoc.getValue());
                     currentNode.remove(selectedDoc.getOldName());
-
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                } catch (IOException iOException) {
+                    logger.error(thisClassName, "public void editDocument(ActionEvent event)", iOException);
                 }
             }
         }
@@ -132,19 +125,18 @@ public class DocumentsController implements Serializable {
 
     public void deleteNode() {
         if (selectedDoc != null) {
-        selectedNode = getNodeByDoc(selectedDoc.getName(), root);
-        selectedNode.getParent().getChildren().remove(selectedNode);
-        String absPath = selectedDoc.getAbsolutePath();
-        if ("File".equals(selectedDoc.getType())) {
-            try {
-                new NodePreferences(null, "").node(absPath).removeNode();
-            } catch (BackingStoreException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+            selectedNode = getNodeByDoc(selectedDoc.getName(), root);
+            selectedNode.getParent().getChildren().remove(selectedNode);
+            String absPath = selectedDoc.getAbsolutePath();
+            if ("File".equals(selectedDoc.getType())) {
+                try {
+                    new NodePreferences(null, "").node(absPath).removeNode();
+                } catch (BackingStoreException backingStoreException) {
+                    logger.error(thisClassName, "public void deleteNode()", backingStoreException);
+                }
+            } else {
+                new NodePreferences(null, "").node(absPath).remove(selectedDoc.getName());
             }
-        } else {
-            new NodePreferences(null, "").node(absPath).remove(selectedDoc.getName());
-        }
         }
     }
 
@@ -222,12 +214,8 @@ public class DocumentsController implements Serializable {
         return selectedNode;
     }
 
-    static List<TreeNode> keyFolder = new ArrayList<TreeNode>();
-    static List<TreeNode> keyvsvakueFolder = new ArrayList<TreeNode>();
-
     public List<TreeNode> searchByKeyName(String keyName, TreeNode node) {
         if (node.getChildren() != null) {
-
             for (TreeNode a : node.getChildren()) {
                 Document document = (Document) a.getData();
                 String documentName = document.getName();
@@ -238,7 +226,6 @@ public class DocumentsController implements Serializable {
             }
         }
         return keyFolder;
-
     }
 
     public List<TreeNode> searchByKeyValue(String keyName, String keyValue, TreeNode node) {
@@ -253,10 +240,13 @@ public class DocumentsController implements Serializable {
                 searchByKeyValue(keyName, keyValue, treeNode);
             }
         }
-
         return keyvsvakueFolder;
     }
 
+    /* Commented by Artem because Sonar makes a critical issue " Dodgy - Dead
+     * store to local variable " on this method at the point "Document document
+     * = (Document) a.getData();" An author of the method should to complete
+     * refactoring
     public List<TreeNode> buttonSearch(String keyName, String keyValue) {
         if (keyValue != null) {
             for (TreeNode a : searchByKeyValue(keyName, keyValue, root)) {
@@ -278,11 +268,10 @@ public class DocumentsController implements Serializable {
         }
         return null;
     }
-    //
-    //
+    **********/
+    
     // public static void main(String[] args) {
     // DocumentsController documentsController = new DocumentsController();
     // documentsController.buttonSearch("Key3.1.3.1", "0.12345");
     // }
-
 }

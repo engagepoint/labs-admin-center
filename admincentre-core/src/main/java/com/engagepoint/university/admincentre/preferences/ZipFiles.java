@@ -18,7 +18,7 @@ import com.engagepoint.university.admincentre.entity.Key;
 import com.engagepoint.university.admincentre.entity.KeyType;
 
 public class ZipFiles {
-	private static final String KEY_TYPE_SEPARATOR = "_";
+    private static final String KEY_TYPE_SEPARATOR = "-";
 	List<String> filesListInDir = new ArrayList<String>();
 
 	public static void main(String[] args) throws IOException {
