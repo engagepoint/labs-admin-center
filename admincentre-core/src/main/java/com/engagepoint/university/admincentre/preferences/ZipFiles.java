@@ -21,32 +21,15 @@ public class ZipFiles {
     private static final String KEY_TYPE_SEPARATOR = "-";
 	List<String> filesListInDir = new ArrayList<String>();
 
-	public static void main(String[] args) throws IOException {
-        String zipDirName = "D:/db.zip";
-        ZipFiles zipFiles = new ZipFiles();
-        // try {
-        // zipFiles.exportZipPreferences(new NodePreferences(null,
-        // "").node("/newNode/Node1"),
-        // zipDirName);
-        // } catch (BackingStoreException e) {
-        // // TODO Auto-generated catch block
-        // e.printStackTrace();
-        // }
-
-        zipFiles.importZipPreferences(zipDirName, "/newNode/Node1");
-
-		    
-		}
-	
-
-	/**
-	 * 
-	 * @param rootPreferences
-	 *            preference from which archive starts
-	 * @param zipDirName
-	 *            path and name of archive
-	 * @throws BackingStoreException
-	 */
+    /**
+     * Exporting preferences into zip archive
+     * 
+     * @param rootPreferences
+     *            preference from which archive starts
+     * @param zipDirName
+     *            path and name of archive
+     * @throws BackingStoreException
+     */
     public void exportZipPreferences(Preferences rootPreferences, String zipDirName)
 			throws BackingStoreException {
 		try {
