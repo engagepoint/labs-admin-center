@@ -1,8 +1,9 @@
 package com.engagepoint.university.admincentre;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Locale;
-import java.util.logging.Logger;
+
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -12,11 +13,13 @@ import com.engagepoint.university.admincentre.entity.KeyType;
 import com.engagepoint.university.admincentre.exception.WrongInputArgException;
 import com.engagepoint.university.admincentre.preferences.NodePreferences;
 import com.engagepoint.university.admincentre.synchronization.SynchMaster;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class ConsoleController {
 
-    private static final Logger LOGGER = Logger.getLogger(ConsoleController.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConsoleController.class.getName());
     private static final StringBuilder ALIGN_STRING = new StringBuilder("---");
     private Preferences currentPreferences = new NodePreferences(null, "");
 
@@ -29,13 +32,13 @@ public class ConsoleController {
     }
 
     public void showHelp() {
-        System.out.println("Options ...");
+        LOGGER.info("Options ...");
         for (Commands commands : Commands.values()) {
             String name = commands.getName();
             StringBuilder stringBuilder = buildAlignmentString(name.length());
-            System.out.println("  " + name + stringBuilder + commands.getDescription());
+            LOGGER.info("  " + name + stringBuilder + commands.getDescription());
         }
-        System.out.println();
+        LOGGER.info("");
     }
 
     private StringBuilder buildAlignmentString(int length) {
@@ -48,13 +51,13 @@ public class ConsoleController {
     }
 
     public void displayNodes(Preferences preference) {
-        System.out.println(ALIGN_STRING + " name = " + preference.name());
+        LOGGER.info(ALIGN_STRING + " name = " + preference.name());
         displayKeys(preference);
         try {
             if (preference.childrenNames().length != 0) {
                 ALIGN_STRING.insert(0, "   ");
-                System.out.println(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3) + "|");
-                System.out.println(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3) + "|");
+                LOGGER.info(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3) + "|");
+                LOGGER.info(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3) + "|");
                 String[] preferenceChildrenNames = preference.childrenNames();
                 for (int i = 0; i < preferenceChildrenNames.length; i++) {
                     displayNodes(preference.node(preferenceChildrenNames[i]));
@@ -63,7 +66,7 @@ public class ConsoleController {
 
             }
         } catch (BackingStoreException e) {
-            LOGGER.warning("displayNodes: message" + e.getMessage());
+            LOGGER.warn("displayNodes: message" + e.getMessage());
         }
     }
 
@@ -75,15 +78,15 @@ public class ConsoleController {
             if (keys.length != 0) {
                 for (int i = 0; i < keys.length; i++) {
 
-                    System.out.println(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3)
+                    LOGGER.info(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3)
                             + " Key = " + keys[i] + ";" + "Value = "
                             + preferance.get(keys[i], "value wasn`t found"));
 
                 }
-                System.out.println();
+                LOGGER.info("");
             }
         } catch (BackingStoreException e) {
-            LOGGER.warning("displayKeys: message" + e.getMessage());
+            LOGGER.warn("displayKeys: message" + e.getMessage());
         }
 
     }
@@ -120,15 +123,17 @@ public class ConsoleController {
         String path = cis.getSecondArg();
         try {
             new NodePreferences(null, "").exportNode(path);
-        } catch (Exception e) {
-            System.out.println("Can`t export using path" + path);
+        } catch (BackingStoreException e) {
+            LOGGER.info("Can`t export using path" + path);
+        } catch (IOException e) {
+            LOGGER.info("Can`t export using path" + path);
         }
     }
 
     public boolean nameValidation(String name) {
         boolean value = name.matches("^\\w+$");
         if (!value) {
-            System.out.println("You enter not valid name... Only a-zA-Z_0-9");
+            LOGGER.info("You enter not valid name... Only a-zA-Z_0-9");
         }
         return value;
     }
@@ -144,9 +149,9 @@ public class ConsoleController {
             KeyType.valueOf(keyType);
         } catch (IllegalArgumentException e) {
             KeyType[] keyTypeList = KeyType.values();
-            System.out.println("You enter wrong key type. Use one of the next types :");
+            LOGGER.info("You enter wrong key type. Use one of the next types :");
             for (KeyType keyTypeTemp : keyTypeList) {
-                System.out.println("  " + keyTypeTemp.toString());
+                LOGGER.info("  " + keyTypeTemp.toString());
             }
             return false;
         }
@@ -171,11 +176,11 @@ public class ConsoleController {
     public void synchArgLengthOneElement(ConsoleInputString cis) {
         switch (getEnumElement(cis)) {
             case CONNECT:
-                System.out.println("Please, type the name of the cluster you want to connect");
+                LOGGER.info("Please, type the name of the cluster you want to connect");
                 break;
             case DISCONNECT:
                 SynchMaster.getInstance().disconnect();
-                System.out.println("Disconnected.");
+                LOGGER.info("Disconnected.");
                 break;
             case OBTAIN:
                 SynchMaster.getInstance().obtainState();
@@ -184,31 +189,31 @@ public class ConsoleController {
                 SynchMaster.getInstance().putAllReceived();
                 break;
             case RECEIVEUPDATES:
-                System.out.println("Receive updates status: " + SynchMaster.getInstance().isReceiveUpdates());
+                LOGGER.info("Receive updates status: " + SynchMaster.getInstance().isReceiveUpdates());
                 break;
             case STATUS:
                 synchSTATUS();
                 break;
             case NAME:
-                System.out.println("Channel name: " + SynchMaster.getInstance().getChannelName());
+                LOGGER.info("Channel name: " + SynchMaster.getInstance().getChannelName());
                 break;
             default: //TODO
         }
     }
 
     private void synchSTATUS() {
-        System.out.println("-----------Synch status-----------"
+        LOGGER.info("-----------Synch status-----------"
                 + "\nChannel name......" + SynchMaster.getInstance().getChannelName()
                 + "\nConnected........." + SynchMaster.getInstance().isConnected());
         if (SynchMaster.getInstance().isConnected()) {
-            System.out.print("Cluster name......" + SynchMaster.getInstance().getClusterName()
+            LOGGER.info("Cluster name......" + SynchMaster.getInstance().getClusterName()
                     + "\nAddresses:		");
             for (Iterator<Address> i = SynchMaster.getInstance().getAddressList().iterator(); i.hasNext(); ) {
                 String name = SynchMaster.getInstance().getChannelName(i.next());
                 if (i.hasNext()) {
-                    System.out.print(name + ", ");
+                    LOGGER.info(name + ", ");
                 } else {
-                    System.out.println(name + ".");
+                    LOGGER.info(name + ".");
                 }
             }
         }
@@ -226,9 +231,9 @@ public class ConsoleController {
             case NAME:
                 if (!SynchMaster.getInstance().isConnected()) {
                     SynchMaster.getInstance().setChannelName(cis.getSecondArg());
-                    System.out.println("You have set channel name: " + SynchMaster.getInstance().getChannelName());
+                    LOGGER.info("You have set channel name: " + SynchMaster.getInstance().getChannelName());
                 } else {
-                    System.out.println("Impossible to set channel name when channel is connected");
+                    LOGGER.info("Impossible to set channel name when channel is connected");
                 }
                 break;
             default: //TODO
