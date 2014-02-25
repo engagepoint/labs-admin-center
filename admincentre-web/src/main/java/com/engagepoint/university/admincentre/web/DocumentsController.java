@@ -1,21 +1,24 @@
 package com.engagepoint.university.admincentre.web;
 
-import com.engagepoint.university.admincentre.entity.Key;
-import com.engagepoint.university.admincentre.entity.KeyType;
-import com.engagepoint.university.admincentre.preferences.NodePreferences;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
+
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.event.ActionEvent;
+
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.engagepoint.university.admincentre.entity.Key;
+import com.engagepoint.university.admincentre.entity.KeyType;
+import com.engagepoint.university.admincentre.preferences.NodePreferences;
 
 @ManagedBean(name = "documentsController")
 @SessionScoped
@@ -39,7 +42,9 @@ public class DocumentsController implements Serializable {
     }
 
 
+
     // @Inject
+
     @PostConstruct
     void init() {
         NodePreferences preferences = new NodePreferences(null, "");
