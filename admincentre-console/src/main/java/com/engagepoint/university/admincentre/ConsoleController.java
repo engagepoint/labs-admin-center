@@ -161,9 +161,9 @@ public class ConsoleController {
 
     public void synch(ConsoleInputString cis) {
         int length =cis.getLength();
-        if (length == 1) {
+        if (length == 2) {
             synchArgLengthOneElement(cis);
-        } else if (length == 2) {
+        } else if (length == 3) {
             synchArgLengthTwoElements(cis);
         }
     }
@@ -173,7 +173,7 @@ public class ConsoleController {
             case CONNECT:
                 System.out.println("Please, type the name of the cluster you want to connect");
                 break;
-            case DISCONECT:
+            case DISCONNECT:
                 SynchMaster.getInstance().disconnect();
                 System.out.println("Disconnected.");
                 break;
@@ -217,7 +217,7 @@ public class ConsoleController {
     public void synchArgLengthTwoElements(ConsoleInputString cis) {
         switch (getEnumElement(cis)) {
             case CONNECT:
-                SynchMaster.getInstance().connect(cis.getSecondArg());
+                SynchMaster.getInstance().connect(cis.getThirdArg());
                 break;
             case RECEIVEUPDATES:
                 boolean value = Boolean.parseBoolean(cis.getSecondArg());
@@ -236,7 +236,7 @@ public class ConsoleController {
     }
 
     public AdditionalCommands getEnumElement(ConsoleInputString cis) {
-        return AdditionalCommands.valueOf(cis.getFifthArg().toUpperCase(Locale.US).replaceFirst("-", ""));
+        return AdditionalCommands.valueOf(cis.getSecondArg().toUpperCase(Locale.US).replaceFirst("-", ""));
     }
 
 

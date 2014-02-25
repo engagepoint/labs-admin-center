@@ -4,7 +4,7 @@ public enum AdditionalCommands {
     NODE("-node"),
     KEY("-key"),
     CONNECT("-connect"),
-    DISCONECT("-disconnect"),
+    DISCONNECT("-disconnect"),
     OBTAIN("-obtain"),
     PUTRECEIVED("-putreceived"),
     RECEIVEUPDATES("-receiveupdates"),
