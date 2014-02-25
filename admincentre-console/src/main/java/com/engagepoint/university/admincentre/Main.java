@@ -104,12 +104,6 @@ public final class Main {
                 case CREATE:
                     CONSOLE_CONTROLLER.checkCreateCommand(cis);
                     break;
-                case REMOVE:
-                    // TODO add remove functional
-                    break;
-                case EDIT:
-                    // TODO add edit functional
-                    break;
                 case SELECT:
                     CONSOLE_CONTROLLER.selectNode(cis);
                     break;
