@@ -1,22 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <logger name="org.infinispan" level="INFO"/>
-    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>logout.log</file>
-        <append>true</append>
-        <encoder>
-            <pattern>%-4relative [%thread] %-5level %logger{35} - %msg%n</pattern>
-        </encoder>
-    </appender>
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <append>true</append>
         <encoder>
             <pattern>%msg%n</pattern>
         </encoder>
     </appender>
-    <root level="INFO">
-        <appender-ref ref="FILE"/>
-    </root>
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
     </root>

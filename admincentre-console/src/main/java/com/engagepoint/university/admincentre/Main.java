@@ -12,9 +12,10 @@ import java.util.logging.Logger;
 import com.engagepoint.university.admincentre.exception.WrongInputArgException;
 import com.engagepoint.university.admincentre.preferences.NodePreferences;
 import com.engagepoint.university.admincentre.synchronization.SynchMaster;
+import org.slf4j.LoggerFactory;
 
 public final class Main {
-    private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ConsoleController.class.getName());
 
     private static final ConsoleController CONSOLE_CONTROLLER = new ConsoleController();
 
@@ -22,10 +23,10 @@ public final class Main {
     }
 
     public static void main(String... args) {
-        Logger parentLogger = LOGGER.getParent();
-        for (Handler iHandler : parentLogger.getHandlers()) {
-            parentLogger.removeHandler(iHandler);
-        }
+//        Logger parentLogger = LOGGER.getParent();
+//        for (Handler iHandler : parentLogger.getHandlers()) {
+//            parentLogger.removeHandler(iHandler);
+//        }
         LogManager.getLogManager().reset();
         if (checkArgs(args)) {
             CONSOLE_CONTROLLER.displayNodes(new NodePreferences(null, ""));
@@ -38,11 +39,11 @@ public final class Main {
             if (Commands.VIEW.getName().equals(args[0]) && args.length == 1) {
                 LOGGER.info("Welcome to EngagePoint Admin Centre...");
             } else {
-                LOGGER.warning("Illegal arguments");
+                LOGGER.warn("Illegal arguments");
                 return false;
             }
         } catch (ArrayIndexOutOfBoundsException e) {
-            LOGGER.warning("Illegal arguments");
+            LOGGER.warn("Illegal arguments");
             return false;
         }
         return true;
@@ -65,7 +66,7 @@ public final class Main {
                 analyzeLine(line);
             }
         } catch (IOException ioe) {
-            LOGGER.warning("Exception while reading input " + ioe);
+            LOGGER.warn("Exception while reading input " + ioe);
         } finally {
             // close the streams using close method
             try {
@@ -74,7 +75,7 @@ public final class Main {
                     br.close();
                 }
             } catch (IOException ioe) {
-                LOGGER.warning("Error while closing stream: " + ioe);
+                LOGGER.warn("Error while closing stream: " + ioe);
             }
         }
     }
@@ -87,7 +88,7 @@ public final class Main {
                 checkCommand(cis);
             } catch (WrongInputArgException e) {
                 // TODO Auto-generated catch block
-                LOGGER.warning("analyzeLine: message = " + e.getMessage());
+                LOGGER.warn("analyzeLine: message = " + e.getMessage());
             }
         }
     }
