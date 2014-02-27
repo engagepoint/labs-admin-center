@@ -47,4 +47,9 @@ public class Node extends AbstractEntity {
         this.keyIdList.add(keyId);
         }
     }
+    
+	@Override
+	public String toString() {
+		return super.getId();
+	}
 }

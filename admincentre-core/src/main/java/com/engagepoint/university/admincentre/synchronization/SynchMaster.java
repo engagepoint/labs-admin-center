@@ -6,8 +6,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 import org.jgroups.Address;
 import org.jgroups.JChannel;
@@ -95,7 +102,7 @@ public final class SynchMaster {
 			try {
 				receivedcacheData = (HashMap<String, AbstractEntity>) Util
 						.objectFromStream(new DataInputStream(input));
-				syso("=========setState: RECEIVED " + receivedcacheData.size()
+				logger.info("=========setState: RECEIVED " + receivedcacheData.size()
 						+ " items");
 			} catch (Exception e) {
 				throw new IllegalStateException(e);
@@ -109,40 +116,51 @@ public final class SynchMaster {
 		 */
 		@Override
 		public void receive(Message msg) {
-			if (!(msg.getObject() instanceof CRUDPayload)) {
+			if (!(msg.getObject() instanceof CRUDPayload)
+					&& !(msg.getObject() instanceof TreeMap)) {
 				throw new IllegalArgumentException(
 						"Something wrong has been received");
 			}
 			if (receiveUpdates) {
-				CRUDPayload crudPayload = (CRUDPayload) msg.getObject();
-				try {
-					switch (crudPayload.getCrudOperation()) {
-					case CREATE:
-						syso("Message received: "
-								+ ((CRUDPayload) msg.getObject()).toString());
-						lastReceivedUpdates.add(crudPayload);
-						abstractDAO.create(crudPayload.getEntity());
-						break;
-					case READ:
-						break;
-					case UPDATE:
-						syso("Message received: "
-								+ ((CRUDPayload) msg.getObject()).toString());
-						lastReceivedUpdates.add(crudPayload);
-						abstractDAO.update(crudPayload.getEntity());
-						break;
-					case DELETE:
-						syso("Message received: "
-								+ ((CRUDPayload) msg.getObject()).toString());
-						lastReceivedUpdates.add(crudPayload);
-						abstractDAO.delete(crudPayload.getEntity().getId());
-						break;
-					default:
-						break;
+				if(msg.getObject() instanceof CRUDPayload){
+					CRUDPayload crudPayload = (CRUDPayload) msg.getObject();
+					try {
+						switch (crudPayload.getCrudOperation()) {
+						case CREATE:
+							lastReceivedUpdates.add(crudPayload);
+							abstractDAO.create(crudPayload.getEntity());
+							break;
+						case READ:
+							break;
+						case UPDATE:
+							lastReceivedUpdates.add(crudPayload);
+							abstractDAO.update(crudPayload.getEntity());
+							break;
+						case DELETE:
+							lastReceivedUpdates.add(crudPayload);
+							abstractDAO.delete(crudPayload.getEntity().getId());
+							break;
+						default:
+							break;
+						}
+					} catch (IOException e) {
+						throw new IllegalStateException(
+								"Could not complete CRUD operation", e);
 					}
-				} catch (IOException e) {
-					throw new IllegalStateException(
-							"Could not complete CRUD operation", e);
+				}else if(msg.getObject() instanceof TreeMap){
+					TreeMap<String, AbstractEntity> map = 
+							(TreeMap<String, AbstractEntity>) msg.getObject();
+					try {
+						Map<String, AbstractEntity> newMapToPut 
+							= new HashMap<String, AbstractEntity>(abstractDAO.obtainCache());
+						newMapToPut.putAll(map);
+						abstractDAO.clear();
+						abstractDAO.putAll(newMapToPut);
+						logger.info("MAP was put: " + newMapToPut);
+					} catch (IOException e) {
+						throw new IllegalStateException(
+								"Could not complete putAll", e);
+					}
 				}
 			}
 		}
@@ -153,18 +171,18 @@ public final class SynchMaster {
 	 * Private constructor, used in realization of singleton pattern.
 	 */
 	private SynchMaster() {
-		System.setProperty("java.net.preferIPv4Stack", "true");
+		System.setProperty("java.net.preferIPv4Stack", "true");		
 		abstractDAO = new AbstractDAO<AbstractEntity>(AbstractEntity.class) {
 		};
 		try {
-			syso("Start constructing..."); // delete
+//			syso("Start constructing..."); // delete
 			channel = new JChannel();
 			channel.setDiscardOwnMessages(true);
 			channel.setReceiver(new Receiver());
 			// connect("testCluster"); // delete
 			// obtainState(); // delete
 			// putAllReceived(); // delete
-			syso("CONSTRUCTED"); // delete
+			logger.info("CONSTRUCTED"); // delete
 		} catch (Exception e) {
 			throw new IllegalStateException("Something wrong with channel", e);
 		}
@@ -249,7 +267,7 @@ public final class SynchMaster {
 	private void send(Message msg) {
 		try {
 			channel.send(msg);
-			syso("Message send: " + ((CRUDPayload) msg.getObject()).toString());
+//			syso("Message send: " + ((CRUDPayload) msg.getObject()).toString());
 		} catch (Exception e) {
 			logger.warn("Message was not set!");
 			throw new IllegalStateException(e);
@@ -266,7 +284,7 @@ public final class SynchMaster {
 
 	public void putAllReceived() {
 		if (receivedcacheData == null) {
-			syso("NO data received");
+			logger.info("NO data received");
 			return;
 		}
         try {
@@ -286,25 +304,18 @@ public final class SynchMaster {
 				throw new IllegalStateException(e);
 			}
 		} else {
-			syso("=======You are the only one in the cluster and cannot obtain state");
+			logger.info("=======You are the only one in the cluster and cannot obtain state");
 		}
 	}
 
 	public void send(CRUDPayload crudPayload) {
-		syso("I was called: " + crudPayload.toString());
 		boolean removed = lastReceivedUpdates.remove(crudPayload);
-		syso("removed: " + Boolean.toString(removed));
 		if (channel.isConnected()) {
 			if (!removed) {
-				syso("wanna send: " + crudPayload.toString());
 				send(new Message(null, null, crudPayload));
-				syso("Sended, " + crudPayload.toString());
 			} else {
-				syso("Will not be sent, was received before "
-						+ crudPayload.toString());
 			}
 		} else {
-			syso("Channel is not connected " + crudPayload.toString());
 		}
 	}
 
@@ -337,7 +348,86 @@ public final class SynchMaster {
 		return channel.getView().getMembers();
 	}
 	
-	private void syso(String s) {
-		System.out.println(s);
+	public HashMap<String, AbstractEntity> getCacheData() {
+		return cacheData;
 	}
+	
+	public void obtainCacheData() {
+		try {
+			cacheData = new HashMap<String, AbstractEntity>(abstractDAO.obtainCache());
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+	
+	public HashMap<String, AbstractEntity> getReceivedcacheData() {
+		return receivedcacheData;
+	}
+	
+	public void push(){
+		obtainCacheData();
+		obtainState();
+		Map<String, AbstractEntity> result = new TreeMap<String, AbstractEntity>(compare(
+				new HashSet<AbstractEntity>(cacheData.values()),
+				new HashSet<AbstractEntity>(receivedcacheData.values())
+				));
+		logger.info("MAP1: " + result);
+		for(Iterator<String> i = result.keySet().iterator(); i.hasNext();){
+			String s = i.next();
+			if(!s.substring(0, 1).equals("1")){
+				i.remove();
+			}
+		}
+		logger.info("MAP2: " + result);
+		Message msg = new Message(null, null, result);
+		try {
+			channel.send(msg);
+		} catch (Exception e) {
+			throw new IllegalStateException("Could not send in push", e);
+		}
+	}
+	
+	public <T> Map<String, T> compare(Set<T>... args){		//expensive algorithm
+		if(args.length == 0){
+			throw new IllegalArgumentException("No args were found.");
+		}
+		final List<Set<T>> list = new ArrayList<Set<T>>(Arrays.asList(args));
+		Set<T> common = new HashSet<T>(list.get(0));
+		for(Iterator<Set<T>> i = list.iterator(); i.hasNext(); ){
+			common.retainAll(i.next());
+		}
+		final List<Set<T>> uniqueList = new ArrayList<Set<T>>();
+		for(Set<T> c: list){
+			Set<T> temp = new HashSet<T>(c);
+			temp.removeAll(common);
+			uniqueList.add(temp);
+		}
+		final Map<String, T> result = new TreeMap<String, T>(new MapComparator());
+		int i = 1;
+		int j = 0;
+		for(T t: common){
+			result.put(String.valueOf(j) + "_" + String.valueOf(i++), t);
+		}
+		j++;
+		for(Set<T> uniq: uniqueList){
+			for(T t: uniq){
+				result.put(String.valueOf(j) + "_" + String.valueOf(i++), t);
+			}
+			j++;
+		}
+		return result;
+	}
+	
+	private class MapComparator implements Comparator<String>{
+
+		@Override
+		public int compare(String s1, String s2) {
+			Integer c1 = Integer.valueOf(s1.substring(0, 1));
+			Integer c2 = Integer.valueOf(s2.substring(0, 1));
+			Integer i1 = Integer.valueOf(s1.substring(2));
+			Integer i2 = Integer.valueOf(s2.substring(2));
+			return c1.compareTo(c2) == 0 ? i1.compareTo(i2) : c1.compareTo(c2);
+		}
+	}
+
 }

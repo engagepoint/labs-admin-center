@@ -36,5 +36,9 @@ public class Key extends AbstractEntity {
         this.value = value;
     }
 
+	@Override
+	public String toString() {
+		return super.getId() + " " + type + " " + value;
+	}
 
 }

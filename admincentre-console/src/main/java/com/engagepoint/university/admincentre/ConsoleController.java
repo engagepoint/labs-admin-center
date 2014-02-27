@@ -3,7 +3,7 @@ package com.engagepoint.university.admincentre;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Locale;
-
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -187,6 +187,24 @@ public class ConsoleController {
             case PUTRECEIVED:
                 SynchMaster.getInstance().putAllReceived();
                 break;
+            case COMPARE:
+            	SynchMaster.getInstance().obtainState();
+            	if(SynchMaster.getInstance().getReceivedcacheData() == null){
+            		break;
+            	}
+            	SynchMaster.getInstance().obtainCacheData();
+            	Map<String, String> map = SynchMaster
+            		.getInstance().compare(
+            				SynchMaster.getInstance().getCacheData().keySet(),
+            				SynchMaster.getInstance()
+                			.getReceivedcacheData().keySet());
+            	for(String key: map.keySet()){
+            		LOGGER.info(key + "\t" + map.get(key));
+            	}
+            	break;
+            case PUSH:
+            	SynchMaster.getInstance().push();
+            	break;
             case RECEIVEUPDATES:
                 LOGGER.info("Receive updates status: " + SynchMaster.getInstance().isReceiveUpdates());
                 break;
@@ -202,19 +220,21 @@ public class ConsoleController {
 
     private void synchSTATUS() {
         LOGGER.info("-----------Synch status-----------"
-                + "\nChannel name......" + SynchMaster.getInstance().getChannelName()
-                + "\nConnected........." + SynchMaster.getInstance().isConnected());
+                + "\nChannel name........." + SynchMaster.getInstance().getChannelName()
+                + "\nConnected............" + SynchMaster.getInstance().isConnected());
         if (SynchMaster.getInstance().isConnected()) {
-            LOGGER.info("Cluster name......" + SynchMaster.getInstance().getClusterName()
-                    + "\nAddresses:		");
+            LOGGER.info("Receive updates......" + SynchMaster.getInstance().isReceiveUpdates()
+            		+ "\nCluster name........." + SynchMaster.getInstance().getClusterName());
+            String addresses = "Addresses: ";
             for (Iterator<Address> i = SynchMaster.getInstance().getAddressList().iterator(); i.hasNext(); ) {
-                String name = SynchMaster.getInstance().getChannelName(i.next());
+            	addresses = addresses.concat( SynchMaster.getInstance().getChannelName(i.next()) );
                 if (i.hasNext()) {
-                    LOGGER.info(name + ", ");
+                	addresses = addresses.concat(", ");
                 } else {
-                    LOGGER.info(name + ".");
+                	addresses = addresses.concat(".");
                 }
             }
+            LOGGER.info(addresses);
         }
     }
 
@@ -229,7 +249,7 @@ public class ConsoleController {
                 break;
             case NAME:
                 if (!SynchMaster.getInstance().isConnected()) {
-                    SynchMaster.getInstance().setChannelName(cis.getSecondArg());
+                    SynchMaster.getInstance().setChannelName(cis.getThirdArg());
                     LOGGER.info("You have set channel name: " + SynchMaster.getInstance().getChannelName());
                 } else {
                     LOGGER.info("Impossible to set channel name when channel is connected");
@@ -249,7 +269,7 @@ public class ConsoleController {
         if (AdditionalCommands.NODE.getCommand().equals(cis.getSecondArg()) && (length == 3)) {
             createNode(cis.getThirdArg());
         } else if (AdditionalCommands.KEY.getCommand().equals(cis.getSecondArg()) && (length == 5)) {
-            createKey(cis.getThirdArg(), cis.getFourthArg(), cis.getFirstArg());
+            createKey(cis.getThirdArg(), cis.getFourthArg(), cis.getFifthArg());
         } else {
             throw new WrongInputArgException();
         }
