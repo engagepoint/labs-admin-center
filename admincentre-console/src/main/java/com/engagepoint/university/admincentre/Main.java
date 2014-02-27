@@ -114,6 +114,7 @@ public final class Main {
                     break;
                 case REFRESH:
                     CONSOLE_CONTROLLER.refresh();
+                    CONSOLE_CONTROLLER.displayNodes(CONSOLE_CONTROLLER.getCurrentPreferences());
                     break;
             case EXPORT:
                 CONSOLE_CONTROLLER.export(cis);

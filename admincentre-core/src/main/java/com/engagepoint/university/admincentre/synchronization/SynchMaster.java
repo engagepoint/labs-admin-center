@@ -38,8 +38,9 @@ import com.engagepoint.university.admincentre.entity.AbstractEntity;
  */
 public final class SynchMaster {
 
-	private static Logger logger = LoggerFactory.getLogger(SynchMaster.class);
-
+	private static final Logger LOGGER = LoggerFactory.getLogger(SynchMaster.class);
+	
+	
 	private static volatile SynchMaster instance;
 
 	private boolean receiveUpdates = true;
@@ -80,7 +81,7 @@ public final class SynchMaster {
 				}
 			}
 
-			logger.info("getState: SENT " + cacheData.size() + " items");
+			LOGGER.info("getState: SENT " + cacheData.size() + " items");
 		}
 
 		/**
@@ -102,7 +103,7 @@ public final class SynchMaster {
 			try {
 				receivedcacheData = (HashMap<String, AbstractEntity>) Util
 						.objectFromStream(new DataInputStream(input));
-				logger.info("=========setState: RECEIVED " + receivedcacheData.size()
+				LOGGER.info("=========setState: RECEIVED " + receivedcacheData.size()
 						+ " items");
 			} catch (Exception e) {
 				throw new IllegalStateException(e);
@@ -129,16 +130,19 @@ public final class SynchMaster {
 						case CREATE:
 							lastReceivedUpdates.add(crudPayload);
 							abstractDAO.create(crudPayload.getEntity());
+							LOGGER.info("[SYNCH] created: " + crudPayload.getEntity().toString());
 							break;
 						case READ:
 							break;
 						case UPDATE:
 							lastReceivedUpdates.add(crudPayload);
 							abstractDAO.update(crudPayload.getEntity());
+							LOGGER.info("[SYNCH] updated: " + crudPayload.getEntity().toString());
 							break;
 						case DELETE:
 							lastReceivedUpdates.add(crudPayload);
 							abstractDAO.delete(crudPayload.getEntity().getId());
+							LOGGER.info("[SYNCH] deleted: " + crudPayload.getEntity().toString());
 							break;
 						default:
 							break;
@@ -156,7 +160,7 @@ public final class SynchMaster {
 						newMapToPut.putAll(map);
 						abstractDAO.clear();
 						abstractDAO.putAll(newMapToPut);
-						logger.info("MAP was put: " + newMapToPut);
+						LOGGER.info("MAP was put: " + newMapToPut);
 					} catch (IOException e) {
 						throw new IllegalStateException(
 								"Could not complete putAll", e);
@@ -182,7 +186,7 @@ public final class SynchMaster {
 			// connect("testCluster"); // delete
 			// obtainState(); // delete
 			// putAllReceived(); // delete
-			logger.info("CONSTRUCTED"); // delete
+			LOGGER.info("CONSTRUCTED"); // delete
 		} catch (Exception e) {
 			throw new IllegalStateException("Something wrong with channel", e);
 		}
@@ -269,7 +273,7 @@ public final class SynchMaster {
 			channel.send(msg);
 //			syso("Message send: " + ((CRUDPayload) msg.getObject()).toString());
 		} catch (Exception e) {
-			logger.warn("Message was not set!");
+			LOGGER.warn("Message was not set!");
 			throw new IllegalStateException(e);
 		}
 	}
@@ -284,14 +288,14 @@ public final class SynchMaster {
 
 	public void putAllReceived() {
 		if (receivedcacheData == null) {
-			logger.info("NO data received");
+			LOGGER.info("NO data received");
 			return;
 		}
         try {
             abstractDAO.clear();
             abstractDAO.putAll(receivedcacheData);
         } catch (IOException e) {
-            logger.warn(e.getMessage());
+            LOGGER.warn(e.getMessage());
         }
 
 	}
@@ -304,7 +308,7 @@ public final class SynchMaster {
 				throw new IllegalStateException(e);
 			}
 		} else {
-			logger.info("=======You are the only one in the cluster and cannot obtain state");
+			LOGGER.info("=======You are the only one in the cluster and cannot obtain state");
 		}
 	}
 
@@ -371,15 +375,20 @@ public final class SynchMaster {
 				new HashSet<AbstractEntity>(cacheData.values()),
 				new HashSet<AbstractEntity>(receivedcacheData.values())
 				));
-		logger.info("MAP1: " + result);
+		LOGGER.info("MAP1: " + result);
 		for(Iterator<String> i = result.keySet().iterator(); i.hasNext();){
 			String s = i.next();
 			if(!s.substring(0, 1).equals("1")){
 				i.remove();
 			}
 		}
-		logger.info("MAP2: " + result);
-		Message msg = new Message(null, null, result);
+		LOGGER.info("MAP2: " + result);
+		Map<String, AbstractEntity> payload = new TreeMap<String, AbstractEntity>();
+		for(String key: result.keySet()){
+			payload.put(result.get(key).getId(), result.get(key));
+		}
+		LOGGER.info("MAP3: " + payload);
+		Message msg = new Message(null, null, payload);
 		try {
 			channel.send(msg);
 		} catch (Exception e) {

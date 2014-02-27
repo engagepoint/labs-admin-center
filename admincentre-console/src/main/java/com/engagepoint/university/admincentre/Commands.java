@@ -23,6 +23,7 @@ public enum Commands {
 					+ "\n\t -disconnect"
 					+ "\n\t -obtain \t*obtain state"
 					+ "\n\t -putreceived \t*put received state"
+					+ "\n\t -push \t\t*send my state to all cluster members"
 					+ "\n\t -receiveupdates [true|false] *get or set receive updates status"
 					+ "\n\t -name [new name] \t*get or set channel name"
 					+ "\n\t -status \t*print all info about channel"),

@@ -1,6 +1,7 @@
 package com.engagepoint.university.admincentre;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
@@ -10,6 +11,7 @@ import java.util.prefs.Preferences;
 
 import org.jgroups.Address;
 
+import com.engagepoint.university.admincentre.entity.AbstractEntity;
 import com.engagepoint.university.admincentre.entity.KeyType;
 import com.engagepoint.university.admincentre.exception.WrongInputArgException;
 import com.engagepoint.university.admincentre.preferences.NodePreferences;
@@ -186,6 +188,7 @@ public class ConsoleController {
                 break;
             case PUTRECEIVED:
                 SynchMaster.getInstance().putAllReceived();
+                refresh();
                 break;
             case COMPARE:
             	SynchMaster.getInstance().obtainState();
@@ -193,13 +196,14 @@ public class ConsoleController {
             		break;
             	}
             	SynchMaster.getInstance().obtainCacheData();
-            	Map<String, String> map = SynchMaster
+            	Map<String, AbstractEntity> map = SynchMaster
             		.getInstance().compare(
-            				SynchMaster.getInstance().getCacheData().keySet(),
-            				SynchMaster.getInstance()
-                			.getReceivedcacheData().keySet());
+            				new HashSet<AbstractEntity>(SynchMaster.getInstance()
+            						.getCacheData().values()),
+            				new HashSet<AbstractEntity>(SynchMaster.getInstance()
+            						.getReceivedcacheData().values()));
             	for(String key: map.keySet()){
-            		LOGGER.info(key + "\t" + map.get(key));
+            		LOGGER.info(key + "\t" + map.get(key).toString());
             	}
             	break;
             case PUSH:
@@ -244,7 +248,7 @@ public class ConsoleController {
                 SynchMaster.getInstance().connect(cis.getThirdArg());
                 break;
             case RECEIVEUPDATES:
-                boolean value = Boolean.parseBoolean(cis.getSecondArg());
+                boolean value = Boolean.parseBoolean(cis.getThirdArg());
                 SynchMaster.getInstance().setReceiveUpdates(value);
                 break;
             case NAME:
