@@ -36,6 +36,23 @@ public class Key extends AbstractEntity {
         this.value = value;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+    	if (this == obj)
+			return true;
+		if ( !(obj instanceof Key) )
+			return false;
+		Key key = (Key) obj;
+		return super.getId().equals(key.getId())
+				&& type == key.type
+				&& value.equals(key.value);
+    }
+    
+    @Override
+    public int hashCode() {
+    	return (super.getId() + type.toString() + value).hashCode();
+    }
+    
 	@Override
 	public String toString() {
 		return super.getId() + " " + type + " " + value;

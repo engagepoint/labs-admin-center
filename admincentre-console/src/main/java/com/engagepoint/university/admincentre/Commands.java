@@ -19,9 +19,9 @@ public enum Commands {
     SYNCH("-synch",
 			"Synchronization commands:"
 					+ "\n\t -connect %cluster_name%"
-					+ "\n\t -compare \t*compare with state"
+					+ "\n\t -merge \t*compare with state"
 					+ "\n\t -disconnect"
-					+ "\n\t -put \t*put received state"
+					+ "\n\t -pull \t*pull state"
 					+ "\n\t -push \t\t*send my state to all cluster members"
 					+ "\n\t -receiveupdates [true|false] *get or set receive updates status"
 					+ "\n\t -name [new name] \t*get or set channel name"

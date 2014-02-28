@@ -183,12 +183,12 @@ public class ConsoleController {
                 SynchMaster.getInstance().disconnect();
                 LOGGER.info("Disconnected.");
                 break;
-            case PUT:
-                SynchMaster.getInstance().put();
+            case PULL:
+                SynchMaster.getInstance().pull();
                 refresh();
                 break;
-            case COMPARE:
-            	Map<String, AbstractEntity> map = SynchMaster.getInstance().compare();
+            case MERGE:
+            	Map<String, AbstractEntity> map = SynchMaster.getInstance().merge();
             	for(String key: map.keySet()){
                 	LOGGER.info(key + "\t" + map.get(key).toString());
                 }
@@ -235,7 +235,7 @@ public class ConsoleController {
                 SynchMaster.getInstance().connect(cis.getThirdArg());
                 if(SynchMaster.getInstance().isSingle() != null
                 		&& !SynchMaster.getInstance().isSingle()){
-                	SynchMaster.getInstance().put();
+                	SynchMaster.getInstance().pull();
                 }
                 break;
             case RECEIVEUPDATES:

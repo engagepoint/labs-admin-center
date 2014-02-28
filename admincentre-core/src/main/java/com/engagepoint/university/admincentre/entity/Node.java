@@ -48,6 +48,21 @@ public class Node extends AbstractEntity {
         }
     }
     
+    @Override
+    public boolean equals(Object obj) {
+    	if (this == obj)
+			return true;
+		if ( !(obj instanceof Node) )
+			return false;
+		Node entity = (Node) obj;
+		return super.getId().equals(entity.getId());
+    }
+    
+    @Override
+    public int hashCode() {
+    	return super.getId().hashCode();
+    }
+    
 	@Override
 	public String toString() {
 		return super.getId();

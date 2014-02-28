@@ -32,8 +32,8 @@ public class NodePreferences extends Preferences {
      */
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NodePreferences.class);
-    private KeyDAO keyDAO = new KeyDAO();
-    private NodeDAO nodeDAO = new NodeDAO();
+    private KeyDAO keyDAO = KeyDAO.getInstance();
+    private NodeDAO nodeDAO = NodeDAO.getInstance();
     private Node currentNode;
     private static final String REMOVED_NODE = "Node has been removed: ";
     private static final String NOTREGISTRD_LISTENER = "Listener not registered in node: ";

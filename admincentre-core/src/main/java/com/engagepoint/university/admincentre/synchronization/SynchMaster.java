@@ -293,19 +293,6 @@ public final class SynchMaster {
 		return receiveUpdates;
 	}
 
-	/**
-	 * Replaces all data in current member for obtained state.
-	 */
-	public void put() {
-		obtainState();
-        try {
-            abstractDAO.clear();
-            abstractDAO.putAll(receivedcacheData);
-        } catch (IOException e) {
-            LOGGER.warn(e.getMessage());
-        }
-
-	}
 
 	private void obtainState() {
 		if (channel.getView().getMembers().size() > 1) {
@@ -345,7 +332,7 @@ public final class SynchMaster {
 	}
 	
 	public boolean isChanged(){
-		for(String key: compare().keySet()){
+		for(String key: merge().keySet()){
 			if(key.substring(0, 1).equals("1")){
 				return true;
 			}
@@ -413,7 +400,9 @@ public final class SynchMaster {
 //			throw new IllegalStateException("Could not send in push", e);
 //		}
 //	}
-	
+	/**
+	 * Push to cluster all changed key-entities and new entities
+	 */
 	public void push(){
 		obtainCacheData();
 		Map<String, AbstractEntity> payload = new TreeMap<String, AbstractEntity>(
@@ -426,17 +415,31 @@ public final class SynchMaster {
 		}
 	}
 	
-	public Map<String, AbstractEntity> compare(){
+	/**
+	 * Replaces all data in current member for obtained state.
+	 */
+	public void pull() {
+		obtainState();
+        try {
+            abstractDAO.clear();
+            abstractDAO.putAll(receivedcacheData);
+        } catch (IOException e) {
+            LOGGER.warn(e.getMessage());
+        }
+
+	}
+	
+	public Map<String, AbstractEntity> merge(){
 		obtainState();
 		obtainCacheData();
 		@SuppressWarnings("unchecked")
-		Map<String, AbstractEntity> map = compare(
+		Map<String, AbstractEntity> map = merge(
         				new HashSet<AbstractEntity>(cacheData.values()),
         				new HashSet<AbstractEntity>(receivedcacheData.values()));
 		return map;
 	}
 	
-	private <T> Map<String, T> compare(Set<T>... args){		//expensive algorithm
+	private <T> Map<String, T> merge(Set<T>... args){		//expensive algorithm
 		if(args.length == 0){
 			throw new IllegalArgumentException("No args were found.");
 		}
