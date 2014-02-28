@@ -133,7 +133,7 @@
                         <h:outputText value="#{trans.delConfDial}"/>
                         <br/>
                         <h:outputText value="Name:  #{documentsController.selectedDoc.name} &lt;br/&gt;
-                                      Value: #{documentsController.selectedDoc.value} &lt;br/&gt; 
+                                      Value: #{documentsController.selectedDoc.value} &lt;br/&gt;
                                       Type:  #{documentsController.selectedDoc.type} &lt;br/&gt;"
                                       escape="false"/>
                         <br/>
@@ -215,8 +215,8 @@
                             styleClass="secondary"
                             oncomplete="editDialog.hide()"
                             action="cancel"
-                            process="@this"/>                        
-                    </p:dialog>                        
+                            process="@this"/>
+                    </p:dialog>
 
                     <!--Add button-->
                     <p:commandButton
@@ -314,7 +314,7 @@
                                              styleClass="secondary"
                                              update="treeTable"
                                              actionListener="#{documentsController.resetTempDoc()}"
-                                             oncomplete="addDlg2.hide()"/>                
+                                             oncomplete="addDlg2.hide()"/>
 
                         </uib:gridContainer>
                     </p:dialog>
