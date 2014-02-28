@@ -1,21 +1,19 @@
 package com.engagepoint.university.admincentre.web;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import com.engagepoint.university.admincentre.datatransfer.DataBean;
+import com.engagepoint.university.admincentre.entity.PropertiesDocument;
+import com.engagepoint.university.admincentre.entity.TreeProperties;
+import org.primefaces.model.DefaultTreeNode;
+import org.primefaces.model.TreeNode;
 
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.event.ActionEvent;
 import javax.inject.Inject;
-
-import org.primefaces.model.DefaultTreeNode;
-import org.primefaces.model.TreeNode;
-
-import com.engagepoint.university.admincentre.datatransfer.DataBean;
-import com.engagepoint.university.admincentre.entity.PropertiesDocument;
-import com.engagepoint.university.admincentre.entity.TreeProperties;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 @ManagedBean(name = "documentsController")
 @ViewScoped
@@ -156,7 +154,7 @@ public class DocumentsController implements Serializable {
      * If "option" == true - all children of the "node" are expanded.
      * setSelected(false) indicate than this node isn't selected
      * @param node
-     * @param option 
+     * @param option
      */
     public void collapsingORexpanding(TreeNode node, boolean option) {
         if (node.getChildren().isEmpty()) {
