@@ -98,12 +98,13 @@ public final class SynchMaster {
 		 *             happened
 		 * @see java.io.InputStream#close()
 		 */
+		@SuppressWarnings("unchecked")
 		@Override
 		public void setState(InputStream input) { // receive
 			try {
 				receivedcacheData = (HashMap<String, AbstractEntity>) Util
 						.objectFromStream(new DataInputStream(input));
-				LOGGER.info("=========setState: RECEIVED " + receivedcacheData.size()
+				LOGGER.info("setState: RECEIVED " + receivedcacheData.size()
 						+ " items");
 			} catch (Exception e) {
 				throw new IllegalStateException(e);
@@ -152,6 +153,7 @@ public final class SynchMaster {
 								"Could not complete CRUD operation", e);
 					}
 				}else if(msg.getObject() instanceof TreeMap){
+					@SuppressWarnings("unchecked")
 					TreeMap<String, AbstractEntity> map = 
 							(TreeMap<String, AbstractEntity>) msg.getObject();
 					try {
@@ -247,7 +249,6 @@ public final class SynchMaster {
 		channel.close();
 	}
 
-
 	/**
 	 * Sends a message. The message contains
 	 * <ol>
@@ -278,6 +279,12 @@ public final class SynchMaster {
 		}
 	}
 
+	public void send(CRUDPayload crudPayload) {
+		boolean removed = lastReceivedUpdates.remove(crudPayload);
+		if (channel.isConnected() && !removed)
+			send(new Message(null, null, crudPayload));
+	}
+	
 	public void setReceiveUpdates(boolean receiveUpdates) {
 		this.receiveUpdates = receiveUpdates;
 	}
@@ -286,11 +293,11 @@ public final class SynchMaster {
 		return receiveUpdates;
 	}
 
-	public void putAllReceived() {
-		if (receivedcacheData == null) {
-			LOGGER.info("NO data received");
-			return;
-		}
+	/**
+	 * Replaces all data in current member for obtained state.
+	 */
+	public void put() {
+		obtainState();
         try {
             abstractDAO.clear();
             abstractDAO.putAll(receivedcacheData);
@@ -300,7 +307,7 @@ public final class SynchMaster {
 
 	}
 
-	public void obtainState() {
+	private void obtainState() {
 		if (channel.getView().getMembers().size() > 1) {
 			try {
 				channel.getState(null, 40000);
@@ -308,18 +315,7 @@ public final class SynchMaster {
 				throw new IllegalStateException(e);
 			}
 		} else {
-			LOGGER.info("=======You are the only one in the cluster and cannot obtain state");
-		}
-	}
-
-	public void send(CRUDPayload crudPayload) {
-		boolean removed = lastReceivedUpdates.remove(crudPayload);
-		if (channel.isConnected()) {
-			if (!removed) {
-				send(new Message(null, null, crudPayload));
-			} else {
-			}
-		} else {
+			LOGGER.info("You are the only one in the cluster and cannot obtain state");
 		}
 	}
 
@@ -348,13 +344,34 @@ public final class SynchMaster {
 		return channel.isConnected();
 	}
 	
+	public boolean isChanged(){
+		for(String key: compare().keySet()){
+			if(key.substring(0, 1).equals("1")){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * <b>null</b> if not connected
+	 * 	<br><b>true</b> if the only one member of the cluster
+	 * 	<br><b>false</b> if 2+ members of cluster exist
+	 * @return membership status
+	 */
+	public Boolean isSingle(){
+		return isConnected()
+			? (channel.getView().getMembers().size() == 1)
+			: null;
+	}
+	
 	public List<Address> getAddressList(){
 		return channel.getView().getMembers();
 	}
 	
-	public HashMap<String, AbstractEntity> getCacheData() {
-		return cacheData;
-	}
+//	private HashMap<String, AbstractEntity> getCacheData() {
+//		return cacheData;
+//	}
 	
 	public void obtainCacheData() {
 		try {
@@ -364,30 +381,43 @@ public final class SynchMaster {
 		}
 	}
 	
-	public HashMap<String, AbstractEntity> getReceivedcacheData() {
-		return receivedcacheData;
-	}
+//	public HashMap<String, AbstractEntity> getReceivedcacheData() {
+//		return receivedcacheData;
+//	}
+	
+//	public void push(){			//	REWRITE!!
+//		obtainCacheData();
+//		obtainState();
+//		@SuppressWarnings("unchecked")
+//		Map<String, AbstractEntity> result = new TreeMap<String, AbstractEntity>(compare(
+//				new HashSet<AbstractEntity>(cacheData.values()),
+//				new HashSet<AbstractEntity>(receivedcacheData.values())
+//				));
+//		LOGGER.info("MAP1: " + result);
+//		for(Iterator<String> i = result.keySet().iterator(); i.hasNext();){
+//			String s = i.next();
+//			if(!s.substring(0, 1).equals("1")){
+//				i.remove();
+//			}
+//		}
+//		LOGGER.info("MAP2: " + result);
+//		Map<String, AbstractEntity> payload = new TreeMap<String, AbstractEntity>();
+//		for(String key: result.keySet()){
+//			payload.put(result.get(key).getId(), result.get(key));
+//		}
+//		LOGGER.info("MAP3: " + payload);
+//		Message msg = new Message(null, null, payload);
+//		try {
+//			channel.send(msg);
+//		} catch (Exception e) {
+//			throw new IllegalStateException("Could not send in push", e);
+//		}
+//	}
 	
 	public void push(){
 		obtainCacheData();
-		obtainState();
-		Map<String, AbstractEntity> result = new TreeMap<String, AbstractEntity>(compare(
-				new HashSet<AbstractEntity>(cacheData.values()),
-				new HashSet<AbstractEntity>(receivedcacheData.values())
-				));
-		LOGGER.info("MAP1: " + result);
-		for(Iterator<String> i = result.keySet().iterator(); i.hasNext();){
-			String s = i.next();
-			if(!s.substring(0, 1).equals("1")){
-				i.remove();
-			}
-		}
-		LOGGER.info("MAP2: " + result);
-		Map<String, AbstractEntity> payload = new TreeMap<String, AbstractEntity>();
-		for(String key: result.keySet()){
-			payload.put(result.get(key).getId(), result.get(key));
-		}
-		LOGGER.info("MAP3: " + payload);
+		Map<String, AbstractEntity> payload = new TreeMap<String, AbstractEntity>(
+				cacheData);
 		Message msg = new Message(null, null, payload);
 		try {
 			channel.send(msg);
@@ -396,7 +426,17 @@ public final class SynchMaster {
 		}
 	}
 	
-	public <T> Map<String, T> compare(Set<T>... args){		//expensive algorithm
+	public Map<String, AbstractEntity> compare(){
+		obtainState();
+		obtainCacheData();
+		@SuppressWarnings("unchecked")
+		Map<String, AbstractEntity> map = compare(
+        				new HashSet<AbstractEntity>(cacheData.values()),
+        				new HashSet<AbstractEntity>(receivedcacheData.values()));
+		return map;
+	}
+	
+	private <T> Map<String, T> compare(Set<T>... args){		//expensive algorithm
 		if(args.length == 0){
 			throw new IllegalArgumentException("No args were found.");
 		}

@@ -183,28 +183,15 @@ public class ConsoleController {
                 SynchMaster.getInstance().disconnect();
                 LOGGER.info("Disconnected.");
                 break;
-            case OBTAIN:
-                SynchMaster.getInstance().obtainState();
-                break;
-            case PUTRECEIVED:
-                SynchMaster.getInstance().putAllReceived();
+            case PUT:
+                SynchMaster.getInstance().put();
                 refresh();
                 break;
             case COMPARE:
-            	SynchMaster.getInstance().obtainState();
-            	if(SynchMaster.getInstance().getReceivedcacheData() == null){
-            		break;
-            	}
-            	SynchMaster.getInstance().obtainCacheData();
-            	Map<String, AbstractEntity> map = SynchMaster
-            		.getInstance().compare(
-            				new HashSet<AbstractEntity>(SynchMaster.getInstance()
-            						.getCacheData().values()),
-            				new HashSet<AbstractEntity>(SynchMaster.getInstance()
-            						.getReceivedcacheData().values()));
+            	Map<String, AbstractEntity> map = SynchMaster.getInstance().compare();
             	for(String key: map.keySet()){
-            		LOGGER.info(key + "\t" + map.get(key).toString());
-            	}
+                	LOGGER.info(key + "\t" + map.get(key).toString());
+                }
             	break;
             case PUSH:
             	SynchMaster.getInstance().push();
@@ -246,6 +233,10 @@ public class ConsoleController {
         switch (getEnumElement(cis)) {
             case CONNECT:
                 SynchMaster.getInstance().connect(cis.getThirdArg());
+                if(SynchMaster.getInstance().isSingle() != null
+                		&& !SynchMaster.getInstance().isSingle()){
+                	SynchMaster.getInstance().put();
+                }
                 break;
             case RECEIVEUPDATES:
                 boolean value = Boolean.parseBoolean(cis.getThirdArg());
