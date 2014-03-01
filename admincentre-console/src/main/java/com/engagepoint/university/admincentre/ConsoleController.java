@@ -1,10 +1,9 @@
 package com.engagepoint.university.admincentre;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -16,7 +15,8 @@ import com.engagepoint.university.admincentre.entity.KeyType;
 import com.engagepoint.university.admincentre.exception.WrongInputArgException;
 import com.engagepoint.university.admincentre.preferences.NodePreferences;
 import com.engagepoint.university.admincentre.synchronization.SynchMaster;
-
+import com.engagepoint.university.admincentre.synchronization.SynchMaster.MergeStatus;
+import com.engagepoint.university.admincentre.synchronization.Pair;
 
 public class ConsoleController {
 
@@ -181,17 +181,18 @@ public class ConsoleController {
                 break;
             case DISCONNECT:
                 SynchMaster.getInstance().disconnect();
-                LOGGER.info("Disconnected.");
+                if(!SynchMaster.getInstance().isConnected())
+                	LOGGER.info("Disconnected.");
                 break;
             case PULL:
                 SynchMaster.getInstance().pull();
                 refresh();
                 break;
             case MERGE:
-            	Map<String, AbstractEntity> map = SynchMaster.getInstance().merge();
-            	for(String key: map.keySet()){
-                	LOGGER.info(key + "\t" + map.get(key).toString());
-                }
+            	List<Pair<MergeStatus, AbstractEntity>> mergeList = SynchMaster.getInstance().merge();
+            	for(Pair<MergeStatus, AbstractEntity> pair: mergeList){
+            		LOGGER.info(pair.toString());
+            	}
             	break;
             case PUSH:
             	SynchMaster.getInstance().push();
@@ -235,7 +236,8 @@ public class ConsoleController {
                 SynchMaster.getInstance().connect(cis.getThirdArg());
                 if(SynchMaster.getInstance().isSingle() != null
                 		&& !SynchMaster.getInstance().isSingle()){
-                	SynchMaster.getInstance().pull();
+                	SynchMaster.getInstance().pull();			//TODO rewrite according to mode (auto 
+                												//or hand-held) - add arg
                 }
                 break;
             case RECEIVEUPDATES:

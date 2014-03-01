@@ -6,14 +6,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 import org.jgroups.Address;
@@ -34,7 +31,7 @@ import com.engagepoint.university.admincentre.entity.AbstractEntity;
  * Singleton pattern was used. Call {@code SynchMaster.getInstance()} to get the
  * instance of this class
  * 
- * @author Roman Garkavenko
+ * @author roman.garkavenko
  */
 public final class SynchMaster {
 
@@ -47,7 +44,7 @@ public final class SynchMaster {
 	private final JChannel channel;
 	private final AbstractDAO<AbstractEntity> abstractDAO;
 	private HashMap<String, AbstractEntity> cacheData;
-	private HashMap<String, AbstractEntity> receivedcacheData;
+	private HashMap<String, AbstractEntity> receivedState;
 	private final List<CRUDPayload> lastReceivedUpdates = new ArrayList<CRUDPayload>();
 
 	private class Receiver extends ReceiverAdapter{
@@ -102,9 +99,9 @@ public final class SynchMaster {
 		@Override
 		public void setState(InputStream input) { // receive
 			try {
-				receivedcacheData = (HashMap<String, AbstractEntity>) Util
+				receivedState = (HashMap<String, AbstractEntity>) Util
 						.objectFromStream(new DataInputStream(input));
-				LOGGER.info("setState: RECEIVED " + receivedcacheData.size()
+				LOGGER.info("setState: RECEIVED " + receivedState.size()
 						+ " items");
 			} catch (Exception e) {
 				throw new IllegalStateException(e);
@@ -293,6 +290,23 @@ public final class SynchMaster {
 		return receiveUpdates;
 	}
 
+	public boolean isMemberChanged(){
+		return isChanged(MergeStatus.MEMBER);
+	}
+	
+	public boolean isClusterChanged(){
+		return isChanged(MergeStatus.CLUSTER);
+	}
+
+	private boolean isChanged(MergeStatus mergeStatus){
+		if(mergeStatus == MergeStatus.COMMON)
+			throw new IllegalArgumentException("Argument to isChange could not be " + mergeStatus);
+		for(Pair<MergeStatus, AbstractEntity> p: merge()){
+			if(p.getLeft() == mergeStatus)
+				return true;
+		}
+		return false;
+	}
 
 	private void obtainState() {
 		if (channel.getView().getMembers().size() > 1) {
@@ -331,14 +345,6 @@ public final class SynchMaster {
 		return channel.isConnected();
 	}
 	
-	public boolean isChanged(){
-		for(String key: merge().keySet()){
-			if(key.substring(0, 1).equals("1")){
-				return true;
-			}
-		}
-		return false;
-	}
 	
 	/**
 	 * <b>null</b> if not connected
@@ -356,10 +362,6 @@ public final class SynchMaster {
 		return channel.getView().getMembers();
 	}
 	
-//	private HashMap<String, AbstractEntity> getCacheData() {
-//		return cacheData;
-//	}
-	
 	public void obtainCacheData() {
 		try {
 			cacheData = new HashMap<String, AbstractEntity>(abstractDAO.obtainCache());
@@ -367,43 +369,14 @@ public final class SynchMaster {
 			throw new IllegalStateException(e);
 		}
 	}
-	
-//	public HashMap<String, AbstractEntity> getReceivedcacheData() {
-//		return receivedcacheData;
-//	}
-	
-//	public void push(){			//	REWRITE!!
-//		obtainCacheData();
-//		obtainState();
-//		@SuppressWarnings("unchecked")
-//		Map<String, AbstractEntity> result = new TreeMap<String, AbstractEntity>(compare(
-//				new HashSet<AbstractEntity>(cacheData.values()),
-//				new HashSet<AbstractEntity>(receivedcacheData.values())
-//				));
-//		LOGGER.info("MAP1: " + result);
-//		for(Iterator<String> i = result.keySet().iterator(); i.hasNext();){
-//			String s = i.next();
-//			if(!s.substring(0, 1).equals("1")){
-//				i.remove();
-//			}
-//		}
-//		LOGGER.info("MAP2: " + result);
-//		Map<String, AbstractEntity> payload = new TreeMap<String, AbstractEntity>();
-//		for(String key: result.keySet()){
-//			payload.put(result.get(key).getId(), result.get(key));
-//		}
-//		LOGGER.info("MAP3: " + payload);
-//		Message msg = new Message(null, null, payload);
-//		try {
-//			channel.send(msg);
-//		} catch (Exception e) {
-//			throw new IllegalStateException("Could not send in push", e);
-//		}
-//	}
+
 	/**
 	 * Push to cluster all changed key-entities and new entities
 	 */
-	public void push(){
+	public void push(){		//TODO REWRITE!! 
+		if(!isConnected()){
+			throw new IllegalStateException("Channel is not connected.");
+		}
 		obtainCacheData();
 		Map<String, AbstractEntity> payload = new TreeMap<String, AbstractEntity>(
 				cacheData);
@@ -418,68 +391,70 @@ public final class SynchMaster {
 	/**
 	 * Replaces all data in current member for obtained state.
 	 */
-	public void pull() {
+	public void pull() {	//TODO REWRITE!! 
+		if(!isConnected()){
+			throw new IllegalStateException("Channel is not connected.");
+		}
 		obtainState();
         try {
             abstractDAO.clear();
-            abstractDAO.putAll(receivedcacheData);
+            abstractDAO.putAll(receivedState);
         } catch (IOException e) {
             LOGGER.warn(e.getMessage());
         }
 
 	}
-	
-	public Map<String, AbstractEntity> merge(){
+	/**
+	 * 
+	 * @return sorted list with pair of MergeStatus and entity both from cluster and member
+	 */
+	public List<Pair<MergeStatus, AbstractEntity>> merge() {
 		obtainState();
 		obtainCacheData();
-		@SuppressWarnings("unchecked")
-		Map<String, AbstractEntity> map = merge(
-        				new HashSet<AbstractEntity>(cacheData.values()),
-        				new HashSet<AbstractEntity>(receivedcacheData.values()));
-		return map;
-	}
-	
-	private <T> Map<String, T> merge(Set<T>... args){		//expensive algorithm
-		if(args.length == 0){
-			throw new IllegalArgumentException("No args were found.");
+		Map<String, AbstractEntity> common 
+			= new HashMap<String, AbstractEntity>(cacheData);
+		common.values().retainAll(receivedState.values());	//common data
+		Map<String, AbstractEntity> member 
+			= new HashMap<String, AbstractEntity>(cacheData);
+		member.values().removeAll(receivedState.values());	//member unique data
+		Map<String, AbstractEntity> cluster
+			= new HashMap<String, AbstractEntity>(receivedState);
+		cluster.values().removeAll(cacheData.values());		//cluster data
+		
+		List<Pair<MergeStatus, AbstractEntity>> result 
+			= new ArrayList<Pair<MergeStatus, AbstractEntity>>();
+		for(String key: common.keySet()){
+			result.add(new Pair<MergeStatus, AbstractEntity>(MergeStatus.COMMON, common.get(key)));
 		}
-		final List<Set<T>> list = new ArrayList<Set<T>>(Arrays.asList(args));
-		Set<T> common = new HashSet<T>(list.get(0));
-		for(Iterator<Set<T>> i = list.iterator(); i.hasNext(); ){
-			common.retainAll(i.next());
+		for(String key: member.keySet()){
+			result.add(new Pair<MergeStatus, AbstractEntity>(MergeStatus.MEMBER, member.get(key)));
 		}
-		final List<Set<T>> uniqueList = new ArrayList<Set<T>>();
-		for(Set<T> c: list){
-			Set<T> temp = new HashSet<T>(c);
-			temp.removeAll(common);
-			uniqueList.add(temp);
+		for(String key: cluster.keySet()){
+			result.add(new Pair<MergeStatus, AbstractEntity>(MergeStatus.CLUSTER, cluster.get(key)));
 		}
-		final Map<String, T> result = new TreeMap<String, T>(new MapComparator());
-		int i = 1;
-		int j = 0;
-		for(T t: common){
-			result.put(String.valueOf(j) + "_" + String.valueOf(i++), t);
-		}
-		j++;
-		for(Set<T> uniq: uniqueList){
-			for(T t: uniq){
-				result.put(String.valueOf(j) + "_" + String.valueOf(i++), t);
-			}
-			j++;
-		}
+		Collections.sort(result, new PairComparator());
 		return result;
 	}
 	
-	private class MapComparator implements Comparator<String>{
+	public enum MergeStatus{
+		COMMON,
+		MEMBER,
+		CLUSTER;
+	}
+	
+	/**
+	 * Used for sorting in merge operation.
+	 *<br>Sorts first by MergeStatus, then by entity.
+	 */
+	private class PairComparator implements Comparator<Pair<MergeStatus, AbstractEntity>>{
 
 		@Override
-		public int compare(String s1, String s2) {
-			Integer c1 = Integer.valueOf(s1.substring(0, 1));
-			Integer c2 = Integer.valueOf(s2.substring(0, 1));
-			Integer i1 = Integer.valueOf(s1.substring(2));
-			Integer i2 = Integer.valueOf(s2.substring(2));
-			return c1.compareTo(c2) == 0 ? i1.compareTo(i2) : c1.compareTo(c2);
+		public int compare(Pair<MergeStatus, AbstractEntity> p1,
+				Pair<MergeStatus, AbstractEntity> p2) {
+			int i = p1.getLeft().compareTo(p2.getLeft());
+			return i != 0 ? i : p1.getRight().toString().compareTo(p2.getRight().toString());
 		}
+		
 	}
 
 }

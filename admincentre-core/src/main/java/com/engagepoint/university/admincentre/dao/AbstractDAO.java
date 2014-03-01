@@ -1,6 +1,7 @@
 package com.engagepoint.university.admincentre.dao;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -167,6 +168,6 @@ public abstract class AbstractDAO<T extends AbstractEntity>
     }
     
     public Map<String, T> obtainCache() throws IOException{
-    	return getCache(CACHE_CONFIG, USED_CACHE);
+    	return new HashMap<String, T>(getCache(CACHE_CONFIG, USED_CACHE));
     }
 }
