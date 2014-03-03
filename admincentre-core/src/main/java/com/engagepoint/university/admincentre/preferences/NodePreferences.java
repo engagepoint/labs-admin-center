@@ -829,12 +829,11 @@ public class NodePreferences extends Preferences {
      * -1.
      */
     private static final byte BASE64_TO_INT[] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-            -1,
             -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-            -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1, 63, 52, 53, 54, 55, 56, 57, 58, 59, 60,
-            61, -1, -1, -1, -1, -1, -1, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
-            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, -1, -1, 26, 27, 28, 29, 30, 31,
-            32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51 };
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1, 63, 52, 53, 54, 55, 56, 57, 58, 59,
+            60, 61, -1, -1, -1, -1, -1, -1, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
+            15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, -1, -1, 26, 27, 28, 29, 30,
+            31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51 };
 
     /**
      * Implements the <tt>keys</tt> method as per the specification in
@@ -1842,7 +1841,6 @@ public class NodePreferences extends Preferences {
 
     }
 
-
     public void changeNodeName(String name) {
         String oldId = absolutePath;
         List<String> childList = this.parent.currentNode.getChildNodeIdList();
@@ -1854,9 +1852,11 @@ public class NodePreferences extends Preferences {
         this.currentNode.setName(name);
 
         try {
-            nodeDAO.update(this.parent.currentNode);
-            nodeDAO.create(this.currentNode);
             nodeDAO.delete(oldId);
+            nodeDAO.create(this.currentNode);
+            nodeDAO.update(this.parent.currentNode);
+
+
         } catch (IOException e) {
             LOGGER.warn("Exception was occured while node name" + name + "was updating");
         }
@@ -1864,6 +1864,7 @@ public class NodePreferences extends Preferences {
 
     private void changeIdPath(Node parentNode, String oldPath) {
         List<String> childNodeIdList = new LinkedList<String>();
+        List<Key> keyList = new LinkedList<Key>();
         if (!parentNode.getKeyIdList().isEmpty()) {
             changeNodeKeyId(parentNode, oldPath);
         }
@@ -1871,12 +1872,11 @@ public class NodePreferences extends Preferences {
             try {
                 Node node = nodeDAO.read(childNodeId);
                 childNodeIdList.add(childNodeId.replaceFirst(oldPath, absolutePath));
-                nodeDAO.delete(node.getId());
+                String oldId = node.getId();
+                nodeDAO.delete(oldId);
                 changeIdPath(node, oldPath);
                 node.setParentNodeId(parentNode.getId().replace(oldPath, absolutePath));
                 nodeDAO.create(node);
-
-
 
             } catch (IOException e) {
                 LOGGER.warn("Couldn't read/update node with id" + childNodeId);
@@ -1886,6 +1886,9 @@ public class NodePreferences extends Preferences {
         try {
             parentNode.setChildNodeIdList(childNodeIdList);
             nodeDAO.update(parentNode);
+            for (Key key : keyList) {
+                putSpi(key);
+            }
         } catch (IOException e) {
             LOGGER.warn("Couldn't update node with id" + parentNode.getId());
         }
@@ -1899,18 +1902,17 @@ public class NodePreferences extends Preferences {
                 String fullOldId = "/".equals(node.getId()) ? "/" + keyId : node.getId() + "/"
                         + keyId;
 
-               
                 Key key = keyDAO.read(fullOldId);
-
-                key.setParentNodeId(node.getId().replaceFirst(oldPath, absolutePath));
-                keyDAO.create(key);
                 keyDAO.delete(fullOldId);
+                key.setParentNodeId(node.getId().replaceFirst(oldPath, absolutePath));
+
+                keyDAO.create(key);
             } catch (IOException e) {
                 LOGGER.warn("Couldn't read/update key with id" + keyId);
             }
         }
     }
-    
+
     /**
      * Method exports Node with all it SubNodes
      * 
@@ -1929,6 +1931,7 @@ public class NodePreferences extends Preferences {
     public void exportNode(String path) throws IOException, BackingStoreException {
         new ZipFiles().exportZipPreferences(this, path);
     }
+
     /**
      * Method exports Node with all it SubNodes
      * 

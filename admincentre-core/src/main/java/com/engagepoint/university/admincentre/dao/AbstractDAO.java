@@ -1,7 +1,6 @@
 package com.engagepoint.university.admincentre.dao;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -21,8 +20,8 @@ import com.engagepoint.university.admincentre.synchronization.CRUDOperation;
 import com.engagepoint.university.admincentre.synchronization.CRUDPayload;
 
 public abstract class AbstractDAO<T extends AbstractEntity>
-	extends Observable
-	implements GenericDAO<T> {
+ extends Observable implements
+        GenericDAO<T> {
 
     private static final String CACHE_CONFIG = "cache_config.xml";
     private static final String USED_CACHE = "evictionCache";
@@ -47,8 +46,9 @@ public abstract class AbstractDAO<T extends AbstractEntity>
             } else {
                 throw new IOException("This entity already exists"+newInstance.getName());
             }
-       }
- finally {
+
+        } finally {
+
             stopCacheManager();
         }
 
@@ -91,10 +91,8 @@ public abstract class AbstractDAO<T extends AbstractEntity>
             cache.remove(keyId);
                 setChanged();
                 notifyObservers(new CRUDPayload(CRUDOperation.DELETE, temp));
-
-            }
-
- finally {
+        }
+        finally {
             stopCacheManager();
         }
 
@@ -118,9 +116,11 @@ public abstract class AbstractDAO<T extends AbstractEntity>
         }
     }
     private Cache<String, T> getCache(String cacheConfigPath, String cacheName) throws IOException {
-
+        if (m == null) {
         m = new DefaultCacheManager(cacheConfigPath);
-        cache = m.getCache(cacheName);
+            cache = m.getCache(cacheName);
+        }
+        cache.start();
         if (!cache.containsKey("/")) {
             Cache<String, Node> startCache = m.getCache(USED_CACHE);
             Node node = new Node("/", "");
@@ -133,7 +133,7 @@ public abstract class AbstractDAO<T extends AbstractEntity>
     private void stopCacheManager() {
         if (m != null) {
             cache.stop();
-            m.stop();
+            // m.stop();
         }
     }
     
@@ -142,14 +142,15 @@ public abstract class AbstractDAO<T extends AbstractEntity>
      * @throws UnsupportedOperationException if could not put all
      */
     public void putAll(Map<String, T> cacheData) throws IOException {
-    	try {
+
+        try {
             getCache(CACHE_CONFIG, USED_CACHE);
-			cache.putAll(cacheData);
-		} catch (IOException e) {
+            cache.putAll(cacheData);
+        } catch (IOException e) {
             throw new IOException("Could not put all, using cache: " + cache.getName(), e);
-		} finally {
-			stopCacheManager();
-		}
+        } finally {
+            stopCacheManager();
+        }
     }
     
     /**
@@ -157,17 +158,19 @@ public abstract class AbstractDAO<T extends AbstractEntity>
      * @throws UnsupportedOperationException if cache could not be clear
      */
     public void clear() throws IOException {
-    	try {
+
+        try {
             getCache(CACHE_CONFIG, USED_CACHE);
-			cache.clear();
-		} catch (IOException e) {
+            cache.clear();
+        } catch (IOException e) {
             throw new IOException("Cache could not be cleared", e);
-		} finally {
-			stopCacheManager();
-		}
+        } finally {
+            stopCacheManager();
+        }
     }
     
     public Map<String, T> obtainCache() throws IOException{
-    	return new HashMap<String, T>(getCache(CACHE_CONFIG, USED_CACHE));
+        return getCache(CACHE_CONFIG, USED_CACHE);
+
     }
 }

@@ -162,9 +162,10 @@ public class ZipFiles {
 					outBuffer.append(toHex(aChar & 0xF));
 				} else {
 					outBuffer.append(aChar);
-				}
-			}
+                }
+                break;
 		}
+        }
 		return outBuffer.toString();
 	}
 

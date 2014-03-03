@@ -1,7 +1,8 @@
 package com.engagepoint.university.admincentre.dao;
 
-import com.engagepoint.university.admincentre.preferences.NodePreferences;
 import java.util.prefs.Preferences;
+
+import com.engagepoint.university.admincentre.preferences.NodePreferences;
 
 public class Test2 {
     public static void main(String[] args) {

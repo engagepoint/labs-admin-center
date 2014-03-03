@@ -1,6 +1,7 @@
 package com.engagepoint.university.admincentre.web;
 
 import java.io.Serializable;
+
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 
@@ -159,9 +160,10 @@ public class Document implements Serializable, Comparable<Document> {
         }
         if (obj instanceof Document) {
             Document other = (Document) obj;
-            if ((this.name.equals(other.name))
+            if ((this.oldName.equals(other.name))
                     && (this.type.equals(other.type))
-                    && (this.value.equals(other.value))) {
+                    && (this.value.equals(other.value))
+                    && (this.absolutePath.equals(other.absolutePath))) {
                 return true;
             }
         }
