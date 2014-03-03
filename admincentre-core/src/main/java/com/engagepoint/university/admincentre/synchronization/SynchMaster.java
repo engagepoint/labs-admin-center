@@ -437,14 +437,14 @@ public final class SynchMaster {
 	/**
 	 * Push to cluster all changed key-entities and new entities
 	 */
-	public void push(){			//TODO rewrite
+	public void push(){
 		if(!isConnected()){
 			throw new IllegalStateException("Channel is not connected.");
 		}
 		obtainCacheData();
-		Map<String, AbstractEntity> payload = new TreeMap<String, AbstractEntity>(
-				cacheData);
-		Message msg = new Message(null, null, payload);
+    	List<CRUDPayload> pushSequence = SynchMaster.getInstance()
+    			.sequance(SynchMaster.MergeStatus.MEMBER, CRUDOperation.CREATE);
+		Message msg = new Message(null, null, pushSequence);
 		try {
 			channel.send(msg);
 		} catch (Exception e) {
@@ -455,21 +455,34 @@ public final class SynchMaster {
 	/**
 	 * Replaces all data in current member for obtained state.
 	 */
-	public void pull() {	//TODO REWRITE!! 
+	public void pull() {
 		if(!isConnected()){
 			throw new IllegalStateException("Channel is not connected.");
 		}
 		if(info().isCoordinator()){
 			throw new IllegalStateException("Coordinator could not pull.");
 		}
-		obtainState();
-        try {
-            abstractDAO.clear();
-            abstractDAO.putAll(receivedState);
-        } catch (IOException e) {
-            LOGGER.warn(e.getMessage());
-        }
-
+    	List<CRUDPayload> pullSequance = SynchMaster.getInstance()
+    			.sequance(SynchMaster.MergeStatus.CLUSTER, CRUDOperation.CREATE);
+    	lastReceivedUpdates.addAll(pullSequance);
+    	for(CRUDPayload crudPayload: pullSequance){
+    		CRUDOperation crudOperation = crudPayload.getCrudOperation();
+    		AbstractEntity entity = crudPayload.getEntity();
+    		try {
+	    		switch (crudOperation) {
+				case CREATE:
+					abstractDAO.create(entity);
+					break;
+				case UPDATE:
+					abstractDAO.update(entity);
+					break;
+				default:
+					break;
+				}
+    		} catch (IOException e) {
+    			throw new IllegalStateException("Could not pull", e);
+    		}
+    	}
 	}
 	
 	private List<CRUDPayload> sequance(MergeStatus mergeStatus, CRUDOperation crudOperation){
