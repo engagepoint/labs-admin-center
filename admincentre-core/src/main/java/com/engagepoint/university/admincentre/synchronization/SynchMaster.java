@@ -23,6 +23,8 @@ import org.slf4j.LoggerFactory;
 
 import com.engagepoint.university.admincentre.dao.AbstractDAO;
 import com.engagepoint.university.admincentre.entity.AbstractEntity;
+import com.engagepoint.university.admincentre.entity.Key;
+import com.engagepoint.university.admincentre.entity.Node;
 
 /**
  * Used for synchronization. It's possible to create new cluster, connect to
@@ -122,7 +124,8 @@ public final class SynchMaster {
 		@Override
 		public void receive(Message msg) {
 			if (!(msg.getObject() instanceof CRUDPayload)
-					&& !(msg.getObject() instanceof TreeMap)) {
+					&& !(msg.getObject() instanceof TreeMap)
+					&& !(msg.getObject() instanceof List)) {
 				throw new IllegalArgumentException(
 						"Something wrong has been received");
 			}
@@ -155,7 +158,7 @@ public final class SynchMaster {
 						throw new IllegalStateException(
 								"Could not complete CRUD operation", e);
 					}
-				}else if(msg.getObject() instanceof TreeMap){
+				}else if(msg.getObject() instanceof TreeMap){	//TODO delete
 					@SuppressWarnings("unchecked")
 					TreeMap<String, AbstractEntity> map = 
 							(TreeMap<String, AbstractEntity>) msg.getObject();
@@ -169,6 +172,34 @@ public final class SynchMaster {
 					} catch (IOException e) {
 						throw new IllegalStateException(
 								"Could not complete putAll", e);
+					}
+				}else if(msg.getObject() instanceof List){
+					@SuppressWarnings("unchecked")
+					List<CRUDPayload> sequence = (List<CRUDPayload>)msg.getObject();
+					lastReceivedUpdates.addAll(sequence);
+					for(CRUDPayload crudPayload: sequence){
+						CRUDOperation crudOperation = crudPayload.getCrudOperation();
+						AbstractEntity entity = crudPayload.getEntity();
+						try {
+							switch (crudOperation) {
+							case CREATE:
+								abstractDAO.create(entity);
+								break;
+							case READ:
+								break;
+							case UPDATE:
+								abstractDAO.update(entity);
+								break;
+							case DELETE:
+								abstractDAO.delete(entity.getId());
+								break;
+							default:
+								break;
+							}
+						} catch (IOException e) {
+							throw new IllegalStateException(
+									"Could not complete CRUD operation", e);
+						}
 					}
 				}
 			}
@@ -406,7 +437,7 @@ public final class SynchMaster {
 	/**
 	 * Push to cluster all changed key-entities and new entities
 	 */
-	public void push(){		//TODO REWRITE!! 
+	public void push(){			//TODO rewrite
 		if(!isConnected()){
 			throw new IllegalStateException("Channel is not connected.");
 		}
@@ -439,6 +470,60 @@ public final class SynchMaster {
             LOGGER.warn(e.getMessage());
         }
 
+	}
+	
+	private List<CRUDPayload> sequance(MergeStatus mergeStatus, CRUDOperation crudOperation){
+		if(mergeStatus != MergeStatus.CLUSTER
+				&& mergeStatus != MergeStatus.MEMBER){
+			throw new IllegalArgumentException("Wrong argument " + mergeStatus + ". Only CLUSTER"
+					+ " and MEMBER could be used.");
+		}
+		if(crudOperation != CRUDOperation.CREATE 
+				&& crudOperation != CRUDOperation.DELETE){
+			throw new IllegalArgumentException("Wrong argument " + crudOperation + ". Only CREATE"
+					+ " and DELETE could be used.");
+		}
+		List<CRUDPayload> sequance = new ArrayList<CRUDPayload>();
+		List<Pair<MergeStatus, AbstractEntity>> mergeList = merge();
+		for(Pair<MergeStatus, AbstractEntity> pair: mergeList){
+			if(pair.getLeft() == mergeStatus){
+				sequance.add(new CRUDPayload(crudOperation, pair.getRight()));	//add create
+				Node parentNode = getParentNodeFromMerge(mergeList, pair.getRight(), mergeStatus);
+				addOrDelete(crudOperation, parentNode, pair.getRight());
+				sequance.add(new CRUDPayload(CRUDOperation.UPDATE, parentNode));	//add update
+			}//finish
+		}
+		return sequance;
+	}
+	
+	private Node getParentNodeFromMerge(List<Pair<MergeStatus, AbstractEntity>> mergeList,
+			AbstractEntity entity, MergeStatus mergeStatus){
+		String parentId = entity.getParentNodeId();
+		Node parentNode = null;
+		for(Pair<MergeStatus, AbstractEntity> innerPair: mergeList){
+			if((innerPair.getLeft() == MergeStatus.COMMON
+					|| innerPair.getLeft() == mergeStatus
+					)
+					&& innerPair.getRight().getId().equals(parentId)){
+				parentNode = (Node) innerPair.getRight();
+				break;
+			}
+		}
+		return parentNode;
+	}
+	
+	private void addOrDelete(CRUDOperation crudOperation, Node parentNode, AbstractEntity entity){
+		if(crudOperation == CRUDOperation.CREATE){
+			if(entity instanceof Node)
+				parentNode.addChildNodeId(entity.getId());
+			if(entity instanceof Key)
+				parentNode.addKeyId(entity.getName());
+		}else if(crudOperation == CRUDOperation.DELETE){
+			if(entity instanceof Node)
+				parentNode.getChildNodeIdList().remove(entity.getId());
+			if(entity instanceof Key)
+				parentNode.getKeyIdList().remove(entity.getName());
+		}
 	}
 	
 	/**

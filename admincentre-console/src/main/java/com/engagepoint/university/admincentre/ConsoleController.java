@@ -14,6 +14,8 @@ import com.engagepoint.university.admincentre.entity.AbstractEntity;
 import com.engagepoint.university.admincentre.entity.KeyType;
 import com.engagepoint.university.admincentre.exception.WrongInputArgException;
 import com.engagepoint.university.admincentre.preferences.NodePreferences;
+import com.engagepoint.university.admincentre.synchronization.CRUDOperation;
+import com.engagepoint.university.admincentre.synchronization.CRUDPayload;
 import com.engagepoint.university.admincentre.synchronization.SynchMaster;
 import com.engagepoint.university.admincentre.synchronization.SynchMaster.MergeStatus;
 import com.engagepoint.university.admincentre.synchronization.Pair;
@@ -192,6 +194,11 @@ public class ConsoleController {
             		break;
             	}
                 SynchMaster.getInstance().pull();
+//            	List<CRUDPayload> pullSequance = SynchMaster.getInstance()
+//            			.sequance(SynchMaster.MergeStatus.CLUSTER, CRUDOperation.CREATE);
+//            	for(CRUDPayload payload: pullSequance){
+//            		LOGGER.info(payload.toString());
+//            	}
                 refresh();
                 break;
             case MERGE:
@@ -208,6 +215,11 @@ public class ConsoleController {
             case PUSH:
             	if(!isConnected()) break;
             	SynchMaster.getInstance().push();
+//            	List<CRUDPayload> pushSequence = SynchMaster.getInstance()
+//            			.sequance(SynchMaster.MergeStatus.MEMBER, CRUDOperation.CREATE);
+//            	for(CRUDPayload payload: pushSequence){
+//            		LOGGER.info(payload.toString());
+//            	}
             	break;
             case MODE:
             	LOGGER.info("Mode: " + SynchMaster.getInstance().mode.name());

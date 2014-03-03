@@ -42,6 +42,6 @@ public class CRUDPayload implements Serializable {
 	
 	@Override
 	public String toString() {
-		return crudOperation + " " + entity.toString();
+		return crudOperation + "\t" + entity.toString();
 	}
 }
