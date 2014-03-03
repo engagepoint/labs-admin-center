@@ -46,7 +46,13 @@ public final class SynchMaster {
 	private HashMap<String, AbstractEntity> cacheData;
 	private HashMap<String, AbstractEntity> receivedState;
 	private final List<CRUDPayload> lastReceivedUpdates = new ArrayList<CRUDPayload>();
-
+	public Mode mode = Mode.AUTO;
+	
+	public enum Mode{
+		AUTO,
+		HAND
+	}
+	
 	private class Receiver extends ReceiverAdapter{
 		/**
 		 * Allows an application to write a state through a provided OutputStream.
@@ -174,17 +180,13 @@ public final class SynchMaster {
 	 * Private constructor, used in realization of singleton pattern.
 	 */
 	private SynchMaster() {
-		System.setProperty("java.net.preferIPv4Stack", "true");		
+		System.setProperty("java.net.preferIPv4Stack", "true");
 		abstractDAO = new AbstractDAO<AbstractEntity>(AbstractEntity.class) {
 		};
 		try {
-//			syso("Start constructing..."); // delete
 			channel = new JChannel();
 			channel.setDiscardOwnMessages(true);
 			channel.setReceiver(new Receiver());
-			// connect("testCluster"); // delete
-			// obtainState(); // delete
-			// putAllReceived(); // delete
 			LOGGER.info("CONSTRUCTED"); // delete
 		} catch (Exception e) {
 			throw new IllegalStateException("Something wrong with channel", e);
@@ -269,7 +271,6 @@ public final class SynchMaster {
 	private void send(Message msg) {
 		try {
 			channel.send(msg);
-//			syso("Message send: " + ((CRUDPayload) msg.getObject()).toString());
 		} catch (Exception e) {
 			LOGGER.warn("Message was not set!");
 			throw new IllegalStateException(e);
@@ -282,6 +283,12 @@ public final class SynchMaster {
 			send(new Message(null, null, crudPayload));
 	}
 	
+	/**
+	 * Set receive updates status. If <b>false</b>,
+	 * channel could be connected and messages be received,
+	 * but data would not be stored into infinispan cache.
+	 * @param receiveUpdates
+	 */
 	public void setReceiveUpdates(boolean receiveUpdates) {
 		this.receiveUpdates = receiveUpdates;
 	}
@@ -308,16 +315,16 @@ public final class SynchMaster {
 		return false;
 	}
 
-	private void obtainState() {
+	private boolean obtainState() {
 		if (channel.getView().getMembers().size() > 1) {
 			try {
 				channel.getState(null, 40000);
+				return true;
 			} catch (Exception e) {
 				throw new IllegalStateException(e);
 			}
-		} else {
-			LOGGER.info("You are the only one in the cluster and cannot obtain state");
-		}
+		} else
+			return false;
 	}
 
 	public void setChannelName(String channelName) {
@@ -345,21 +352,47 @@ public final class SynchMaster {
 		return channel.isConnected();
 	}
 	
-	
 	/**
-	 * <b>null</b> if not connected
-	 * 	<br><b>true</b> if the only one member of the cluster
-	 * 	<br><b>false</b> if 2+ members of cluster exist
-	 * @return membership status
+	 * Use this method to get additional info.
+	 * <br>Info</br> is an inner class containing optional info methods.
+	 * @return
 	 */
-	public Boolean isSingle(){
-		return isConnected()
-			? (channel.getView().getMembers().size() == 1)
-			: null;
+	public Info info(){
+		if(!channel.isConnected())
+			throw new IllegalStateException("Channel is not connected.");
+		if(infoInstance == null){
+			infoInstance = new Info();
+		}
+		return infoInstance;
 	}
 	
-	public List<Address> getAddressList(){
-		return channel.getView().getMembers();
+	private static volatile Info infoInstance;
+	
+	public class Info{
+		
+		private Info(){
+		}
+		
+		/**
+		 * 	<b>true</b> if the only one member of the cluster
+		 * 	<br><b>false</b> if 2+ members of cluster exist
+		 * @return membership status
+		 */
+		public boolean isSingle(){
+			return (channel.getView().getMembers().size() == 1);
+		}
+		
+		public boolean isCoordinator(){
+			return channel.getAddress().compareTo(getCoordinator()) == 0;
+		}
+		
+		public Address getCoordinator(){
+			return channel.getView().getMembers().get(0);
+		}
+		
+		public List<Address> getAddressList(){
+			return channel.getView().getMembers();
+		}
 	}
 	
 	public void obtainCacheData() {
@@ -395,6 +428,9 @@ public final class SynchMaster {
 		if(!isConnected()){
 			throw new IllegalStateException("Channel is not connected.");
 		}
+		if(info().isCoordinator()){
+			throw new IllegalStateException("Coordinator could not pull.");
+		}
 		obtainState();
         try {
             abstractDAO.clear();
@@ -404,11 +440,19 @@ public final class SynchMaster {
         }
 
 	}
+	
 	/**
 	 * 
 	 * @return sorted list with pair of MergeStatus and entity both from cluster and member
 	 */
 	public List<Pair<MergeStatus, AbstractEntity>> merge() {
+		if(info().isSingle()){
+			throw new IllegalStateException("It has to be 2+ members in a cluster.");
+		}
+		if(info().isCoordinator()){
+			throw new IllegalStateException("Current member is coordinator. It's cache data"
+					+ " is equal to cluster state.");
+		}
 		obtainState();
 		obtainCacheData();
 		Map<String, AbstractEntity> common 

@@ -185,17 +185,32 @@ public class ConsoleController {
                 	LOGGER.info("Disconnected.");
                 break;
             case PULL:
+            	if(!isConnected()) break;
+            	if(SynchMaster.getInstance().info().isCoordinator()){
+            		LOGGER.info("This member is coordinator of the cluster and could"
+            				+ " not pull.");
+            		break;
+            	}
                 SynchMaster.getInstance().pull();
                 refresh();
                 break;
             case MERGE:
+            	if(!isConnected()) break;
+            	if(SynchMaster.getInstance().info().isCoordinator()){
+            		LOGGER.info("This member is coordinator.");
+            		break;
+            	}
             	List<Pair<MergeStatus, AbstractEntity>> mergeList = SynchMaster.getInstance().merge();
             	for(Pair<MergeStatus, AbstractEntity> pair: mergeList){
             		LOGGER.info(pair.toString());
             	}
             	break;
             case PUSH:
+            	if(!isConnected()) break;
             	SynchMaster.getInstance().push();
+            	break;
+            case MODE:
+            	LOGGER.info("Mode: " + SynchMaster.getInstance().mode.name());
             	break;
             case RECEIVEUPDATES:
                 LOGGER.info("Receive updates status: " + SynchMaster.getInstance().isReceiveUpdates());
@@ -210,15 +225,30 @@ public class ConsoleController {
         }
     }
 
+    /**
+     * Prints caution info if trying to call methods
+     * which require connected channel
+     * @return <br><b>true</b> if channel is connected
+     * 		<br><b>false</br> otherwise
+     */
+    private boolean isConnected(){
+    	if(SynchMaster.getInstance().isConnected())
+    		return true;
+    	LOGGER.info("Channel is disconnected. Command could not be used.");
+    	return false;
+    }
+    
     private void synchSTATUS() {
         LOGGER.info("-----------Synch status-----------"
                 + "\nChannel name........." + SynchMaster.getInstance().getChannelName()
+                + "\nMode................." + SynchMaster.getInstance().mode.name()
                 + "\nConnected............" + SynchMaster.getInstance().isConnected());
         if (SynchMaster.getInstance().isConnected()) {
             LOGGER.info("Receive updates......" + SynchMaster.getInstance().isReceiveUpdates()
-            		+ "\nCluster name........." + SynchMaster.getInstance().getClusterName());
-            String addresses = "Addresses: ";
-            for (Iterator<Address> i = SynchMaster.getInstance().getAddressList().iterator(); i.hasNext(); ) {
+            		+ "\nCluster name........." + SynchMaster.getInstance().getClusterName()
+            		+ "\nCoordinator.........." + SynchMaster.getInstance().info().getCoordinator().toString());
+            String addresses = "Addresses(" + SynchMaster.getInstance().info().getAddressList().size() + "): ";
+            for (Iterator<Address> i = SynchMaster.getInstance().info().getAddressList().iterator(); i.hasNext(); ) {
             	addresses = addresses.concat( SynchMaster.getInstance().getChannelName(i.next()) );
                 if (i.hasNext()) {
                 	addresses = addresses.concat(", ");
@@ -234,15 +264,24 @@ public class ConsoleController {
         switch (getEnumElement(cis)) {
             case CONNECT:
                 SynchMaster.getInstance().connect(cis.getThirdArg());
-                if(SynchMaster.getInstance().isSingle() != null
-                		&& !SynchMaster.getInstance().isSingle()){
-                	SynchMaster.getInstance().pull();			//TODO rewrite according to mode (auto 
-                												//or hand-held) - add arg
+                if(SynchMaster.getInstance().mode == SynchMaster.Mode.AUTO
+                	&& !SynchMaster.getInstance().info().isSingle()){
+                	SynchMaster.getInstance().pull();
                 }
                 break;
+            case MODE:
+            	if(!cis.getThirdArg().equals("auto") && !cis.getThirdArg().equals("hand")){
+            		LOGGER.info("Wrong argument. Only \"auto\" or \"hand\" could be passed");
+            		break;
+            	}
+            	SynchMaster.getInstance().mode 
+            		= SynchMaster.Mode.valueOf(cis.getThirdArg().toUpperCase(Locale.US));
+            	LOGGER.info("New mode has been set: " + SynchMaster.getInstance().mode.name());
+            	break;
             case RECEIVEUPDATES:
                 boolean value = Boolean.parseBoolean(cis.getThirdArg());
                 SynchMaster.getInstance().setReceiveUpdates(value);
+                LOGGER.info("Receive updates: " + SynchMaster.getInstance().isReceiveUpdates());
                 break;
             case NAME:
                 if (!SynchMaster.getInstance().isConnected()) {

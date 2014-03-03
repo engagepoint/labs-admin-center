@@ -5,10 +5,10 @@ public enum AdditionalCommands {
     KEY("-key"),
     CONNECT("-connect"),
     DISCONNECT("-disconnect"),
-//    OBTAIN("-obtain"),
     PULL("-pull"),
     MERGE("-merge"),
     PUSH("-push"),
+    MODE("-mode"),
     RECEIVEUPDATES("-receiveupdates"),
     STATUS("-status"),
     NAME("-name");
