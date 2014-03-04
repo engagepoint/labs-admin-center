@@ -168,13 +168,13 @@ public class ConsoleController {
     public void synch(ConsoleInputString cis) {
         int length =cis.getLength();
         if (length == 2) {
-            synchArgLengthOneElement(cis);
+            synchArgLengthTwoElement(cis);
         } else if (length == 3) {
-            synchArgLengthTwoElements(cis);
+            synchArgLengthThreeElements(cis);
         }
     }
 
-    public void synchArgLengthOneElement(ConsoleInputString cis) {
+    public void synchArgLengthTwoElement(ConsoleInputString cis) {
         switch (getEnumElement(cis)) {
             case CONNECT:
                 LOGGER.info("Please, type the name of the cluster you want to connect");
@@ -265,7 +265,7 @@ public class ConsoleController {
         }
     }
 
-    public void synchArgLengthTwoElements(ConsoleInputString cis) {
+    public void synchArgLengthThreeElements(ConsoleInputString cis) {
         switch (getEnumElement(cis)) {
             case CONNECT:
                 SynchMaster.getInstance().connect(cis.getThirdArg());

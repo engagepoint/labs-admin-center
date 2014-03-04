@@ -1,4 +1,4 @@
-<ui:composition 
+<ui:composition
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:h="http://java.sun.com/jsf/html"
@@ -19,6 +19,35 @@
             </ui:remove>
             <h2><h:outputText value="#{trans.prefAdm}"/></h2>
 
+
+            <p:menuButton value="Options" id="Options" >
+                <p:menuitem value="Export" id="export"
+                            icon="ui-icon-disk"
+                            ajax="false"
+                            actionListener="#{tempController.onExportZip}">
+                    <p:fileDownload value="#{fileController.downloadFile}"/>
+                </p:menuitem>
+                <p:menuitem value="Import"
+                            name="Import"
+                            update="ImportDialog"
+                            icon="ui-icon-arrowrefresh-1-w"
+                            oncomplete="uploadXML.show()"/>
+
+            </p:menuButton>
+
+
+            <p:dialog id="ImportDialog"
+                      header="Import Dialog"
+                      widgetVar="uploadXML"
+                      modal="true" height="200" width="800">
+                <p:fileUpload value="#{fileController.uploadFile}"
+                              fileUploadListener="#{tempController.onImportZip}"
+                              multiple="true"
+                              oncomplete="uploadXML.hide()"
+                        />
+            </p:dialog>
+
+
             <p:treeTable id="treeTable" value="#{documentsController.root}"
                          var="doc">
                 <f:facet name="header">#{trans.propViewer}</f:facet>
@@ -33,40 +62,41 @@
                                      title="Add new node"
                                      styleClass="ui-button-icon-only secondary small"
                                      icon="ui-icon-add"
-                                     style="float: right">  
-                        <f:setPropertyActionListener value="#{doc}"   
-                                                     target="#{documentsController.selectedDoc}" />  
-                    </p:commandButton> 
+                                     style="float: right">
+                        <f:setPropertyActionListener value="#{doc}"
+                                                     target="#{documentsController.selectedDoc}" />
+                    </p:commandButton>
 
-                    <p:dialog id="addDialog" header="Add Node" position="top" closable="true" showEffect="fade" widgetVar="addDlg" modal="true">  
+                    <p:dialog id="addDialog" header="Add Node" position="top" closable="true" showEffect="fade" widgetVar="addDlg" modal="true">
                         <uib:gridContainer id="container" >
-                            <p:selectOneRadio id="addRadio" value="#{documentsController.tempDoc.file}" >  
-                                <f:selectItem itemLabel="File" itemValue="true" />  
+                            <p:selectOneRadio id="addRadio" value="#{documentsController.tempDoc.file}" >
+                                <f:selectItem itemLabel="File" itemValue="true" />
                                 <f:selectItem itemLabel="Key" itemValue="false" />
                                 <p:ajax update="container" event="change"/>
                             </p:selectOneRadio>  <br/>
 
-                            <h:outputLabel value="Name: " />  
-                            <p:inputText  value="#{documentsController.tempDoc.name}" style="font-weight:bold" />  
+                            <h:outputLabel value="Name: " />
+                            <p:inputText  value="#{documentsController.tempDoc.name}" style="font-weight:bold" />
 
-                            <h:outputLabel  value="Value: "  />  
-                            <p:inputText  disabled="#{documentsController.tempDoc.file}" value="#{documentsController.tempDoc.value}"  style="font-weight:bold" />  
+                            <h:outputLabel  value="Value: "  />
+                            <p:inputText  disabled="#{documentsController.tempDoc.file}" value="#{documentsController.tempDoc.value}"  style="font-weight:bold" />
 
                             <h:outputLabel value="Type "/>
-                            <p:selectOneMenu value="#{documentsController.tempDoc.type}" disabled="#{documentsController.tempDoc.file}">  
-                                <f:selectItem itemLabel="Select Type" itemValue="" />  
-                                <f:selectItem itemLabel="String" itemValue="String" />  
-                                <f:selectItem itemLabel="Integer" itemValue="Integer" />  
-                                <f:selectItem itemLabel="Double" itemValue="Double" />  
-                                <f:selectItem itemLabel="Float" itemValue="Float" />  
+                            <p:selectOneMenu value="#{documentsController.tempDoc.type}" disabled="#{documentsController.tempDoc.file}">
+                                <f:selectItem itemLabel="Select Type" itemValue="" />
+                                <f:selectItem itemLabel="String" itemValue="String" />
+                                <f:selectItem itemLabel="Integer" itemValue="Integer" />
+                                <f:selectItem itemLabel="Double" itemValue="Double" />
+                                <f:selectItem itemLabel="Float" itemValue="Float" />
                             </p:selectOneMenu>
 
                             <p:commandButton value="Ok"
                                              style="float:left"
+                                             ajax="false"
                                              update="treeTable"
                                              actionListener="#{documentsController.addNode()}"
                                              oncomplete="addDlg.hide()"/>
-                            
+
                             <p:commandButton value="Cancel"
                                              style="float:right"
                                              update="treeTable"
@@ -111,24 +141,25 @@
                               showEffect="fade"
                               hideEffect="explode"
                               modal="true">
-                        
+
                         <h:panelGrid id="editPanelGrid" columns="2" cellpadding="4">
                             <h:outputText value="Name1:" />
                             <p:inputText  value="#{documentsController.selectedDoc.name}" />
                             <h:outputText value="Value:" rendered="#{not documentsController.selectedDoc.file}"/>
                             <p:inputText  value="#{documentsController.selectedDoc.value}" rendered="#{not documentsController.selectedDoc.file}"/>
                             <h:outputText value="Type:" rendered="#{not documentsController.selectedDoc.file}"/>
-                         
-                            <p:selectOneMenu value="#{documentsController.selectedDoc.type}" rendered="#{not documentsController.selectedDoc.file}">  
-                                <f:selectItem itemLabel="Select" itemValue="" />  
-                                <f:selectItem itemLabel="String" itemValue="String" />  
-                                <f:selectItem itemLabel="Integer" itemValue="Integer" />  
-                                <f:selectItem itemLabel="Double" itemValue="Double" />  
-                                <f:selectItem itemLabel="Float" itemValue="Float" />  
+
+                            <p:selectOneMenu value="#{documentsController.selectedDoc.type}" rendered="#{not documentsController.selectedDoc.file}">
+                                <f:selectItem itemLabel="Select" itemValue="" />
+                                <f:selectItem itemLabel="String" itemValue="String" />
+                                <f:selectItem itemLabel="Integer" itemValue="Integer" />
+                                <f:selectItem itemLabel="Double" itemValue="Double" />
+                                <f:selectItem itemLabel="Float" itemValue="Float" />
                             </p:selectOneMenu>
-                            
+
                             <p:commandButton value="Ok"
                                              update="treeTable"
+                                             ajax="false"
                                              oncomplete="editDialog.hide()"
                                              actionListener="#{documentsController.editDocument}" />
                             <p:commandButton value="#{trans.cancel}"
@@ -140,7 +171,7 @@
                     </p:dialog>
 
                     <!--Delete button-->
-                    <p:commandButton 
+                    <p:commandButton
                         id="delButton"
                         value="#{trans.del}"
                         alt="#{trans.del}"
@@ -159,7 +190,7 @@
                               position="center, center"
                               showEffect="fade"
                               hideEffect="explode"
-                              modal="true"                              
+                              modal="true"
                               closable="false">
 
                         <h:outputText value="#{trans.delConfDial}"/>
@@ -170,13 +201,13 @@
                                       escape="false"/>
                         <br/>
 
-                        <p:commandButton 
+                        <p:commandButton
                             id="delOkButton"
                             value="Ok"
                             styleClass="ui-state-focus ui-state-active"
                             style="float:left"
                             action="#{documentsController.deleteNode()}"
-                            ajax="false"                            
+                            ajax="false"
                             oncomplete="delDialog.hide()"/>
 
                         <p:commandButton
@@ -187,7 +218,7 @@
                             action="cancel"
                             update="treeTable"
                             oncomplete="delDialog.hide()"/>
-                    </p:dialog>                    
+                    </p:dialog>
                 </p:column>
             </p:treeTable>
         </h:form>
