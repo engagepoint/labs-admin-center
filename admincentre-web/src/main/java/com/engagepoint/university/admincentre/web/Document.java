@@ -46,7 +46,9 @@ public class Document implements Serializable, Comparable<Document> {
     }
 
     public boolean isFile() {
+
         return file;
+
     }
 
     public String getAbsolutePath() {
