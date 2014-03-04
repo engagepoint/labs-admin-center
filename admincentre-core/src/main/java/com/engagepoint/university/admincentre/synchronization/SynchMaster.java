@@ -42,7 +42,7 @@ public final class SynchMaster {
 	private static volatile SynchMaster instance;
 
 	private final JChannel channel;
-	private final AbstractDAO<AbstractEntity> abstractDAO;
+	private AbstractDAO<AbstractEntity> abstractDAO;
 	private HashMap<String, AbstractEntity> cacheData;
 	private HashMap<String, AbstractEntity> receivedState;
 	private final List<CRUDPayload> lastReceivedUpdates = new ArrayList<CRUDPayload>();
@@ -71,6 +71,8 @@ public final class SynchMaster {
 		@Override
 		public void getState(OutputStream output) { // SEND
 			try {
+				abstractDAO = new AbstractDAO<AbstractEntity>(AbstractEntity.class) {
+				};
 				cacheData = new HashMap<String, AbstractEntity>(
 						abstractDAO.obtainCache());
 			} catch (IOException e1) {
@@ -406,6 +408,8 @@ public final class SynchMaster {
 	
 	public void obtainCacheData() {
 		try {
+			abstractDAO = new AbstractDAO<AbstractEntity>(AbstractEntity.class) {
+			};
 			cacheData = new HashMap<String, AbstractEntity>(abstractDAO.obtainCache());
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
@@ -419,9 +423,7 @@ public final class SynchMaster {
 		if(!isConnected()){
 			throw new IllegalStateException("Channel is not connected.");
 		}
-		obtainCacheData();
-    	List<CRUDPayload> pushSequence = SynchMaster.getInstance()
-    			.sequance(SynchMaster.MergeStatus.MEMBER, CRUDOperation.CREATE);
+    	List<CRUDPayload> pushSequence = sequance(SynchMaster.MergeStatus.MEMBER, CRUDOperation.CREATE);
 		Message msg = new Message(null, null, pushSequence);
 		try {
 			channel.send(msg);
@@ -440,8 +442,7 @@ public final class SynchMaster {
 		if(info().isCoordinator()){
 			throw new IllegalStateException("Coordinator could not pull.");
 		}
-    	List<CRUDPayload> pullSequance = SynchMaster.getInstance()
-    			.sequance(SynchMaster.MergeStatus.CLUSTER, CRUDOperation.CREATE);
+    	List<CRUDPayload> pullSequance = sequance(SynchMaster.MergeStatus.CLUSTER, CRUDOperation.CREATE);
     	lastReceivedUpdates.addAll(pullSequance);
     	for(CRUDPayload crudPayload: pullSequance){
     		CRUDOperation crudOperation = crudPayload.getCrudOperation();
@@ -463,7 +464,46 @@ public final class SynchMaster {
     	}
 	}
 	
-	public List<CRUDPayload> sequance(MergeStatus mergeStatus, CRUDOperation crudOperation){
+	public void reset(){
+		if(info().isCoordinator()){
+			throw new IllegalStateException("Coordinator could not reset changes.");
+		}
+		List<CRUDPayload> sequance = sequance(SynchMaster.MergeStatus.MEMBER, CRUDOperation.DELETE);
+		lastReceivedUpdates.addAll(sequance);
+    	for(CRUDPayload crudPayload: sequance){
+    		CRUDOperation crudOperation = crudPayload.getCrudOperation();
+    		AbstractEntity entity = crudPayload.getEntity();
+    		try {
+	    		switch (crudOperation) {
+				case UPDATE:
+					abstractDAO.update(entity);
+					break;
+				case DELETE:
+					abstractDAO.delete(entity.getId());
+					break;
+				default:
+					break;
+				}
+    		} catch (IOException e) {
+    			throw new IllegalStateException("Could not pull", e);
+    		}
+    	}
+	}
+	
+	public void revert(){
+		if(!isConnected()){
+			throw new IllegalStateException("Channel is not connected.");
+		}
+		List<CRUDPayload> sequance = sequance(SynchMaster.MergeStatus.CLUSTER, CRUDOperation.DELETE);
+		Message msg = new Message(null, null, sequance);
+		try {
+			channel.send(msg);
+		} catch (Exception e) {
+			throw new IllegalStateException("Could not send in push", e);
+		}
+	}
+	
+	private List<CRUDPayload> sequance(MergeStatus mergeStatus, CRUDOperation crudOperation){
 		if(mergeStatus != MergeStatus.CLUSTER
 				&& mergeStatus != MergeStatus.MEMBER){
 			throw new IllegalArgumentException("Wrong argument " + mergeStatus + ". Only CLUSTER"
@@ -476,18 +516,23 @@ public final class SynchMaster {
 		}
 		List<CRUDPayload> sequance = new ArrayList<CRUDPayload>();
 		List<Pair<MergeStatus, AbstractEntity>> mergeList = merge();
+		if(crudOperation == CRUDOperation.DELETE)
+			Collections.reverse(mergeList);
 		for(Pair<MergeStatus, AbstractEntity> pair: mergeList){
 			if(pair.getLeft() == mergeStatus){
-				if(pair.getRight() instanceof Key
-						&& !updateKeyIfExist((Key)pair.getRight(), mergeList, mergeStatus, sequance)){
-				}else{
-					sequance.add(new CRUDPayload(crudOperation, pair.getRight()));	//add create
-					Node parentNode = getParentNodeFromMerge(mergeList, pair.getRight(), mergeStatus);
-					addOrDelete(crudOperation, parentNode, pair.getRight());
-					sequance.add(new CRUDPayload(CRUDOperation.UPDATE, parentNode));	//add update
+				if(pair.getRight() instanceof Key){
+					Key key = (Key)pair.getRight();
+					if(crudOperation != CRUDOperation.DELETE
+							&& updateKeyIfExist(key, mergeList, mergeStatus, sequance))
+						continue;
 				}
+				sequance.add(new CRUDPayload(crudOperation, pair.getRight()));	//add create
+				Node parentNode = getParentNodeFromMerge(mergeList, pair.getRight(), mergeStatus);
+				createOrDelete(crudOperation, parentNode, pair.getRight());
+				sequance.add(new CRUDPayload(CRUDOperation.UPDATE, parentNode));	//add update
 			}
 		}
+		
 		return sequance;
 	}
 	
@@ -507,7 +552,7 @@ public final class SynchMaster {
 		return parentNode;
 	}
 	
-	private void addOrDelete(CRUDOperation crudOperation, Node parentNode, AbstractEntity entity){
+	private void createOrDelete(CRUDOperation crudOperation, Node parentNode, AbstractEntity entity){
 		if(crudOperation == CRUDOperation.CREATE){
 			if(entity instanceof Node)
 				parentNode.addChildNodeId(entity.getId());

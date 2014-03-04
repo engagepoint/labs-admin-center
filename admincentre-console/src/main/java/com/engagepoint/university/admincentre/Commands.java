@@ -19,12 +19,13 @@ public enum Commands {
     SYNCH("-synch",
 			"Synchronization commands:"
 					+ "\n\t -connect \"cluster_name\""
-					+ "\n\t -merge \t*compare with state"
 					+ "\n\t -disconnect"
+					+ "\n\t -merge \t\t*compare with state"
 					+ "\n\t -pull \t\t*pull state"
 					+ "\n\t -push \t\t*send my state to all cluster members"
+					+ "\n\t -reset \t\t*reset member's changes"
+					+ "\n\t -revert \t\t*reset cluster changes"
 					+ "\n\t -mode [auto|hand] \t*get or set mode - auto or hand-held"
-					+ "\n\t -receiveupdates [true|false] *get or set receive updates status"
 					+ "\n\t -name [new name] \t*get or set channel name"
 					+ "\n\t -status \t*print all info about channel"),
     REFRESH("-refresh", "*use after obtaining new message or state"),

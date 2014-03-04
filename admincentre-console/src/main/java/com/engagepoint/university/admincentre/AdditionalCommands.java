@@ -5,9 +5,11 @@ public enum AdditionalCommands {
     KEY("-key"),
     CONNECT("-connect"),
     DISCONNECT("-disconnect"),
-    PULL("-pull"),
     MERGE("-merge"),
+    PULL("-pull"),
     PUSH("-push"),
+    RESET("-reset"),
+    REVERT("-revert"),
     MODE("-mode"),
     STATUS("-status"),
     NAME("-name");

@@ -14,11 +14,9 @@ import com.engagepoint.university.admincentre.entity.AbstractEntity;
 import com.engagepoint.university.admincentre.entity.KeyType;
 import com.engagepoint.university.admincentre.exception.WrongInputArgException;
 import com.engagepoint.university.admincentre.preferences.NodePreferences;
-import com.engagepoint.university.admincentre.synchronization.CRUDOperation;
-import com.engagepoint.university.admincentre.synchronization.CRUDPayload;
+import com.engagepoint.university.admincentre.synchronization.Pair;
 import com.engagepoint.university.admincentre.synchronization.SynchMaster;
 import com.engagepoint.university.admincentre.synchronization.SynchMaster.MergeStatus;
-import com.engagepoint.university.admincentre.synchronization.Pair;
 
 public class ConsoleController {
 
@@ -193,19 +191,8 @@ public class ConsoleController {
             				+ " not pull.");
             		break;
             	}
-//                SynchMaster.getInstance().pull();
-            	List<CRUDPayload> pullSequance = SynchMaster.getInstance()
-            			.sequance(SynchMaster.MergeStatus.CLUSTER, CRUDOperation.CREATE);
-            	for(CRUDPayload payload: pullSequance){
-            		LOGGER.info(payload.toString());
-            	}
-            	LOGGER.info("--------------");
-            	List<CRUDPayload> pullSequance2 = SynchMaster.getInstance()
-            			.sequance(SynchMaster.MergeStatus.CLUSTER, CRUDOperation.DELETE);
-            	for(CRUDPayload payload: pullSequance2){
-            		LOGGER.info(payload.toString());
-            	}
-//                refresh();
+                SynchMaster.getInstance().pull();
+                refresh();
                 break;
             case MERGE:
             	if(!isConnected()) break;
@@ -220,18 +207,16 @@ public class ConsoleController {
             	break;
             case PUSH:
             	if(!isConnected()) break;
-//            	SynchMaster.getInstance().push();
-            	List<CRUDPayload> pushSequance = SynchMaster.getInstance()
-            			.sequance(SynchMaster.MergeStatus.MEMBER, CRUDOperation.CREATE);
-            	for(CRUDPayload payload: pushSequance){
-            		LOGGER.info(payload.toString());
-            	}
-            	LOGGER.info("--------------");
-            	List<CRUDPayload> pushSequance2 = SynchMaster.getInstance()
-            			.sequance(SynchMaster.MergeStatus.MEMBER, CRUDOperation.DELETE);
-            	for(CRUDPayload payload: pushSequance2){
-            		LOGGER.info(payload.toString());
-            	}
+            	SynchMaster.getInstance().push();
+            	break;
+            case RESET:
+            	if(!isConnected()) break;
+            	SynchMaster.getInstance().reset();
+            	refresh();
+            	break;
+            case REVERT:
+            	if(!isConnected()) break;
+            	SynchMaster.getInstance().revert();
             	break;
             case MODE:
             	LOGGER.info("Mode: " + SynchMaster.getInstance().mode.name());
