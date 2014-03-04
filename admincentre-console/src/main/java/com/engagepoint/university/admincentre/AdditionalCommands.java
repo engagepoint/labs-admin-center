@@ -9,7 +9,6 @@ public enum AdditionalCommands {
     MERGE("-merge"),
     PUSH("-push"),
     MODE("-mode"),
-    RECEIVEUPDATES("-receiveupdates"),
     STATUS("-status"),
     NAME("-name");
 

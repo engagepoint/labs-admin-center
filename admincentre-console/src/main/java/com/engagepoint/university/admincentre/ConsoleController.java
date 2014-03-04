@@ -193,13 +193,19 @@ public class ConsoleController {
             				+ " not pull.");
             		break;
             	}
-                SynchMaster.getInstance().pull();
-//            	List<CRUDPayload> pullSequance = SynchMaster.getInstance()
-//            			.sequance(SynchMaster.MergeStatus.CLUSTER, CRUDOperation.CREATE);
-//            	for(CRUDPayload payload: pullSequance){
-//            		LOGGER.info(payload.toString());
-//            	}
-                refresh();
+//                SynchMaster.getInstance().pull();
+            	List<CRUDPayload> pullSequance = SynchMaster.getInstance()
+            			.sequance(SynchMaster.MergeStatus.CLUSTER, CRUDOperation.CREATE);
+            	for(CRUDPayload payload: pullSequance){
+            		LOGGER.info(payload.toString());
+            	}
+            	LOGGER.info("--------------");
+            	List<CRUDPayload> pullSequance2 = SynchMaster.getInstance()
+            			.sequance(SynchMaster.MergeStatus.CLUSTER, CRUDOperation.DELETE);
+            	for(CRUDPayload payload: pullSequance2){
+            		LOGGER.info(payload.toString());
+            	}
+//                refresh();
                 break;
             case MERGE:
             	if(!isConnected()) break;
@@ -214,19 +220,22 @@ public class ConsoleController {
             	break;
             case PUSH:
             	if(!isConnected()) break;
-            	SynchMaster.getInstance().push();
-//            	List<CRUDPayload> pushSequence = SynchMaster.getInstance()
-//            			.sequance(SynchMaster.MergeStatus.MEMBER, CRUDOperation.CREATE);
-//            	for(CRUDPayload payload: pushSequence){
-//            		LOGGER.info(payload.toString());
-//            	}
+//            	SynchMaster.getInstance().push();
+            	List<CRUDPayload> pushSequance = SynchMaster.getInstance()
+            			.sequance(SynchMaster.MergeStatus.MEMBER, CRUDOperation.CREATE);
+            	for(CRUDPayload payload: pushSequance){
+            		LOGGER.info(payload.toString());
+            	}
+            	LOGGER.info("--------------");
+            	List<CRUDPayload> pushSequance2 = SynchMaster.getInstance()
+            			.sequance(SynchMaster.MergeStatus.MEMBER, CRUDOperation.DELETE);
+            	for(CRUDPayload payload: pushSequance2){
+            		LOGGER.info(payload.toString());
+            	}
             	break;
             case MODE:
             	LOGGER.info("Mode: " + SynchMaster.getInstance().mode.name());
             	break;
-            case RECEIVEUPDATES:
-                LOGGER.info("Receive updates status: " + SynchMaster.getInstance().isReceiveUpdates());
-                break;
             case STATUS:
                 synchSTATUS();
                 break;
@@ -256,8 +265,7 @@ public class ConsoleController {
                 + "\nMode................." + SynchMaster.getInstance().mode.name()
                 + "\nConnected............" + SynchMaster.getInstance().isConnected());
         if (SynchMaster.getInstance().isConnected()) {
-            LOGGER.info("Receive updates......" + SynchMaster.getInstance().isReceiveUpdates()
-            		+ "\nCluster name........." + SynchMaster.getInstance().getClusterName()
+            LOGGER.info("Cluster name........." + SynchMaster.getInstance().getClusterName()
             		+ "\nCoordinator.........." + SynchMaster.getInstance().info().getCoordinator().toString());
             String addresses = "Addresses(" + SynchMaster.getInstance().info().getAddressList().size() + "): ";
             for (Iterator<Address> i = SynchMaster.getInstance().info().getAddressList().iterator(); i.hasNext(); ) {
@@ -290,11 +298,6 @@ public class ConsoleController {
             		= SynchMaster.Mode.valueOf(cis.getThirdArg().toUpperCase(Locale.US));
             	LOGGER.info("New mode has been set: " + SynchMaster.getInstance().mode.name());
             	break;
-            case RECEIVEUPDATES:
-                boolean value = Boolean.parseBoolean(cis.getThirdArg());
-                SynchMaster.getInstance().setReceiveUpdates(value);
-                LOGGER.info("Receive updates: " + SynchMaster.getInstance().isReceiveUpdates());
-                break;
             case NAME:
                 if (!SynchMaster.getInstance().isConnected()) {
                     SynchMaster.getInstance().setChannelName(cis.getThirdArg());

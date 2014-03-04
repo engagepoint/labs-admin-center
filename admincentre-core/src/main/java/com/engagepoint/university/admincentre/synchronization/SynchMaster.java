@@ -11,7 +11,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import org.jgroups.Address;
 import org.jgroups.JChannel;
@@ -42,7 +41,6 @@ public final class SynchMaster {
 	
 	private static volatile SynchMaster instance;
 
-	private boolean receiveUpdates = true;
 	private final JChannel channel;
 	private final AbstractDAO<AbstractEntity> abstractDAO;
 	private HashMap<String, AbstractEntity> cacheData;
@@ -124,32 +122,34 @@ public final class SynchMaster {
 		@Override
 		public void receive(Message msg) {
 			if (!(msg.getObject() instanceof CRUDPayload)
-					&& !(msg.getObject() instanceof TreeMap)
 					&& !(msg.getObject() instanceof List)) {
 				throw new IllegalArgumentException(
 						"Something wrong has been received");
 			}
-			if (receiveUpdates) {
-				if(msg.getObject() instanceof CRUDPayload){
+			if(mode == Mode.AUTO){
+				if (msg.getObject() instanceof CRUDPayload) {
 					CRUDPayload crudPayload = (CRUDPayload) msg.getObject();
 					try {
 						switch (crudPayload.getCrudOperation()) {
 						case CREATE:
 							lastReceivedUpdates.add(crudPayload);
 							abstractDAO.create(crudPayload.getEntity());
-							LOGGER.info("[SYNCH] created: " + crudPayload.getEntity().toString());
+							LOGGER.info("[SYNCH] created: "
+									+ crudPayload.getEntity().toString());
 							break;
 						case READ:
 							break;
 						case UPDATE:
 							lastReceivedUpdates.add(crudPayload);
 							abstractDAO.update(crudPayload.getEntity());
-							LOGGER.info("[SYNCH] updated: " + crudPayload.getEntity().toString());
+							LOGGER.info("[SYNCH] updated: "
+									+ crudPayload.getEntity().toString());
 							break;
 						case DELETE:
 							lastReceivedUpdates.add(crudPayload);
 							abstractDAO.delete(crudPayload.getEntity().getId());
-							LOGGER.info("[SYNCH] deleted: " + crudPayload.getEntity().toString());
+							LOGGER.info("[SYNCH] deleted: "
+									+ crudPayload.getEntity().toString());
 							break;
 						default:
 							break;
@@ -158,27 +158,14 @@ public final class SynchMaster {
 						throw new IllegalStateException(
 								"Could not complete CRUD operation", e);
 					}
-				}else if(msg.getObject() instanceof TreeMap){	//TODO delete
+				} else if (msg.getObject() instanceof List) {
 					@SuppressWarnings("unchecked")
-					TreeMap<String, AbstractEntity> map = 
-							(TreeMap<String, AbstractEntity>) msg.getObject();
-					try {
-						Map<String, AbstractEntity> newMapToPut 
-							= new HashMap<String, AbstractEntity>(abstractDAO.obtainCache());
-						newMapToPut.putAll(map);
-						abstractDAO.clear();
-						abstractDAO.putAll(newMapToPut);
-						LOGGER.info("MAP was put: " + newMapToPut);
-					} catch (IOException e) {
-						throw new IllegalStateException(
-								"Could not complete putAll", e);
-					}
-				}else if(msg.getObject() instanceof List){
-					@SuppressWarnings("unchecked")
-					List<CRUDPayload> sequence = (List<CRUDPayload>)msg.getObject();
+					List<CRUDPayload> sequence = (List<CRUDPayload>) msg
+							.getObject();
 					lastReceivedUpdates.addAll(sequence);
-					for(CRUDPayload crudPayload: sequence){
-						CRUDOperation crudOperation = crudPayload.getCrudOperation();
+					for (CRUDPayload crudPayload : sequence) {
+						CRUDOperation crudOperation = crudPayload
+								.getCrudOperation();
 						AbstractEntity entity = crudPayload.getEntity();
 						try {
 							switch (crudOperation) {
@@ -203,6 +190,8 @@ public final class SynchMaster {
 					}
 				}
 			}
+			
+			
 		}
 
 	}
@@ -309,23 +298,12 @@ public final class SynchMaster {
 	}
 
 	public void send(CRUDPayload crudPayload) {
+		if(mode == Mode.HAND){
+			return;
+		}
 		boolean removed = lastReceivedUpdates.remove(crudPayload);
 		if (channel.isConnected() && !removed)
 			send(new Message(null, null, crudPayload));
-	}
-	
-	/**
-	 * Set receive updates status. If <b>false</b>,
-	 * channel could be connected and messages be received,
-	 * but data would not be stored into infinispan cache.
-	 * @param receiveUpdates
-	 */
-	public void setReceiveUpdates(boolean receiveUpdates) {
-		this.receiveUpdates = receiveUpdates;
-	}
-
-	public boolean isReceiveUpdates() {
-		return receiveUpdates;
 	}
 
 	public boolean isMemberChanged(){
@@ -485,7 +463,7 @@ public final class SynchMaster {
     	}
 	}
 	
-	private List<CRUDPayload> sequance(MergeStatus mergeStatus, CRUDOperation crudOperation){
+	public List<CRUDPayload> sequance(MergeStatus mergeStatus, CRUDOperation crudOperation){
 		if(mergeStatus != MergeStatus.CLUSTER
 				&& mergeStatus != MergeStatus.MEMBER){
 			throw new IllegalArgumentException("Wrong argument " + mergeStatus + ". Only CLUSTER"
@@ -500,11 +478,15 @@ public final class SynchMaster {
 		List<Pair<MergeStatus, AbstractEntity>> mergeList = merge();
 		for(Pair<MergeStatus, AbstractEntity> pair: mergeList){
 			if(pair.getLeft() == mergeStatus){
-				sequance.add(new CRUDPayload(crudOperation, pair.getRight()));	//add create
-				Node parentNode = getParentNodeFromMerge(mergeList, pair.getRight(), mergeStatus);
-				addOrDelete(crudOperation, parentNode, pair.getRight());
-				sequance.add(new CRUDPayload(CRUDOperation.UPDATE, parentNode));	//add update
-			}//finish
+				if(pair.getRight() instanceof Key
+						&& !updateKeyIfExist((Key)pair.getRight(), mergeList, mergeStatus, sequance)){
+				}else{
+					sequance.add(new CRUDPayload(crudOperation, pair.getRight()));	//add create
+					Node parentNode = getParentNodeFromMerge(mergeList, pair.getRight(), mergeStatus);
+					addOrDelete(crudOperation, parentNode, pair.getRight());
+					sequance.add(new CRUDPayload(CRUDOperation.UPDATE, parentNode));	//add update
+				}
+			}
 		}
 		return sequance;
 	}
@@ -537,6 +519,24 @@ public final class SynchMaster {
 			if(entity instanceof Key)
 				parentNode.getKeyIdList().remove(entity.getName());
 		}
+	}
+	
+	private boolean updateKeyIfExist(Key key, List<Pair<MergeStatus, AbstractEntity>> mergeList,
+			MergeStatus mergeStatus, List<CRUDPayload> sequance){
+		for (Pair<MergeStatus, AbstractEntity> pair : mergeList) {
+			if(pair.getRight().getId().equals(key.getId())) {
+				if (mergeStatus == MergeStatus.CLUSTER
+						&& pair.getLeft() == MergeStatus.MEMBER){
+					sequance.add(new CRUDPayload(CRUDOperation.UPDATE, key));
+					return true;
+				}else if(mergeStatus == MergeStatus.MEMBER
+						&& pair.getLeft() == MergeStatus.CLUSTER){
+					sequance.add(new CRUDPayload(CRUDOperation.UPDATE, key));
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	/**
