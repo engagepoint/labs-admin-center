@@ -1,104 +1,149 @@
-<ui:composition xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:ui="http://java.sun.com/jsf/facelets"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:p="http://primefaces.org/ui"
-                xmlns:uib="http://engagepoint.com/uib"
-                xmlns:ui-paginator="http://java.sun.com/jsf/composite/uibootstrap/components/paginator"
-                template="/WEB-INF/templates/default.xhtml">
+<ui:composition 
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:uib="http://engagepoint.com/uib"
+    template="/WEB-INF/templates/default.xhtml">
 
     <ui:define name="page">
 
         <h:form id="preferencesForm">
-            <h2><h:outputText value="Preferences administration"/></h2>
+            <ui:remove>
+                <p:commandLink action="#{localeChanger.englishSet}"
+                               value="ENGLISH"/>
+                <h:outputText value="&#160;"/>
+                <p:commandLink action="#{localeChanger.spanishSet}"
+                               value="SPANISH"/>
+            </ui:remove>
+            <h2><h:outputText value="#{trans.prefAdm}"/></h2>
 
             <p:treeTable id="treeTable" value="#{documentsController.root}"
                          var="doc">
-                <f:facet name="header">Properties Viewer</f:facet>
+                <f:facet name="header">#{trans.propViewer}</f:facet>
 
                 <p:column style="width:32%">
-                    <f:facet name="header">File</f:facet>
-                    <h:outputText value="#{doc.name}        " />
-                    <p:commandButton update="treeTable" rendered="#{doc.file}" oncomplete="addDlg.show()"  title="Add new node" styleClass="ui-button-icon-only secondary small" icon="ui-icon-add" >  
+
+                    <f:facet name="header">#{trans.file}</f:facet>
+                    <h:outputText value="#{doc.name}" />
+                    <p:commandButton update="treeTable"
+                                     rendered="#{doc.file}"
+                                     oncomplete="addDlg.show()"
+                                     title="Add new node"
+                                     styleClass="ui-button-icon-only secondary small"
+                                     icon="ui-icon-add"
+                                     style="float: right">  
                         <f:setPropertyActionListener value="#{doc}"   
                                                      target="#{documentsController.selectedDoc}" />  
                     </p:commandButton> 
-                    
-                     <p:dialog id="addDialog" header="Add Node" closable="true" showEffect="fade" widgetVar="addDlg" modal="true">  
-                         <uib:gridContainer id="container" >
-                                <p:selectOneRadio id="addRadio" value="#{documentsController.tempDoc.file}" >  
-                                    <f:selectItem itemLabel="File" itemValue="true" />  
-                                    <f:selectItem itemLabel="Key" itemValue="false" />
-                                    <p:ajax update="container" event="change"/>
-                                </p:selectOneRadio>  <br/>
 
-                                <h:outputLabel value="Name: " />  
-                                <p:inputText  value="#{documentsController.tempDoc.name}" style="font-weight:bold" />  
+                    <p:dialog id="addDialog" header="Add Node" position="top" closable="true" showEffect="fade" widgetVar="addDlg" modal="true">  
+                        <uib:gridContainer id="container" >
+                            <p:selectOneRadio id="addRadio" value="#{documentsController.tempDoc.file}" >  
+                                <f:selectItem itemLabel="File" itemValue="true" />  
+                                <f:selectItem itemLabel="Key" itemValue="false" />
+                                <p:ajax update="container" event="change"/>
+                            </p:selectOneRadio>  <br/>
 
-                                <h:outputLabel  value="Value: "  />  
-                                <p:inputText  disabled="#{documentsController.tempDoc.file}" value="#{documentsController.tempDoc.value}"  style="font-weight:bold" />  
+                            <h:outputLabel value="Name: " />  
+                            <p:inputText  value="#{documentsController.tempDoc.name}" style="font-weight:bold" />  
 
-                                <h:outputLabel value="Type "/>  
-                                <p:inputText  value="#{documentsController.tempDoc.type}" disabled="#{documentsController.tempDoc.file}" style="font-weight:bold" />  
-                                <p:commandButton value="Ok" update="treeTable" actionListener="#{documentsController.addNode()}" oncomplete="addDlg.hide()"/>
-                                <p:commandButton value="Cancel" update="treeTable" actionListener="#{documentsController.resetTempDoc()}" oncomplete="addDlg.hide()"/>
-                       
+                            <h:outputLabel  value="Value: "  />  
+                            <p:inputText  disabled="#{documentsController.tempDoc.file}" value="#{documentsController.tempDoc.value}"  style="font-weight:bold" />  
 
+                            <h:outputLabel value="Type "/>
+                            <p:selectOneMenu value="#{documentsController.tempDoc.type}" disabled="#{documentsController.tempDoc.file}">  
+                                <f:selectItem itemLabel="Select Type" itemValue="" />  
+                                <f:selectItem itemLabel="String" itemValue="String" />  
+                                <f:selectItem itemLabel="Integer" itemValue="Integer" />  
+                                <f:selectItem itemLabel="Double" itemValue="Double" />  
+                                <f:selectItem itemLabel="Float" itemValue="Float" />  
+                            </p:selectOneMenu>
 
-                         </uib:gridContainer>            
+                            <p:commandButton value="Ok"
+                                             style="float:left"
+                                             update="treeTable"
+                                             actionListener="#{documentsController.addNode()}"
+                                             oncomplete="addDlg.hide()"/>
+                            
+                            <p:commandButton value="Cancel"
+                                             style="float:right"
+                                             update="treeTable"
+                                             actionListener="#{documentsController.resetTempDoc()}"
+                                             oncomplete="addDlg.hide()"/>
+                        </uib:gridContainer>
+                    </p:dialog>
 
-                     </p:dialog>
-
-                    
                 </p:column>
 
                 <p:column style="width:32%">
-                    <f:facet name="header">Value</f:facet>
+                    <f:facet name="header">#{trans.value}</f:facet>
                     <h:outputText value="#{doc.value}"/>
                 </p:column>
 
                 <p:column style="width:10%">
-                    <f:facet name="header">Type</f:facet>
+                    <f:facet name="header">#{trans.type}</f:facet>
                     <h:outputText value="#{doc.type}"/>
                 </p:column>
-                
+
                 <p:column id="column" style="width:10%">
                     <f:facet name="header"></f:facet>
-                    
+
                     <!--Edit button-->
-                    <p:commandButton value="Edit" id="editButton" title="Edit"
-                                     update="treeTable" oncomplete="editDialog.show()"
+                    <p:commandButton id="editButton"
+                                     value="#{trans.edit}"
+                                     title="#{trans.edit}"
+                                     update="treeTable"
+                                     oncomplete="editDialog.show()"
                                      styleClass="ui-button-icon-only secondary small"
                                      icon="ui-icon-edit">
                         <f:setPropertyActionListener value="#{doc}"
                                                      target="#{documentsController.selectedDoc}"/>
                     </p:commandButton>
-                    
+
                     <!--Edit dialog-->
-                    <p:dialog header="Edit" widgetVar="editDialog" resizable="false"
-                              id="editDlg" showEffect="fade" hideEffect="explode" modal="true">
+                    <p:dialog id="editDlg"
+                              header="#{trans.edit}"
+                              widgetVar="editDialog"
+                              position="center, center"
+                              resizable="false"
+                              showEffect="fade"
+                              hideEffect="explode"
+                              modal="true">
+                        
                         <h:panelGrid id="editPanelGrid" columns="2" cellpadding="4">
                             <h:outputText value="Name1:" />
-                            <p:inputText value="#{documentsController.selectedDoc.name}" />
+                            <p:inputText  value="#{documentsController.selectedDoc.name}" />
                             <h:outputText value="Value:" rendered="#{not documentsController.selectedDoc.file}"/>
-                            <p:inputText value="#{documentsController.selectedDoc.value}" rendered="#{not documentsController.selectedDoc.file}"/>
+                            <p:inputText  value="#{documentsController.selectedDoc.value}" rendered="#{not documentsController.selectedDoc.file}"/>
                             <h:outputText value="Type:" rendered="#{not documentsController.selectedDoc.file}"/>
-                            <p:inputText value="#{documentsController.selectedDoc.type}" rendered="#{not documentsController.selectedDoc.file}"/>
-                            <p:commandButton value="Ok" update="treeTable"
-                                             oncomplete="editDialog.hide()" styleClass="ui-confirmdialog-yes"
-                                             icon="ui-icon-check"
+                         
+                            <p:selectOneMenu value="#{documentsController.selectedDoc.type}" rendered="#{not documentsController.selectedDoc.file}">  
+                                <f:selectItem itemLabel="Select" itemValue="" />  
+                                <f:selectItem itemLabel="String" itemValue="String" />  
+                                <f:selectItem itemLabel="Integer" itemValue="Integer" />  
+                                <f:selectItem itemLabel="Double" itemValue="Double" />  
+                                <f:selectItem itemLabel="Float" itemValue="Float" />  
+                            </p:selectOneMenu>
+                            
+                            <p:commandButton value="Ok"
+                                             update="treeTable"
+                                             oncomplete="editDialog.hide()"
                                              actionListener="#{documentsController.editDocument}" />
-                            <p:commandButton value="Cancel" oncomplete="editDialog.hide()"
-                                             action="cancel" process="@this" styleClass="ui-confirmdialog-no"
-                                             icon="ui-icon-close" />
+                            <p:commandButton value="#{trans.cancel}"
+                                             oncomplete="editDialog.hide()"
+                                             action="cancel"
+                                             process="@this"
+                                             styleClass="ui-confirmdialog-no"/>
                         </h:panelGrid>
                     </p:dialog>
 
                     <!--Delete button-->
                     <p:commandButton 
                         id="delButton"
-                        value="Delete"
-                        alt="Delete"
+                        value="#{trans.del}"
+                        alt="#{trans.del}"
                         styleClass="ui-button-icon-only secondary small"
                         icon="ui-icon-remove"
                         update="treeTable"
@@ -109,7 +154,7 @@
 
                     <!--Delete dialog-->
                     <p:dialog id="delDialog"
-                              header="Deletion Confirmation"
+                              header="#{trans.delConfHeader}"
                               widgetVar="delDialog"
                               position="center, center"
                               showEffect="fade"
@@ -117,12 +162,11 @@
                               modal="true"                              
                               closable="false">
 
-                        <h:outputText value="Do you really want to delete the preference group
-                                             and all related nodes and preferences?"/>
+                        <h:outputText value="#{trans.delConfDial}"/>
                         <br/>
-                        <h:outputText value="Name: #{documentsController.selectedDoc.name} &lt;br/&gt;
-                                             Value:  #{documentsController.selectedDoc.value} &lt;br/&gt; 
-                                             Type: #{documentsController.selectedDoc.type}"
+                        <h:outputText value="Name:  #{documentsController.selectedDoc.name} &lt;br/&gt;
+                                      Value: #{documentsController.selectedDoc.value} &lt;br/&gt; 
+                                      Type:  #{documentsController.selectedDoc.type} &lt;br/&gt;"
                                       escape="false"/>
                         <br/>
 
@@ -130,14 +174,14 @@
                             id="delOkButton"
                             value="Ok"
                             styleClass="ui-state-focus ui-state-active"
-                            style="float: right"
+                            style="float:left"
                             action="#{documentsController.deleteNode()}"
                             ajax="false"                            
-                            oncomplete="delDialog.hide()"/>                        
+                            oncomplete="delDialog.hide()"/>
 
                         <p:commandButton
                             id="delCancelButton"
-                            value="Cancel"
+                            value="#{trans.cancel}"
                             styleClass="ui-confirmdialog-no"
                             style="float: right"
                             action="cancel"

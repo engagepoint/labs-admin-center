@@ -45,5 +45,16 @@
             <renderer-class>com.engagepoint.renderer.primefaces.BootStrapSelectOneRadioRenderer</renderer-class>
         </renderer>
     </render-kit>
+    
+    <application>
+        <resource-bundle>
+            <base-name>transText</base-name>
+            <var>trans</var>
+        </resource-bundle>
+        <locale-config>
+            <default-locale>en</default-locale>
+            <supported-locale>es</supported-locale>
+        </locale-config>
+    </application>
 
 </faces-config>

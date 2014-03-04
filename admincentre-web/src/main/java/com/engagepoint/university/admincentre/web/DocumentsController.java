@@ -26,143 +26,133 @@ import com.engagepoint.university.admincentre.preferences.NodePreferences;
 @SessionScoped
 public class DocumentsController implements Serializable {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(DocumentsController.class.getName());
-	private static final long serialVersionUID = 123L;
-	private static List<TreeNode> keyFolder = new ArrayList<TreeNode>(100);
-	private static List<TreeNode> keyvsvakueFolder = new ArrayList<TreeNode>(
-			100);
-	private TreeNode root;
-	private Document selectedDoc = new Document();
-	private TreeNode selectedNode;
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(DocumentsController.class.getName());
+    private static final long serialVersionUID = 123L;
+    private static List<TreeNode> keyFolder = new ArrayList<TreeNode>(100);
+    private static List<TreeNode> keyvsvakueFolder = new ArrayList<TreeNode>(100);
+    private TreeNode root;
+    private Document selectedDoc = new Document();
+    private TreeNode selectedNode;
+    private Document tempDoc = new Document(null, "", "", "");
+    @Inject
+    DataBean dataBean;
+    private String thisClassName = "\n DocumentsController";
 
-	private Document tempDoc = new Document(null, "", "", "");
-	@Inject
-	DataBean dataBean;
+    public DocumentsController() {
+    }
 
-	private String thisClassName = "DocumentsController";
+    @PostConstruct
+    void init() {
+        TreeProperties treeProperties = dataBean.getPreferencesTree();
+        root = new DefaultTreeNode("root", null);
+        buildTree(treeProperties, root);
+    }
 
-	public DocumentsController() {
-	}
+    private void buildTree(TreeProperties treeProperties, TreeNode treeNode) {
+        for (TreeProperties child : treeProperties.getChildren()) {
+            PropertiesDocument propertiesDocument = (PropertiesDocument) child
+                    .getData();
+            TreeNode childTreeNode = new DefaultTreeNode(
+                    new Document(propertiesDocument.getAbsolutePath(),
+                    propertiesDocument.getName(),
+                    propertiesDocument.getValue(),
+                    propertiesDocument.getType()), treeNode);
+            buildTree(child, childTreeNode);
+        }
+    }
 
-	@PostConstruct
-	void init() {
-		TreeProperties treeProperties = dataBean.getPreferencesTree();
-		root = new DefaultTreeNode("root", null);
-		buildTree(treeProperties, root);
-	};
+    public void editDocument(ActionEvent event) {
+        TreeProperties editedTree = dataBean
+                .editDocument(getPropertiesDocumentfromDocument(selectedDoc));
+        root = new DefaultTreeNode("root", null);
+        buildTree(editedTree, root);
+    }
 
-	private void buildTree(TreeProperties treeProperties, TreeNode treeNode) {
+    public void deleteNode() {
+        TreeProperties editedTree = dataBean
+                .deleteDocument(getPropertiesDocumentfromDocument(selectedDoc));
+        root = new DefaultTreeNode("root", null);
+        buildTree(editedTree, root);
+    }
 
-		for (TreeProperties child : treeProperties.getChildren()) {
-			PropertiesDocument propertiesDocument = (PropertiesDocument) child
-					.getData();
-			TreeNode childTreeNode = new DefaultTreeNode(
-					new Document(propertiesDocument.getAbsolutePath(),
-							propertiesDocument.getName(),
-							propertiesDocument.getValue(),
-							propertiesDocument.getType()), treeNode);
-			buildTree(child, childTreeNode);
-		}
-	}
+    public void addNode() {
+        TreeProperties editedTree = dataBean.addDocument(
+                getPropertiesDocumentfromDocument(selectedDoc),
+                getPropertiesDocumentfromDocument(tempDoc));
+        resetTempDoc();
+        selectedDoc.setDirectoryForAdding(false);
+        root = new DefaultTreeNode("root", null);
+        buildTree(editedTree, root);
+    }
 
-	public void editDocument(ActionEvent event) {
+    private PropertiesDocument getPropertiesDocumentfromDocument(
+            Document document) {
+        return new PropertiesDocument(document.getAbsolutePath(),
+                document.getName(), document.getValue(), document.getType(),
+                document.isFile(), document.getOldName());
+    }
 
-		TreeProperties editedTree = dataBean
-				.editDocument(getPropertiesDocumentfromDocument(selectedDoc));
-		root = new DefaultTreeNode("root", null);
-		buildTree(editedTree, root);
+    public void resetTempDoc() {
+        tempDoc = new Document(null, "", "", "");
+    }
 
-	}
+    public List<TreeNode> searchByKeyName(String keyName, TreeNode node) {
+        if (node.getChildren() != null) {
+            for (TreeNode a : node.getChildren()) {
+                Document document = (Document) a.getData();
+                String documentName = document.getName();
+                if (keyName.equals(documentName)) {
+                    keyFolder.add(a.getParent());
+                }
+                searchByKeyName(keyName, a);
+            }
+        }
+        return keyFolder;
+    }
 
-	public void deleteNode() {
-		TreeProperties editedTree = dataBean
-				.deleteDocument(getPropertiesDocumentfromDocument(selectedDoc));
-		root = new DefaultTreeNode("root", null);
-		buildTree(editedTree, root);
-	}
+    public List<TreeNode> searchByKeyValue(String keyName, String keyValue,
+            TreeNode node) {
+        if (node.getChildren() != null) {
+            for (TreeNode treeNode : node.getChildren()) {
+                Document document = (Document) treeNode.getData();
+                String documentName = document.getName();
+                String documentValue = document.getValue();
+                if (keyName.equals(documentName)
+                        && (keyValue.equals(documentValue))) {
+                    keyvsvakueFolder.add(treeNode.getParent());
+                }
+                searchByKeyValue(keyName, keyValue, treeNode);
+            }
+        }
+        return keyvsvakueFolder;
+    }
 
-	public void addNode() {		
-		TreeProperties editedTree = dataBean.addDocument(
-				getPropertiesDocumentfromDocument(selectedDoc),
-				getPropertiesDocumentfromDocument(tempDoc));
-		resetTempDoc();
-		selectedDoc.setDirectoryForAdding(false);
-		root = new DefaultTreeNode("root", null);
-		buildTree(editedTree, root);
-		
-	}
-	
-	private PropertiesDocument getPropertiesDocumentfromDocument(
-			Document document) {
-		return new PropertiesDocument(document.getAbsolutePath(),
-				document.getName(), document.getValue(), document.getType(),
-				document.isFile(), document.getOldName());
-	}
+    public TreeNode getSelectedNode() {
+        return selectedNode;
+    }
 
-	
+    public void setSelectedNode(TreeNode selectedNode) {
+        this.selectedNode = selectedNode;
+    }
 
-	
-	public void resetTempDoc() {
-		tempDoc = new Document(null, "", "", "");
-	}
+    public TreeNode getRoot() {
+        return root;
+    }
 
-	public List<TreeNode> searchByKeyName(String keyName, TreeNode node) {
-		if (node.getChildren() != null) {
-			for (TreeNode a : node.getChildren()) {
-				Document document = (Document) a.getData();
-				String documentName = document.getName();
-				if (keyName.equals(documentName)) {
-					keyFolder.add(a.getParent());
-				}
-				searchByKeyName(keyName, a);
-			}
-		}
-		return keyFolder;
-	}
+    public Document getSelectedDoc() {
+        return selectedDoc;
+    }
 
-	public List<TreeNode> searchByKeyValue(String keyName, String keyValue,
-			TreeNode node) {
-		if (node.getChildren() != null) {
-			for (TreeNode treeNode : node.getChildren()) {
-				Document document = (Document) treeNode.getData();
-				String documentName = document.getName();
-				String documentValue = document.getValue();
-				if (keyName.equals(documentName)
-						&& (keyValue.equals(documentValue))) {
-					keyvsvakueFolder.add(treeNode.getParent());
-				}
-				searchByKeyValue(keyName, keyValue, treeNode);
-			}
-		}
-		return keyvsvakueFolder;
-	}
+    public void setSelectedDoc(Document selectedDoc) {
+        this.selectedDoc = selectedDoc;
+    }
 
-	public TreeNode getSelectedNode() {
-		return selectedNode;
-	}
+    public Document getTempDoc() {
+        return tempDoc;
+    }
 
-	public void setSelectedNode(TreeNode selectedNode) {
-		this.selectedNode = selectedNode;
-	}
-
-	public TreeNode getRoot() {
-		return root;
-	}
-
-	public Document getSelectedDoc() {
-		return selectedDoc;
-	}
-
-	public void setSelectedDoc(Document selectedDoc) {
-		this.selectedDoc = selectedDoc;
-	}
-
-	public Document getTempDoc() {
-		return tempDoc;
-	}
-
-	public void setTempDoc(Document tempDoc) {
-		this.tempDoc = tempDoc;
-	}
+    public void setTempDoc(Document tempDoc) {
+        this.tempDoc = tempDoc;
+    }
 }
