@@ -235,7 +235,7 @@ public class NodePreferences extends Preferences {
 
             Key result = null;
             try {
-                String keyId = absolutePath + "/" + key;
+                String keyId = ("/".equals(absolutePath) ? "/" + key : absolutePath + "/" + key);
                 result = getSpi(keyId);
             } catch (Exception e) {
                 LOGGER.warn(e.getMessage());
@@ -1346,8 +1346,8 @@ public class NodePreferences extends Preferences {
         return keyDAO.read(keyId);
     };
 
-    public Key getKey(String keyName) throws IOException {
-        return getSpi(absolutePath + "/" + keyName);
+    public Key getKey(String key) throws IOException {
+        return getSpi("/".equals(absolutePath) ? "/" + key : absolutePath + "/" + key);
     }
 
     /**
