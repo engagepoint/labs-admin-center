@@ -1363,7 +1363,7 @@ public class NodePreferences extends Preferences {
      */
     protected void removeSpi(String key) throws IOException {
 
-        keyDAO.delete(absolutePath + "/" + key);
+        keyDAO.delete("/".equals(absolutePath) ? "/" + key : absolutePath + "/" + key);
         currentNode.getKeyIdList().remove(key);
         nodeDAO.update(this.currentNode);
     };

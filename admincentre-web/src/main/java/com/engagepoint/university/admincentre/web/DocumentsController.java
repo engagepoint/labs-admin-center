@@ -1,6 +1,5 @@
 package com.engagepoint.university.admincentre.web;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,10 +16,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.engagepoint.university.admincentre.datatransfer.DataBean;
-import com.engagepoint.university.admincentre.entity.KeyType;
 import com.engagepoint.university.admincentre.entity.PropertiesDocument;
 import com.engagepoint.university.admincentre.entity.TreeProperties;
-import com.engagepoint.university.admincentre.preferences.NodePreferences;
+
 
 @ManagedBean(name = "documentsController")
 @SessionScoped

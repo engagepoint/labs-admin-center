@@ -71,25 +71,29 @@ public class DataBean {
             String absPath = selectedDocument.getAbsolutePath();
             NodePreferences currentNode = (NodePreferences) new NodePreferences(null, "")
                     .node(absPath);
+
             if (selectedDocument.isFile()) {
                 TreeProperties selectedNode = getNodeByDoc(selectedDocument, root);
                 selectedNode.getParent().getChildren().remove(selectedNode);
                 currentNode.changeNodeName(selectedDocument.getName());
                 selectedDocument.setAbsolutePath(currentNode.absolutePath());
-                buildTree(currentNode, selectedNode.getParent());
+                // buildTree(currentNode, selectedNode.getParent());
             } else {
                 try {
                     currentNode.put(selectedDocument.getName(),
                             KeyType.valueOf(selectedDocument.getType()),
                             selectedDocument.getValue());
                     currentNode.remove(selectedDocument.getOldName());
+                    // buildTree(currentNode, selectedNode.getParent());
                 } catch (IOException iOException) {
                     LOGGER.error(this.getClass().getName(),
                             "public void editDocument(ActionEvent event)", iOException);
                 }
             }
+
         }
-        return root;
+
+        return getPreferencesTree();
     }
 
     public TreeProperties deleteDocument(PropertiesDocument selectedDocument) {
@@ -139,7 +143,7 @@ public class DataBean {
                     returnDirectoryForAdding(root));
             System.out.println();
         }
-        return root;
+        return getPreferencesTree();
     }
 
     public TreeProperties getNodeByDoc(PropertiesDocument document, TreeProperties root) {
