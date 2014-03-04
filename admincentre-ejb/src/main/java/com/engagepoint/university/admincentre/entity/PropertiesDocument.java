@@ -22,13 +22,20 @@ public class PropertiesDocument implements Serializable, Comparable<PropertiesDo
         this.oldName = name;
         this.file = "File".equals(type);
     }
-
     public PropertiesDocument(String absolutePath, String name, String value, String type, boolean file) {
         this.absolutePath = absolutePath;
         this.name = name;
         this.value = value;
         this.type = (file) ? "File" : type;
-        this.oldName = name;
+        this.oldName = oldName;
+        this.file = file;
+    }
+    public PropertiesDocument(String absolutePath, String name, String value, String type, String oldName, boolean file) {
+        this.absolutePath = absolutePath;
+        this.name = name;
+        this.value = value;
+        this.type = (file) ? "File" : type;
+        this.oldName = oldName;
         this.file = file;
     }
 

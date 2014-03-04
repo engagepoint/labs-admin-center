@@ -89,8 +89,8 @@ public class DocumentsController implements Serializable {
     private PropertiesDocument getPropertiesDocumentfromDocument(
             Document document) {
         return new PropertiesDocument(document.getAbsolutePath(),
-                document.getName(), document.getValue(), document.getType(),
-                document.isFile(), document.getOldName());
+                document.getName(), document.getValue(), document.getType(), document.getOldName(),
+                document.isFile());
     }
 
     public void resetTempDoc() {

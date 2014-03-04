@@ -61,7 +61,7 @@ public class DataBean {
 			for (int i = 0; i < nodePreferences.keys().length; i++) {
 				Key key = nodePreferences.getKey(nodePreferences.keys()[i]);
 				new TreeProperties(
-						new PropertiesDocument(key.getId(), key.getName(),
+						new PropertiesDocument(key.getParentNodeId(), key.getName(),
 								key.getValue(), key.getType().toString()),
 						parentTreeNode);
 			}
