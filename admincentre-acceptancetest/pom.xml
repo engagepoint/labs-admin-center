@@ -4,9 +4,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>admincentre-bom</artifactId>
+        <groupId>com.engagepoint.university.admincentre</groupId>
+        <version>1.0-M2-SNAPSHOT</version>
+    </parent>
+    
     <groupId>com.engagepoint.acceptancetest</groupId>
     <artifactId>admincentre-acceptancetest</artifactId>
-    <version>1.0-M2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>EngagePoint University Admin Centre - AT</name>
     <properties>
