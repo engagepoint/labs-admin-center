@@ -184,42 +184,60 @@ public class ConsoleController {
                 if(!SynchMaster.getInstance().isConnected())
                 	LOGGER.info("Disconnected.");
                 break;
-            case PULL:
-            	if(!isConnected()) break;
-            	if(SynchMaster.getInstance().info().isCoordinator()){
-            		LOGGER.info("This member is coordinator of the cluster and could"
-            				+ " not pull.");
-            		break;
-            	}
-                SynchMaster.getInstance().pull();
-                refresh();
-                break;
             case MERGE:
             	if(!isConnected()) break;
-            	if(SynchMaster.getInstance().info().isCoordinator()){
-            		LOGGER.info("This member is coordinator.");
-            		break;
-            	}
+            	if(isCoordinator()) break;
             	List<Pair<MergeStatus, AbstractEntity>> mergeList = SynchMaster.getInstance().merge();
             	for(Pair<MergeStatus, AbstractEntity> pair: mergeList){
             		LOGGER.info(pair.toString());
             	}
             	break;
+            case PULL:
+            	if(!isConnected()) break;
+            	if(isCoordinator()) break;
+            	if(SynchMaster.getInstance().pull()){
+            		LOGGER.info("Pulled.");
+            		refresh();
+            	}else
+            		LOGGER.info("Nothing to pull, you have all cluster's data.");
+                break;
             case PUSH:
             	if(!isConnected()) break;
-            	SynchMaster.getInstance().push();
+            	if(SynchMaster.getInstance().push())
+            		LOGGER.info("Pushed.");
+            	else
+            		LOGGER.info("Nothing to push, you do not have local changes.");
             	break;
             case RESET:
             	if(!isConnected()) break;
-            	SynchMaster.getInstance().reset();
-            	refresh();
+            	if(isCoordinator()) break;
+            	if(SynchMaster.getInstance().reset()){
+            		LOGGER.info("Reseted local changes.");
+            		refresh();
+            	}else
+            		LOGGER.info("Nothing to reset, you do not have local changes.");
             	break;
             case REVERT:
             	if(!isConnected()) break;
-            	SynchMaster.getInstance().revert();
+            	if(isCoordinator()) break;
+            	if(SynchMaster.getInstance().revert()){
+            		LOGGER.info("Cluster has been reverted.");
+            	}else
+            		LOGGER.info("Nothing to revert, you have all cluster data.");
             	break;
+            case AUTOSYNCH:
+            	if(!isConnected()) break;
+            	if(isCoordinator()) break;
+            	if(SynchMaster.getInstance().getMode() == SynchMaster.Mode.HAND){
+            		SynchMaster.getInstance().pull();
+            		SynchMaster.getInstance().push();
+            		SynchMaster.getInstance().setMode(SynchMaster.Mode.AUTO);
+            	}else{
+            		LOGGER.info("Already in AURO mode");
+            	}
+//            	break;
             case MODE:
-            	LOGGER.info("Mode: " + SynchMaster.getInstance().mode.name());
+            	LOGGER.info("Mode: " + SynchMaster.getInstance().getMode().name());
             	break;
             case STATUS:
                 synchSTATUS();
@@ -244,14 +262,33 @@ public class ConsoleController {
     	return false;
     }
     
+    /**
+     * Prints caution info if trying to call methods
+     * acceptable only for non-coordinator member.
+     * @return <br><b>true</b> if member is coordinator
+     * 		<br><b>false</br> otherwise
+     */
+    private boolean isCoordinator(){
+    	if(SynchMaster.getInstance().info().isCoordinator()){
+    		LOGGER.info("This member is coordinator");
+    		return true;
+    	}
+    	return false;
+    }
+    
+    /**
+     * Prints all info about channel and cluster.
+     */
     private void synchSTATUS() {
         LOGGER.info("-----------Synch status-----------"
                 + "\nChannel name........." + SynchMaster.getInstance().getChannelName()
-                + "\nMode................." + SynchMaster.getInstance().mode.name()
+                + "\nMode................." + SynchMaster.getInstance().getMode().name()
                 + "\nConnected............" + SynchMaster.getInstance().isConnected());
         if (SynchMaster.getInstance().isConnected()) {
             LOGGER.info("Cluster name........." + SynchMaster.getInstance().getClusterName()
-            		+ "\nCoordinator.........." + SynchMaster.getInstance().info().getCoordinator().toString());
+            		+ "\nCoordinator.........." + SynchMaster.getInstance().info().getCoordinator().toString()
+            		+ "\nState synchronized..." + !(SynchMaster.getInstance().isMemberChanged()
+            				|| SynchMaster.getInstance().isMemberChanged()));
             String addresses = "Addresses(" + SynchMaster.getInstance().info().getAddressList().size() + "): ";
             for (Iterator<Address> i = SynchMaster.getInstance().info().getAddressList().iterator(); i.hasNext(); ) {
             	addresses = addresses.concat( SynchMaster.getInstance().getChannelName(i.next()) );
@@ -269,7 +306,7 @@ public class ConsoleController {
         switch (getEnumElement(cis)) {
             case CONNECT:
                 SynchMaster.getInstance().connect(cis.getThirdArg());
-                if(SynchMaster.getInstance().mode == SynchMaster.Mode.AUTO
+                if(SynchMaster.getInstance().getMode() == SynchMaster.Mode.AUTO
                 	&& !SynchMaster.getInstance().info().isSingle()){
                 	SynchMaster.getInstance().pull();
                 }
@@ -279,9 +316,20 @@ public class ConsoleController {
             		LOGGER.info("Wrong argument. Only \"auto\" or \"hand\" could be passed");
             		break;
             	}
-            	SynchMaster.getInstance().mode 
-            		= SynchMaster.Mode.valueOf(cis.getThirdArg().toUpperCase(Locale.US));
-            	LOGGER.info("New mode has been set: " + SynchMaster.getInstance().mode.name());
+            	if(SynchMaster.getInstance().info().isCoordinator()){
+            		LOGGER.info("NOT RECOMMENDED. This member is coordinator.");
+            	}else if(SynchMaster.getInstance().getMode() == SynchMaster.Mode.HAND
+            			&& cis.getThirdArg().equals("auto")
+            			&& (SynchMaster.getInstance().isMemberChanged()
+        					||
+        					SynchMaster.getInstance().isClusterChanged())){
+            		LOGGER.info("Current member is not synchronized with cluster."
+            				+ " Use commands 'push', 'pull', 'reset', 'revert' to"
+            				+ " synch with cluster.");
+            		break;
+            	}
+            	SynchMaster.getInstance().setMode(SynchMaster.Mode.valueOf(cis.getThirdArg().toUpperCase(Locale.US)));
+            	LOGGER.info("New mode has been set: " + SynchMaster.getInstance().getMode().name());
             	break;
             case NAME:
                 if (!SynchMaster.getInstance().isConnected()) {

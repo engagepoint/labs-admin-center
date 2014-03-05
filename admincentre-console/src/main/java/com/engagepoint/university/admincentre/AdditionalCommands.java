@@ -10,6 +10,7 @@ public enum AdditionalCommands {
     PUSH("-push"),
     RESET("-reset"),
     REVERT("-revert"),
+    AUTOSYNCH("-autosynch"),
     MODE("-mode"),
     STATUS("-status"),
     NAME("-name");

@@ -25,6 +25,7 @@ public enum Commands {
 					+ "\n\t -push \t\t*send my state to all cluster members"
 					+ "\n\t -reset \t\t*reset member's changes"
 					+ "\n\t -revert \t\t*reset cluster changes"
+					+ "\n\t -autosynch \t\t*pull, push and set auto mode"
 					+ "\n\t -mode [auto|hand] \t*get or set mode - auto or hand-held"
 					+ "\n\t -name [new name] \t*get or set channel name"
 					+ "\n\t -status \t*print all info about channel"),

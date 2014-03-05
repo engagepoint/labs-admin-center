@@ -38,7 +38,6 @@ public final class SynchMaster {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SynchMaster.class);
 	
-	
 	private static volatile SynchMaster instance;
 
 	private final JChannel channel;
@@ -46,7 +45,7 @@ public final class SynchMaster {
 	private HashMap<String, AbstractEntity> cacheData;
 	private HashMap<String, AbstractEntity> receivedState;
 	private final List<CRUDPayload> lastReceivedUpdates = new ArrayList<CRUDPayload>();
-	public Mode mode = Mode.AUTO;
+	private Mode mode = Mode.AUTO;
 	
 	public enum Mode{
 		AUTO,
@@ -359,6 +358,18 @@ public final class SynchMaster {
 		return channel.getClusterName();
 	}
 	
+	public Mode getMode() {
+		return mode;
+	}
+	
+	public void setMode(Mode mode) {
+		if(isMemberChanged() || isClusterChanged()){
+			throw new IllegalStateException("Member is not synchronized."
+					+ " Swithing to auto mode is possible only for synched member");
+		}
+		this.mode = mode;
+	}
+	
 	public boolean isConnected(){
 		return channel.isConnected();
 	}
@@ -416,33 +427,37 @@ public final class SynchMaster {
 		}
 	}
 
-	/**
-	 * Push to cluster all changed key-entities and new entities
-	 */
-	public void push(){
-		if(!isConnected()){
-			throw new IllegalStateException("Channel is not connected.");
-		}
-    	List<CRUDPayload> pushSequence = sequance(SynchMaster.MergeStatus.MEMBER, CRUDOperation.CREATE);
-		Message msg = new Message(null, null, pushSequence);
-		try {
-			channel.send(msg);
-		} catch (Exception e) {
-			throw new IllegalStateException("Could not send in push", e);
+	private void throwIfCoordinator(){
+		if(info().isCoordinator()){
+			throw new IllegalStateException("Current member is coordinator.");
 		}
 	}
 	
 	/**
-	 * Replaces all data in current member for obtained state.
+	 * Push to cluster all changed key-entities and new entities.
+	 * @return <b>true</b> if something was pushed, <b>false</b> otherwise.
 	 */
-	public void pull() {
+	public boolean push(){
 		if(!isConnected()){
 			throw new IllegalStateException("Channel is not connected.");
 		}
-		if(info().isCoordinator()){
-			throw new IllegalStateException("Coordinator could not pull.");
-		}
+    	List<CRUDPayload> pushSequence = sequance(SynchMaster.MergeStatus.MEMBER, CRUDOperation.CREATE);
+    	if(pushSequence.isEmpty())
+    		return false;
+		Message msg = new Message(null, null, pushSequence);
+		send(msg);
+		return true;
+	}
+	
+	/**
+	 * Obtain state from cluster and put into the local storage.
+	 * @return <b>true</b> if something was pulled, <b>false</b> otherwise.
+	 */
+	public boolean pull() {
+		throwIfCoordinator();
     	List<CRUDPayload> pullSequance = sequance(SynchMaster.MergeStatus.CLUSTER, CRUDOperation.CREATE);
+    	if(pullSequance.isEmpty())
+    		return false;
     	lastReceivedUpdates.addAll(pullSequance);
     	for(CRUDPayload crudPayload: pullSequance){
     		CRUDOperation crudOperation = crudPayload.getCrudOperation();
@@ -462,13 +477,18 @@ public final class SynchMaster {
     			throw new IllegalStateException("Could not pull", e);
     		}
     	}
+    	return true;
 	}
 	
-	public void reset(){
-		if(info().isCoordinator()){
-			throw new IllegalStateException("Coordinator could not reset changes.");
-		}
+	/**
+	 * Reset changes made in local member's storage
+	 * @return <b>true</b> if something was reseted, <b>false</b> otherwise.
+	 */
+	public boolean reset(){
+		throwIfCoordinator();
 		List<CRUDPayload> sequance = sequance(SynchMaster.MergeStatus.MEMBER, CRUDOperation.DELETE);
+		if(sequance.isEmpty())
+			return false;
 		lastReceivedUpdates.addAll(sequance);
     	for(CRUDPayload crudPayload: sequance){
     		CRUDOperation crudOperation = crudPayload.getCrudOperation();
@@ -488,19 +508,21 @@ public final class SynchMaster {
     			throw new IllegalStateException("Could not pull", e);
     		}
     	}
+    	return true;
 	}
 	
-	public void revert(){
-		if(!isConnected()){
-			throw new IllegalStateException("Channel is not connected.");
-		}
+	/**
+	 * Revert changes made in cluster to the state of current member
+	 * @return <b>true</b> if something was reverted, <b>false</b> otherwise.
+	 */
+	public boolean revert(){
+		throwIfCoordinator();
 		List<CRUDPayload> sequance = sequance(SynchMaster.MergeStatus.CLUSTER, CRUDOperation.DELETE);
+		if(sequance.isEmpty())
+			return false;
 		Message msg = new Message(null, null, sequance);
-		try {
-			channel.send(msg);
-		} catch (Exception e) {
-			throw new IllegalStateException("Could not send in push", e);
-		}
+		send(msg);
+		return true;
 	}
 	
 	private List<CRUDPayload> sequance(MergeStatus mergeStatus, CRUDOperation crudOperation){
