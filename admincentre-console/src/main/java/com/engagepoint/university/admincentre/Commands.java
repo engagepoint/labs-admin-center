@@ -20,18 +20,18 @@ public enum Commands {
 			"Synchronization commands:"
 					+ "\n\t -connect \"cluster_name\""
 					+ "\n\t -disconnect"
-					+ "\n\t -merge \t\t*compare with state"
-					+ "\n\t -pull \t\t*pull state"
-					+ "\n\t -push \t\t*send my state to all cluster members"
-					+ "\n\t -reset \t\t*reset member's changes"
-					+ "\n\t -revert \t\t*reset cluster changes"
-					+ "\n\t -autosynch \t\t*pull, push and set auto mode"
-					+ "\n\t -mode [auto|hand] \t*get or set mode - auto or hand-held"
-					+ "\n\t -name [new name] \t*get or set channel name"
-					+ "\n\t -status \t*print all info about channel"
-					+ "\n\t -load \t\t*uses configurations from file"
-					+ "\n\t -save \t\t*save configurations to file"),
-    REFRESH("-refresh", "*use after obtaining new message or state"),
+					+ "\n\t -merge \t\tcompare with state"
+					+ "\n\t -pull \t\t\tpull state"
+					+ "\n\t -push \t\t\tsend my state to all cluster members"
+					+ "\n\t -reset \t\treset member's changes"
+					+ "\n\t -revert \t\treset cluster changes"
+					+ "\n\t -autosynch \t\tpull, push and set auto mode"
+					+ "\n\t -mode [auto|hand] \tget or set mode - auto or hand-held"
+					+ "\n\t -name [new name] \tget or set channel name"
+					+ "\n\t -status \t\tprint all info about channel"
+					+ "\n\t -load \t\t\tuses configurations from file"
+					+ "\n\t -save \t\t\tsave configurations to file"),
+    REFRESH("-refresh", "use after obtaining new message or state"),
     EXPORT("-export",
             "exports current base into zip located in entered path");
 
