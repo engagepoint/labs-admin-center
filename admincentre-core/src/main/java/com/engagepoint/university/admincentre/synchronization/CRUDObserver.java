@@ -3,6 +3,12 @@ package com.engagepoint.university.admincentre.synchronization;
 import java.util.Observable;
 import java.util.Observer;
 
+/**
+ * Realization of observer pattern, provided
+ * by java SE.
+ * @author Roman Garkavenko
+ *
+ */
 public class CRUDObserver implements Observer {
 
 		@Override
