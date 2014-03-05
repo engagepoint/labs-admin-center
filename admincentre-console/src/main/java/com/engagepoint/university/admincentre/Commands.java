@@ -28,7 +28,9 @@ public enum Commands {
 					+ "\n\t -autosynch \t\t*pull, push and set auto mode"
 					+ "\n\t -mode [auto|hand] \t*get or set mode - auto or hand-held"
 					+ "\n\t -name [new name] \t*get or set channel name"
-					+ "\n\t -status \t*print all info about channel"),
+					+ "\n\t -status \t*print all info about channel"
+					+ "\n\t -load \t\t*uses configurations from file"
+					+ "\n\t -save \t\t*save configurations to file"),
     REFRESH("-refresh", "*use after obtaining new message or state"),
     EXPORT("-export",
             "exports current base into zip located in entered path");

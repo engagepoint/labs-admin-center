@@ -13,7 +13,9 @@ public enum AdditionalCommands {
     AUTOSYNCH("-autosynch"),
     MODE("-mode"),
     STATUS("-status"),
-    NAME("-name");
+    NAME("-name"),
+    LOAD("-load"),
+    SAVE("-save");
 
     private String command;
 

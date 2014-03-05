@@ -24,6 +24,7 @@ import com.engagepoint.university.admincentre.dao.AbstractDAO;
 import com.engagepoint.university.admincentre.entity.AbstractEntity;
 import com.engagepoint.university.admincentre.entity.Key;
 import com.engagepoint.university.admincentre.entity.Node;
+import com.engagepoint.university.admincentre.util.ConfLoader;
 
 /**
  * Used for synchronization. It's possible to create new cluster, connect to
@@ -208,7 +209,6 @@ public final class SynchMaster {
 			channel = new JChannel();
 			channel.setDiscardOwnMessages(true);
 			channel.setReceiver(new Receiver());
-			LOGGER.info("CONSTRUCTED"); // delete
 		} catch (Exception e) {
 			throw new IllegalStateException("Something wrong with channel", e);
 		}
@@ -363,7 +363,7 @@ public final class SynchMaster {
 	}
 	
 	public void setMode(Mode mode) {
-		if(isMemberChanged() || isClusterChanged()){
+		if(isConnected() && (isMemberChanged() || isClusterChanged())){
 			throw new IllegalStateException("Member is not synchronized."
 					+ " Swithing to auto mode is possible only for synched member");
 		}
@@ -525,6 +525,12 @@ public final class SynchMaster {
 		return true;
 	}
 	
+	/**
+	 * Creates a sequence of operations which than could be used in push, pull, reset, revert commands.
+	 * @param mergeStatus
+	 * @param crudOperation
+	 * @return a sequence of (create & update) or (delete & update) operations
+	 */
 	private List<CRUDPayload> sequance(MergeStatus mergeStatus, CRUDOperation crudOperation){
 		if(mergeStatus != MergeStatus.CLUSTER
 				&& mergeStatus != MergeStatus.MEMBER){
@@ -666,4 +672,34 @@ public final class SynchMaster {
 		
 	}
 
+	/**
+	 * Save configurations (channel name, mode, cluster name) to file if set
+	 */
+	public void saveConfig(){
+		ConfLoader confLoader = new ConfLoader();
+		if(getChannelName() != null)
+			confLoader.setChannelName(getChannelName());
+		confLoader.setMode(mode.name());
+		if(isConnected())
+			confLoader.setClusterName(getClusterName());
+	}
+	
+	/**
+	 * Disconnects if connected, loads configurations (channel name, mode, 
+	 * cluster name) from file.
+	 * Connects to the cluster if cluster name was read from file.
+	 */
+	public void useSavedConfig(){
+		disconnect();
+		ConfLoader confLoader = new ConfLoader();
+		String channelName = confLoader.getChannelName();
+		if(!channelName.equals(""))
+			setChannelName(channelName);
+		String mode = confLoader.getMode();
+		if(!mode.equals("") && (mode.equals("AUTO") || mode.equals("MODE")))
+			setMode(Mode.valueOf(mode));
+		String clusterName = confLoader.getClusterName();
+		if(!clusterName.equals(""))
+			connect(clusterName);
+	}
 }

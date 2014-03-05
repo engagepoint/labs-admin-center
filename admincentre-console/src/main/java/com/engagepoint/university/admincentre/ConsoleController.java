@@ -245,6 +245,13 @@ public class ConsoleController {
             case NAME:
                 LOGGER.info("Channel name: " + SynchMaster.getInstance().getChannelName());
                 break;
+            case LOAD:
+            	SynchMaster.getInstance().useSavedConfig();
+            	break;
+            case SAVE:
+            	SynchMaster.getInstance().saveConfig();
+            	LOGGER.info("Configurations were saved.");
+            	break;
             default: //TODO
         }
     }
@@ -279,15 +286,16 @@ public class ConsoleController {
     /**
      * Prints all info about channel and cluster.
      */
-    private void synchSTATUS() {
+    void synchSTATUS() {
         LOGGER.info("-----------Synch status-----------"
                 + "\nChannel name........." + SynchMaster.getInstance().getChannelName()
                 + "\nMode................." + SynchMaster.getInstance().getMode().name()
                 + "\nConnected............" + SynchMaster.getInstance().isConnected());
         if (SynchMaster.getInstance().isConnected()) {
             LOGGER.info("Cluster name........." + SynchMaster.getInstance().getClusterName()
-            		+ "\nCoordinator.........." + SynchMaster.getInstance().info().getCoordinator().toString()
-            		+ "\nState synchronized..." + !(SynchMaster.getInstance().isMemberChanged()
+            		+ "\nCoordinator.........." + SynchMaster.getInstance().info().getCoordinator().toString());
+            if(!SynchMaster.getInstance().info().isCoordinator())
+            	LOGGER.info("State synchronized..." + !(SynchMaster.getInstance().isMemberChanged()
             				|| SynchMaster.getInstance().isMemberChanged()));
             String addresses = "Addresses(" + SynchMaster.getInstance().info().getAddressList().size() + "): ";
             for (Iterator<Address> i = SynchMaster.getInstance().info().getAddressList().iterator(); i.hasNext(); ) {

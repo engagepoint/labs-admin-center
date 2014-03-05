@@ -37,9 +37,15 @@ public final class Main {
 
     private static boolean checkArgs(String... args) {
         try {
-            if (Commands.VIEW.getName().equals(args[0]) && args.length == 1) {
+            if (args.length == 1 && Commands.VIEW.getName().equals(args[0])) {
                 LOGGER.info("Welcome to EngagePoint Admin Centre...");
-            } else {
+            }else if(args.length == 3 && Commands.SYNCH.getName().equals(args[1])
+            		&& AdditionalCommands.LOAD.getCommand().equals(args[2])){
+            	SynchMaster.getInstance().useSavedConfig();
+            	SynchMaster.getInstance().pull();
+        		SynchMaster.getInstance().push();
+            	CONSOLE_CONTROLLER.synchSTATUS();
+            }else {
                 LOGGER.warning("Illegal arguments");
                 return false;
             }
