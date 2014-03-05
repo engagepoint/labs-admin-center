@@ -6,7 +6,7 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
+import javax.faces.bean.ViewScoped;
 import javax.faces.event.ActionEvent;
 import javax.inject.Inject;
 
@@ -21,7 +21,7 @@ import com.engagepoint.university.admincentre.entity.TreeProperties;
 
 
 @ManagedBean(name = "documentsController")
-@SessionScoped
+@ViewScoped
 public class DocumentsController implements Serializable {
 
     private static final Logger LOGGER = LoggerFactory

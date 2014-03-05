@@ -80,10 +80,11 @@ public class DataBean {
                 // buildTree(currentNode, selectedNode.getParent());
             } else {
                 try {
+                    currentNode.remove(selectedDocument.getOldName());
                     currentNode.put(selectedDocument.getName(),
                             KeyType.valueOf(selectedDocument.getType()),
                             selectedDocument.getValue());
-                    currentNode.remove(selectedDocument.getOldName());
+
                     // buildTree(currentNode, selectedNode.getParent());
                 } catch (IOException iOException) {
                     LOGGER.error(this.getClass().getName(),
