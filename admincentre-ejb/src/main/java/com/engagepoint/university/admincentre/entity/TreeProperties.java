@@ -25,8 +25,9 @@ public class TreeProperties {
         this.data = data;
         children = new ArrayList<TreeProperties>();
         this.parent = parent;
-        if (this.parent != null)
+        if (this.parent != null){
             this.parent.getChildren().add(this);
+    }
     }
 
     public TreeProperties(String type, Object data, TreeProperties parent) {
@@ -34,8 +35,9 @@ public class TreeProperties {
         this.data = data;
         children = new ArrayList<TreeProperties>();
         this.parent = parent;
-        if (this.parent != null)
+        if (this.parent != null){
             this.parent.getChildren().add(this);
+    }
     }
 
     public String getType() {
@@ -92,17 +94,18 @@ public class TreeProperties {
     }
 
     public boolean isLeaf() {
-        if (children == null)
+        if (children == null){
             return true;
-
-        return children.size() == 0;
+        }
+        return children.isEmpty();
     }
 
     @Override
     public String toString() {
-        if (data != null)
+        if (data != null){
             return data.toString();
-        else
+        } else{
             return super.toString();
+    }
     }
 }

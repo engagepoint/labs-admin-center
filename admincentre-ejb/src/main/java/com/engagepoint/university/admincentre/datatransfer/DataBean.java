@@ -21,164 +21,163 @@ public class DataBean {
     private TreeProperties root;
     private static final Logger LOGGER = LoggerFactory.getLogger(DataBean.class.getName());
 
-    public TreeProperties getPreferencesTree() {
+	    public TreeProperties getPreferencesTree() {
         root = new TreeProperties("root", null);
         Preferences preferences = new NodePreferences(null, "");
         buildTree((NodePreferences) preferences, root);
         return root;
-
     }
 
-    private void buildTree(NodePreferences preferences, TreeProperties parentTreeNode) {
 
-        TreeProperties treeNode = new TreeProperties(new PropertiesDocument(preferences
-                .getCurrentNode().getId(), preferences.name(), "-", "File"), parentTreeNode);
+	private void buildTree(NodePreferences preferences,
+			TreeProperties parentTreeNode) {
 
-        addLeaves(preferences, treeNode);
-        try {
-            if (preferences.childrenNames().length != 0) {
-                for (int i = 0; i < preferences.childrenNames().length; i++) {
-                    buildTree((NodePreferences) preferences.node(preferences.childrenNames()[i]),
-                            treeNode);
-                }
+		TreeProperties treeNode = new TreeProperties(new PropertiesDocument(
+				preferences.getCurrentNode().getId(), preferences.name(), "-",
+				"File"), parentTreeNode);
 
-            }
-        } catch (BackingStoreException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    };
+		addLeaves(preferences, treeNode);
+		try {
+			if (preferences.childrenNames().length != 0) {
+				for (int i = 0; i < preferences.childrenNames().length; i++) {
+					buildTree((NodePreferences) preferences.node(preferences.childrenNames()[i]), treeNode);
+				}
 
-    private void addLeaves(NodePreferences nodePreferences, TreeProperties parentTreeNode) {
-        try {
+			}
+		} catch (BackingStoreException e) {
+            LOGGER.error("failed to access backing store", e);
+		}
+	}
 
-            for (int i = 0; i < nodePreferences.keys().length; i++) {
-                Key key = nodePreferences.getKey(nodePreferences.keys()[i]);
-                new TreeProperties(new PropertiesDocument(key.getParentNodeId(), key.getName(),
-                        key.getValue(), key.getType().toString()), parentTreeNode);
-            }
-        } catch (BackingStoreException e) {
-            LOGGER.error("error during constructing tree on key from node: "
-                    + nodePreferences.name());
-        } catch (IOException e) {
-            LOGGER.error("error during constructing tree on reading key from node: "
-                    + nodePreferences.name());
-        }
-    }
+	private void addLeaves(NodePreferences nodePreferences,
+			TreeProperties parentTreeNode) {
+		try {
+			for (int i = 0; i < nodePreferences.keys().length; i++) {
+				Key key = nodePreferences.getKey(nodePreferences.keys()[i]);
+				new TreeProperties(
+						new PropertiesDocument(key.getId(), key.getName(),
+								key.getValue(), key.getType().toString()),
+						parentTreeNode);
+			}
+		} catch (BackingStoreException e) {
+			LOGGER.error("error during constructing tree on key from node: "
+					+ nodePreferences.name() , e);
+		} catch (IOException e) {
+			LOGGER.error("error during constructing tree on reading key from node: "
+					+ nodePreferences.name() , e);
+		}
+	}
 
-    public TreeProperties editDocument(PropertiesDocument selectedDocument) {
-        if (selectedDocument != null) {
-            String absPath = selectedDocument.getAbsolutePath();
-            NodePreferences currentNode = (NodePreferences) new NodePreferences(null, "")
-                    .node(absPath);
+	public TreeProperties editDocument(PropertiesDocument selectedDocument) {
+		if (selectedDocument != null) {
+			String absPath = selectedDocument.getAbsolutePath();
+			NodePreferences currentNode = (NodePreferences) new NodePreferences(
+					null, "").node(absPath);
+			if (selectedDocument.isFile()) {
+				TreeProperties selectedNode = getNodeByDoc(selectedDocument,
+						root);
+				selectedNode.getParent().getChildren().remove(selectedNode);
+				currentNode.changeNodeName(selectedDocument.getName());
+				selectedDocument.setAbsolutePath(currentNode.absolutePath());
+				buildTree(currentNode, selectedNode.getParent());
+			} else {
+				try {
+					currentNode.put(selectedDocument.getName(),
+							KeyType.valueOf(selectedDocument.getType()),
+							selectedDocument.getValue());
+					currentNode.remove(selectedDocument.getOldName());
+				} catch (IOException iOException) {
+					LOGGER.error(this.getClass().getName(),
+							"public void editDocument(ActionEvent event)",
+							iOException);
+				}
+			}
+		}
+		return getPreferencesTree();
+	}
 
-            if (selectedDocument.isFile()) {
-                TreeProperties selectedNode = getNodeByDoc(selectedDocument, root);
-                selectedNode.getParent().getChildren().remove(selectedNode);
-                currentNode.changeNodeName(selectedDocument.getName());
-                selectedDocument.setAbsolutePath(currentNode.absolutePath());
-                // buildTree(currentNode, selectedNode.getParent());
-            } else {
-                try {
-                    currentNode.remove(selectedDocument.getOldName());
-                    currentNode.put(selectedDocument.getName(),
-                            KeyType.valueOf(selectedDocument.getType()),
-                            selectedDocument.getValue());
+	public TreeProperties deleteDocument(PropertiesDocument selectedDocument) {
+		if (selectedDocument != null) {
+			TreeProperties selectedNode = getNodeByDoc(selectedDocument, root);
+			selectedNode.getParent().getChildren().remove(selectedNode);
+			String absPath = selectedDocument.getAbsolutePath();
+			if (selectedDocument.isFile()) {
+				try {
+					new NodePreferences(null, "").node(absPath).removeNode();
+				} catch (BackingStoreException backingStoreException) {
+					LOGGER.error(DataBean.class.getName(),
+							"public void deleteNode()", backingStoreException);
+				}
+			} else {
+				new NodePreferences(null, "").node(absPath).remove(
+						selectedDocument.getName());
+			}
+		}
+		return root;
+	}
 
-                    // buildTree(currentNode, selectedNode.getParent());
-                } catch (IOException iOException) {
-                    LOGGER.error(this.getClass().getName(),
-                            "public void editDocument(ActionEvent event)", iOException);
-                }
-            }
+	public TreeProperties addDocument(PropertiesDocument selectedDocument, PropertiesDocument temporaryDocument) {
+		selectedDocument.setDirectoryForAdding(true);
+		String newName = temporaryDocument.getName();
+		String selectedAbsolutePath = selectedDocument.getAbsolutePath();
+		String path;
 
-        }
+		if (temporaryDocument.isFile()) {
+			path = "/".equals(selectedAbsolutePath) ? "/" + newName
+					: selectedAbsolutePath + "/" + newName;
+			new NodePreferences(null, "").node(path);
+			new TreeProperties(new PropertiesDocument(path, newName, "-", "File",
+					temporaryDocument.isFile()), returnDirectoryForAdding(root));
+		} else {
+			path = selectedAbsolutePath;
+			try {
+				((NodePreferences) new NodePreferences(null, "").node(path)).put(newName, KeyType.valueOf(temporaryDocument.getType()),
+								temporaryDocument.getValue());
 
-        return getPreferencesTree();
-    }
+			} catch (IOException e) {
+                LOGGER.error("input - output exception", e);
+			}
+			new TreeProperties(new PropertiesDocument(path, newName, temporaryDocument.getValue(),
+					temporaryDocument.getType(), temporaryDocument.isFile()),
+					returnDirectoryForAdding(root));
+			LOGGER.info(" ");
+		}
+		return getPreferencesTree();
+	}
+	
+	public TreeProperties getNodeByDoc(PropertiesDocument document,
+			TreeProperties root) {
+		TreeProperties foundTree = null;
+		for (TreeProperties treeNode : root.getChildren()) {
+			PropertiesDocument currentDocument = (PropertiesDocument) treeNode.getData();
 
-    public TreeProperties deleteDocument(PropertiesDocument selectedDocument) {
-        if (selectedDocument != null) {
-            TreeProperties selectedNode = getNodeByDoc(selectedDocument, root);
-            selectedNode.getParent().getChildren().remove(selectedNode);
-            String absPath = selectedDocument.getAbsolutePath();
-            if (selectedDocument.isFile()) {
-                try {
-                    new NodePreferences(null, "").node(absPath).removeNode();
-                } catch (BackingStoreException backingStoreException) {
-                    LOGGER.error(DataBean.class.getName(), "public void deleteNode()",
-                            backingStoreException);
-                }
-            } else {
-                new NodePreferences(null, "").node(absPath).remove(selectedDocument.getName());
-            }
-        }
-        return root;
-    }
+			if (document.equals(currentDocument)) {
+				return treeNode;
+			} else {
+				foundTree = getNodeByDoc(document, treeNode);
+			}
+		}
+		return foundTree;
+	}
 
-    public TreeProperties addDocument(PropertiesDocument selectedDocument,
-            PropertiesDocument temporaryDocument) {
-        selectedDocument.setDirectoryForAdding(true);
-        String newName = temporaryDocument.getName();
-        String selectedAbsolutePath = selectedDocument.getAbsolutePath();
-        String path;
+	private TreeProperties returnDirectoryForAdding(TreeProperties  rootNode) {
+		TreeProperties selectedNode = null;
+		for (TreeProperties  treeNode : rootNode.getChildren()) {
+			if (((PropertiesDocument) treeNode.getData()).isDirectoryForAdding()) {
+				selectedNode = treeNode;
+			}
+			returnDirectoryForAdding(treeNode);
+		}
+		return selectedNode;
 
-        if (temporaryDocument.isFile()) {
-            path = "/".equals(selectedAbsolutePath) ? "/" + newName : selectedAbsolutePath + "/"
-                    + newName;
-            new NodePreferences(null, "").node(path);
-            new TreeProperties(new PropertiesDocument(path, newName, "-", "File",
-                    temporaryDocument.isFile()), returnDirectoryForAdding(root));
-        } else {
-            path = selectedAbsolutePath;
-            try {
-                ((NodePreferences) new NodePreferences(null, "").node(path)).put(newName,
-                        KeyType.valueOf(temporaryDocument.getType()), temporaryDocument.getValue());
+	}
+	
+	public TreeProperties getRoot() {
+		return root;
+	}
 
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            new TreeProperties(new PropertiesDocument(path, newName, temporaryDocument.getValue(),
-                    temporaryDocument.getType(), temporaryDocument.isFile()),
-                    returnDirectoryForAdding(root));
-            System.out.println();
-        }
-        return getPreferencesTree();
-    }
-
-    public TreeProperties getNodeByDoc(PropertiesDocument document, TreeProperties root) {
-        TreeProperties foundTree = null;
-        for (TreeProperties treeNode : root.getChildren()) {
-            PropertiesDocument currentDocument = (PropertiesDocument) treeNode.getData();
-
-            if (document.equals(currentDocument)) {
-                return treeNode;
-            } else {
-                foundTree = getNodeByDoc(document, treeNode);
-            }
-        }
-        return foundTree;
-    }
-
-    private TreeProperties returnDirectoryForAdding(TreeProperties rootNode) {
-        TreeProperties selectedNode = null;
-        for (TreeProperties treeNode : rootNode.getChildren()) {
-            if (((PropertiesDocument) treeNode.getData()).isDirectoryForAdding()) {
-                selectedNode = treeNode;
-            }
-            returnDirectoryForAdding(treeNode);
-        }
-        return selectedNode;
-
-    }
-
-    public TreeProperties getRoot() {
-        return root;
-    }
-
-    public void setRoot(TreeProperties root) {
-        this.root = root;
-    }
+	public void setRoot(TreeProperties root) {
+		this.root = root;
+	}
 
 }
