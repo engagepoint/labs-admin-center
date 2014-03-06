@@ -184,7 +184,11 @@ public class ZipFiles {
     
 	
 	private void load0 (LineReader lr, String rootPath,String relativePath) throws IOException {
-		NodePreferences currentPreferences = (NodePreferences) new NodePreferences(null, "").node(rootPath+relativePath);
+        String path = rootPath+relativePath;
+        if(path.indexOf("//")!=-1){
+            path = path.replace("//","/");
+        }
+		NodePreferences currentPreferences = (NodePreferences) new NodePreferences(null, "").node(path);
         char[] convtBuf = new char[1024];
         int limit;
         int keyLen;

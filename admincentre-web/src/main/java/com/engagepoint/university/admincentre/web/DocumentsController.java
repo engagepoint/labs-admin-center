@@ -62,29 +62,29 @@ public class DocumentsController implements Serializable {
 
     public void editDocument(ActionEvent event) {
         TreeProperties editedTree = dataBean
-                .editDocument(getPropertiesDocumentfromDocument(selectedDoc));
+                .editDocument(getPropertiesDocumentFromDocument(selectedDoc));
         root = new DefaultTreeNode("root", null);
         buildTree(editedTree, root);
     }
 
     public void deleteNode() {
         TreeProperties editedTree = dataBean
-                .deleteDocument(getPropertiesDocumentfromDocument(selectedDoc));
+                .deleteDocument(getPropertiesDocumentFromDocument(selectedDoc));
         root = new DefaultTreeNode("root", null);
         buildTree(editedTree, root);
     }
 
     public void addNode() {
         TreeProperties editedTree = dataBean.addDocument(
-                getPropertiesDocumentfromDocument(selectedDoc),
-                getPropertiesDocumentfromDocument(tempDoc));
+                getPropertiesDocumentFromDocument(selectedDoc),
+                getPropertiesDocumentFromDocument(tempDoc));
         resetTempDoc();
         selectedDoc.setDirectoryForAdding(false);
         root = new DefaultTreeNode("root", null);
         buildTree(editedTree, root);
     }
 
-    private PropertiesDocument getPropertiesDocumentfromDocument(
+    private PropertiesDocument getPropertiesDocumentFromDocument(
             Document document) {
         return new PropertiesDocument(document.getAbsolutePath(),
                 document.getName(), document.getValue(), document.getType(), document.getOldName(),

@@ -1,6 +1,7 @@
 package com.engagepoint.university.admincentre.web;
 
 import com.engagepoint.university.admincentre.preferences.NodePreferences;
+import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.UploadedFile;
