@@ -4,6 +4,12 @@ import java.io.Serializable;
 
 import com.engagepoint.university.admincentre.entity.AbstractEntity;
 
+/**
+ * An instance of this class could be sent in a message
+ * payload.
+ * @author Roman Garkavenko
+ *
+ */
 public class CRUDPayload implements Serializable {
 
 	private static final long serialVersionUID = -703924255956246679L;
@@ -26,10 +32,12 @@ public class CRUDPayload implements Serializable {
 	
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj){
 			return true;
-		if ( !(obj instanceof CRUDPayload) )
+		}
+		if ( !(obj instanceof CRUDPayload) ){
 			return false;
+		}
 		CRUDPayload crudPayload = (CRUDPayload) obj;
 		return (crudOperation == crudPayload.crudOperation)
 				&& entity.equals(crudPayload.entity);

@@ -125,8 +125,9 @@ public final class Main {
             case EXPORT:
                 CONSOLE_CONTROLLER.export(cis);
                 break;
-                default:
-                    CONSOLE_CONTROLLER.showHelp();
+            default:
+                CONSOLE_CONTROLLER.showHelp();
+                break;
             }
         } catch (IllegalArgumentException e) {
             throw new WrongInputArgException(e);

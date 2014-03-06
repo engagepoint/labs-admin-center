@@ -12,8 +12,6 @@ import javax.inject.Inject;
 
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.engagepoint.university.admincentre.datatransfer.DataBean;
 import com.engagepoint.university.admincentre.entity.PropertiesDocument;
@@ -23,9 +21,7 @@ import com.engagepoint.university.admincentre.entity.TreeProperties;
 @ManagedBean(name = "documentsController")
 @ViewScoped
 public class DocumentsController implements Serializable {
-
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(DocumentsController.class.getName());
+    
     private static final long serialVersionUID = 123L;
     private static List<TreeNode> keyFolder = new ArrayList<TreeNode>(100);
     private static List<TreeNode> keyvsvakueFolder = new ArrayList<TreeNode>(100);
@@ -35,7 +31,6 @@ public class DocumentsController implements Serializable {
     private Document tempDoc = new Document(null, "", "", "");
     @Inject
     DataBean dataBean;
-    private String thisClassName = "\n DocumentsController";
 
     public DocumentsController() {
     }

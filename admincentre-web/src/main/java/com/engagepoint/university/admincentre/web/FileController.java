@@ -24,8 +24,9 @@ public class FileController implements Serializable {
     }
 
     public FileController() throws IOException {
-        if (pathToTempFile.isEmpty())
+        if (pathToTempFile.isEmpty()) {
             return;
+        }
         File file = new File(pathToTempFile);
         file.deleteOnExit();
         InputStream stream = new FileInputStream(file);

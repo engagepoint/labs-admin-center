@@ -1,8 +1,12 @@
 package com.engagepoint.university.admincentre.entity;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Serializable;
 
 public class PropertiesDocument implements Serializable, Comparable<PropertiesDocument> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PropertiesDocument.class.getName());
 
     private static final long serialVersionUID = 12L;
     private String absolutePath;
@@ -48,7 +52,7 @@ public class PropertiesDocument implements Serializable, Comparable<PropertiesDo
     }
 
     public boolean isFile() {
-        return file;
+        return "File".equals(type);
     }
 
     public String getAbsolutePath() {
@@ -108,6 +112,7 @@ public class PropertiesDocument implements Serializable, Comparable<PropertiesDo
         //return to current page
         return null;
     }
+
 
     public boolean isDirectoryForAdding() {
         return directoryForAdding;

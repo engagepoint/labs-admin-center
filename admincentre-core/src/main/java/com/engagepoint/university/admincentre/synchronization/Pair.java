@@ -6,7 +6,7 @@ package com.engagepoint.university.admincentre.synchronization;
  * @param <L> to store left object
  * @param <R> to store right object
  * 
- * @author roman.garkavenko
+ * @author Roman Garkavenko
  */
 public class Pair<L,R> {
     private L left;

@@ -108,9 +108,6 @@ public class Document implements Serializable, Comparable<Document> {
         //return to current page
         return null;
     }
-//
-//    public void setSelected() {
-//    }
 
     public boolean isDirectoryForAdding() {
         return directoryForAdding;

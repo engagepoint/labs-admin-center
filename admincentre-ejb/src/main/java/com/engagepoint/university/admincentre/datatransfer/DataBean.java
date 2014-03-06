@@ -21,7 +21,7 @@ public class DataBean {
     private TreeProperties root;
     private static final Logger LOGGER = LoggerFactory.getLogger(DataBean.class.getName());
 
-    public TreeProperties getPreferencesTree() {
+	    public TreeProperties getPreferencesTree() {
         root = new TreeProperties("root", null);
         Preferences preferences = new NodePreferences(null, "");
         buildTree((NodePreferences) preferences, root);
@@ -43,11 +43,10 @@ public class DataBean {
                 }
 
             }
-        } catch (BackingStoreException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (BackingStoreException backingStoreException) {
+            LOGGER.warn("Tree building exception", backingStoreException);
         }
-    };
+    }
 
     private void addLeaves(NodePreferences nodePreferences, TreeProperties parentTreeNode) {
         try {
@@ -80,11 +79,10 @@ public class DataBean {
                 // buildTree(currentNode, selectedNode.getParent());
             } else {
                 try {
-                    currentNode.remove(selectedDocument.getOldName());
                     currentNode.put(selectedDocument.getName(),
                             KeyType.valueOf(selectedDocument.getType()),
                             selectedDocument.getValue());
-
+                    currentNode.remove(selectedDocument.getOldName());
                     // buildTree(currentNode, selectedNode.getParent());
                 } catch (IOException iOException) {
                     LOGGER.error(this.getClass().getName(),
@@ -135,13 +133,13 @@ public class DataBean {
                         KeyType.valueOf(temporaryDocument.getType()), temporaryDocument.getValue());
 
             } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+            LOGGER.warn("Cannot complete this:\n"
+                    + ".put(newName, KeyType.valueOf(temporaryDocument.getType()), temporaryDocument.getValue());\n }"
+            , e);
             }
             new TreeProperties(new PropertiesDocument(path, newName, temporaryDocument.getValue(),
                     temporaryDocument.getType(), temporaryDocument.isFile()),
                     returnDirectoryForAdding(root));
-            System.out.println();
         }
         return getPreferencesTree();
     }
@@ -160,18 +158,6 @@ public class DataBean {
         return foundTree;
     }
 
-    private TreeProperties returnDirectoryForAdding(TreeProperties rootNode) {
-        TreeProperties selectedNode = null;
-        for (TreeProperties treeNode : rootNode.getChildren()) {
-            if (((PropertiesDocument) treeNode.getData()).isDirectoryForAdding()) {
-                selectedNode = treeNode;
-            }
-            returnDirectoryForAdding(treeNode);
-        }
-        return selectedNode;
-
-    }
-
     public TreeProperties getRoot() {
         return root;
     }
@@ -179,5 +165,4 @@ public class DataBean {
     public void setRoot(TreeProperties root) {
         this.root = root;
     }
-
 }
