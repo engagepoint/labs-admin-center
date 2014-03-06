@@ -18,7 +18,7 @@ import java.util.prefs.BackingStoreException;
 public class TempController {
 
     private static final Logger LOGGER = LoggerFactory
-            .getLogger(DocumentsController.class.getName());
+            .getLogger(TempController.class.getName());
 
     public void onExportZip() throws IOException, BackingStoreException {
         File tmpFile = FileController.createTempZip();
