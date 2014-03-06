@@ -7,8 +7,9 @@ public class Key extends AbstractEntity {
     private static final long serialVersionUID = -5430748795395302687L;
 
     private KeyType type;
-    //TODO change value type to byte
+
     private String value;
+
 
     public Key() {
 
@@ -16,6 +17,7 @@ public class Key extends AbstractEntity {
 
     public Key(String parentNodeId, String name, KeyType type, String value) {
         super(name, parentNodeId);
+
         this.type = type;
         this.value = value;
     }
@@ -35,6 +37,8 @@ public class Key extends AbstractEntity {
     public void setValue(String value) {
         this.value = value;
     }
+
+
 
     @Override
     public boolean equals(Object obj) {

@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Observable;
 
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
@@ -19,8 +21,7 @@ import com.engagepoint.university.admincentre.synchronization.CRUDObserver;
 import com.engagepoint.university.admincentre.synchronization.CRUDOperation;
 import com.engagepoint.university.admincentre.synchronization.CRUDPayload;
 
-public abstract class AbstractDAO<T extends AbstractEntity>
- extends Observable implements
+public abstract class AbstractDAO<T extends AbstractEntity> extends Observable implements
         GenericDAO<T> {
 
     private static final String CACHE_CONFIG = "cache_config.xml";
@@ -44,7 +45,7 @@ public abstract class AbstractDAO<T extends AbstractEntity>
                 setChanged();
                 notifyObservers(new CRUDPayload(CRUDOperation.CREATE, newInstance));
             } else {
-                throw new IOException("This entity already exists"+newInstance.getName());
+                throw new IOException("This entity already exists" + newInstance.getName());
             }
 
         } finally {
@@ -72,16 +73,16 @@ public abstract class AbstractDAO<T extends AbstractEntity>
     public void update(T transientObject) throws IOException {
         try {
             getCache(CACHE_CONFIG, USED_CACHE);
-        cache.replace(transientObject.getId(), transientObject);
-        setChanged();
-        notifyObservers(new CRUDPayload(CRUDOperation.UPDATE, transientObject));
+            cache.replace(transientObject.getId(), transientObject);
+            setChanged();
+            notifyObservers(new CRUDPayload(CRUDOperation.UPDATE, transientObject));
         } finally {
             stopCacheManager();
         }
 
     }
 
-    public void delete(String keyId) throws IOException{
+    public void delete(String keyId) throws IOException {
         try {
             getCache(CACHE_CONFIG, USED_CACHE);
             T temp = cache.get(keyId);
@@ -89,10 +90,9 @@ public abstract class AbstractDAO<T extends AbstractEntity>
                 throw new IOException();
             }
             cache.remove(keyId);
-                setChanged();
-                notifyObservers(new CRUDPayload(CRUDOperation.DELETE, temp));
-        }
-        finally {
+            setChanged();
+            notifyObservers(new CRUDPayload(CRUDOperation.DELETE, temp));
+        } finally {
             stopCacheManager();
         }
 
@@ -115,14 +115,27 @@ public abstract class AbstractDAO<T extends AbstractEntity>
             stopCacheManager();
         }
     }
+
     private Cache<String, T> getCache(String cacheConfigPath, String cacheName) throws IOException {
+        String newCacheName = "distributedWithL1";
         if (m == null) {
-        m = new DefaultCacheManager(cacheConfigPath);
-            cache = m.getCache(cacheName);
+            // Configuration config = new
+            // ConfigurationBuilder().jmxStatistics().enabled(true)
+            // .indexing().enabled(true).persistence().passivation(false).addSingleFileStore()
+            // .location("D:/infinispan/db").fetchPersistentState(true).preload(true)
+            // .ignoreModifications(false).purgeOnStartup(false).shared(false).build();
+            m = new DefaultCacheManager(cacheConfigPath);
+            Configuration rc = m.getCacheConfiguration(cacheName);
+            Configuration config = new ConfigurationBuilder().read(rc).persistence()
+                    .addSingleFileStore()
+                    .location(System.getProperty("java.io.tmpdir") + "/infinispan").build();
+
+            m.defineConfiguration(newCacheName, config);
+            cache = m.getCache(newCacheName);
         }
         cache.start();
         if (!cache.containsKey("/")) {
-            Cache<String, Node> startCache = m.getCache(USED_CACHE);
+            Cache<String, Node> startCache = m.getCache(newCacheName);
             Node node = new Node("/", "");
             startCache.put(node.getId(), node);
         }
@@ -136,10 +149,12 @@ public abstract class AbstractDAO<T extends AbstractEntity>
             // m.stop();
         }
     }
-    
+
     /**
      * Puts new received cache
-     * @throws UnsupportedOperationException if could not put all
+     * 
+     * @throws UnsupportedOperationException
+     *             if could not put all
      */
     public void putAll(Map<String, T> cacheData) throws IOException {
 
@@ -152,10 +167,12 @@ public abstract class AbstractDAO<T extends AbstractEntity>
             stopCacheManager();
         }
     }
-    
+
     /**
      * Clears cache
-     * @throws UnsupportedOperationException if cache could not be clear
+     * 
+     * @throws UnsupportedOperationException
+     *             if cache could not be clear
      */
     public void clear() throws IOException {
 
@@ -168,8 +185,8 @@ public abstract class AbstractDAO<T extends AbstractEntity>
             stopCacheManager();
         }
     }
-    
-    public Map<String, T> obtainCache() throws IOException{
+
+    public Map<String, T> obtainCache() throws IOException {
         return getCache(CACHE_CONFIG, USED_CACHE);
 
     }

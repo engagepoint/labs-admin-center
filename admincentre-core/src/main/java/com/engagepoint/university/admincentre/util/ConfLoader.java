@@ -138,7 +138,7 @@ public class ConfLoader {
         XMLOutputter outputter = new XMLOutputter();
         outputter.setFormat(Format.getPrettyFormat());
         try {
-            FileWriter fw = new FileWriter("src/main/resources/config.xml");
+            FileWriter fw = new FileWriter("config.xml");
             outputter.output(this.rDoc, fw);
             fw.close();
         } catch (Exception ex) {
@@ -148,7 +148,8 @@ public class ConfLoader {
 
     private void read() throws FileNotFoundException {
         SAXBuilder parser = new SAXBuilder();
-        fr = new FileReader("src/main/resources/config.xml");
+        fr = new FileReader("config.xml");
+        
         try {
             this.rDoc = parser.build(fr);
             fr.close();
@@ -161,5 +162,4 @@ public class ConfLoader {
         }
     }
 
-       
 }
