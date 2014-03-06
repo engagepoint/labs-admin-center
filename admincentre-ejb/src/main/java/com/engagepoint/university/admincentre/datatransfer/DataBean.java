@@ -21,16 +21,14 @@ public class DataBean {
     private TreeProperties root;
     private static final Logger LOGGER = LoggerFactory.getLogger(DataBean.class.getName());
 
-	    public TreeProperties getPreferencesTree() {
+    public TreeProperties getPreferencesTree() {
         root = new TreeProperties("root", null);
         Preferences preferences = new NodePreferences(null, "");
         buildTree((NodePreferences) preferences, root);
         return root;
-
     }
 
     private void buildTree(NodePreferences preferences, TreeProperties parentTreeNode) {
-
         TreeProperties treeNode = new TreeProperties(new PropertiesDocument(preferences
                 .getCurrentNode().getId(), preferences.name(), "-", "File"), parentTreeNode);
 
@@ -41,7 +39,6 @@ public class DataBean {
                     buildTree((NodePreferences) preferences.node(preferences.childrenNames()[i]),
                             treeNode);
                 }
-
             }
         } catch (BackingStoreException backingStoreException) {
             LOGGER.warn("Tree building exception", backingStoreException);
@@ -50,7 +47,6 @@ public class DataBean {
 
     private void addLeaves(NodePreferences nodePreferences, TreeProperties parentTreeNode) {
         try {
-
             for (int i = 0; i < nodePreferences.keys().length; i++) {
                 Key key = nodePreferences.getKey(nodePreferences.keys()[i]);
                 new TreeProperties(new PropertiesDocument(key.getParentNodeId(), key.getName(),
@@ -76,20 +72,17 @@ public class DataBean {
                 selectedNode.getParent().getChildren().remove(selectedNode);
                 currentNode.changeNodeName(selectedDocument.getName());
                 selectedDocument.setAbsolutePath(currentNode.absolutePath());
-                // buildTree(currentNode, selectedNode.getParent());
             } else {
                 try {
+                    currentNode.remove(selectedDocument.getOldName());
                     currentNode.put(selectedDocument.getName(),
                             KeyType.valueOf(selectedDocument.getType()),
                             selectedDocument.getValue());
-                    currentNode.remove(selectedDocument.getOldName());
-                    // buildTree(currentNode, selectedNode.getParent());
                 } catch (IOException iOException) {
                     LOGGER.error(this.getClass().getName(),
                             "public void editDocument(ActionEvent event)", iOException);
                 }
             }
-
         }
         return getPreferencesTree();
     }
@@ -133,9 +126,8 @@ public class DataBean {
                         KeyType.valueOf(temporaryDocument.getType()), temporaryDocument.getValue());
 
             } catch (IOException e) {
-            LOGGER.warn("Cannot complete this:\n"
-                    + ".put(newName, KeyType.valueOf(temporaryDocument.getType()), temporaryDocument.getValue());\n }"
-            , e);
+                LOGGER.warn("Cannot complete this:\n"
+                        + ".put(newName, KeyType.valueOf(temporaryDocument.getType()), temporaryDocument.getValue());\n }", e);
             }
             new TreeProperties(new PropertiesDocument(path, newName, temporaryDocument.getValue(),
                     temporaryDocument.getType(), temporaryDocument.isFile()),
@@ -156,6 +148,17 @@ public class DataBean {
             }
         }
         return foundTree;
+    }
+
+    private TreeProperties returnDirectoryForAdding(TreeProperties rootNode) {
+        TreeProperties selectedNode = null;
+        for (TreeProperties treeNode : rootNode.getChildren()) {
+            if (((PropertiesDocument) treeNode.getData()).isDirectoryForAdding()) {
+                selectedNode = treeNode;
+            }
+            returnDirectoryForAdding(treeNode);
+        }
+        return selectedNode;
     }
 
     public TreeProperties getRoot() {
