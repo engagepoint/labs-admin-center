@@ -26,7 +26,7 @@ public enum Commands {
 					+ "\n\t -reset \t\treset member's changes"
 					+ "\n\t -revert \t\treset cluster changes"
 					+ "\n\t -autosynch \t\tpull, push and set auto mode"
-					+ "\n\t -mode [auto|manual] \tget or set mode - auto or manual-held"
+					+ "\n\t -mode [auto|manual] \tget or set mode - auto or manual"
 					+ "\n\t -name [new name] \tget or set channel name"
 					+ "\n\t -status \t\tprint all info about channel"
 					+ "\n\t -load \t\t\tuses configurations from file"
