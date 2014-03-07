@@ -35,6 +35,54 @@
                               multiple="true"
                               oncomplete="uploadXML.hide()"/>
             </p:dialog>
+<ui:remove>
+            <p:commandButton value="Configuration" oncomplete="confDialog.show()">
+
+            </p:commandButton>
+
+            <!--Config dialog-->
+            <p:dialog id="confDialog"
+                      header="Configure Dialog"
+                      widgetVar="confDialog"
+                      position="center, center"
+                      showEffect="fade"
+                      modal="true"
+                      closable="false">
+
+
+                    <h:outputLabel value="Channel: " />
+                    <p:inputText  value="#{configBean.channel}" style="font-weight:bold" />
+
+                    <h:outputLabel value="Mode" />
+                    <p:inputText  value="#{configBean.mode}" style="font-weight:bold" />
+
+                    <h:outputLabel value="Cluster " />
+                    <p:inputText  value="#{configBean.cluster}" style="font-weight:bold" />
+
+                    <h:outputLabel value="Base Path" />
+                    <p:inputText  value="#{configBean.basePath}" style="font-weight:bold" />
+
+                <br/>
+                <br/>
+                <p:commandButton
+                        id="confOkButton"
+                        value="Ok"
+                        styleClass="ml20"
+                        style="float:right"
+                        ajax="false"
+                        oncomplete="delDialog.hide()"/>
+                <h:outputText value="    "/>
+
+                <p:commandButton
+                        id="confCancelButton"
+                        value="Cancel"
+                        styleClass="secondary"
+                        style="float: right"
+                        action="cancel"
+                        update="treeTable"
+                        oncomplete="delDialog.hide()"/>
+            </p:dialog>
+</ui:remove>
 
             <p:treeTable id="treeTable"
                          value="#{documentsController.root}"
