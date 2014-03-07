@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Created by aleksey.korotysh on 04.03.14.
  */
-public class DataBeanTest {
+public class  DataBeanTest {
     TreeProperties parentTreeNode;
     DataBean dataBean = new DataBean();
     NodePreferences nodePreferences;

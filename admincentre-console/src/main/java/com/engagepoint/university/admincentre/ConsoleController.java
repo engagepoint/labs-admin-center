@@ -366,7 +366,7 @@ public class ConsoleController {
     private void autosynch(){
     	if(!isConnected()) return;
     	if(isCoordinator()) return;
-    	if(SynchMaster.getInstance().getMode() == SynchMaster.Mode.HAND){
+    	if(SynchMaster.getInstance().getMode() == SynchMaster.Mode.MANUAL){
     		SynchMaster.getInstance().pull();
     		SynchMaster.getInstance().push();
     		SynchMaster.getInstance().setMode(SynchMaster.Mode.AUTO);
@@ -384,15 +384,15 @@ public class ConsoleController {
     }
     
     private void mode(ConsoleInputString cis){
-    	if(!cis.getThirdArg().equals("auto") && !cis.getThirdArg().equals("hand")){
-    		LOGGER.info("Wrong argument. Only \"auto\" or \"hand\" could be passed");
+    	if(!cis.getThirdArg().equals("auto") && !cis.getThirdArg().equals("manual")){
+    		LOGGER.info("Wrong argument. Only \"auto\" or \"manual\" could be passed");
     		return;
     	}
     	if(SynchMaster.getInstance().isConnected()){
     		if(SynchMaster.getInstance().info().isCoordinator()
-    				&& cis.getThirdArg().equals("hand")){
+    				&& cis.getThirdArg().equals("manual")){
     			LOGGER.info("NOT RECOMMENDED. This member is coordinator.");
-    		}else if(SynchMaster.getInstance().getMode() == SynchMaster.Mode.HAND
+    		}else if(SynchMaster.getInstance().getMode() == SynchMaster.Mode.MANUAL
     				&& cis.getThirdArg().equals("auto")
     				&& (SynchMaster.getInstance().isMemberChanged()
     						||
