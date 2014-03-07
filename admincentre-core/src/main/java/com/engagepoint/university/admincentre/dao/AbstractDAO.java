@@ -119,16 +119,13 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
     private Cache<String, T> getCache(String cacheConfigPath, String cacheName) throws IOException {
         String newCacheName = "distributedWithL1";
         if (m == null) {
-            // Configuration config = new
-            // ConfigurationBuilder().jmxStatistics().enabled(true)
-            // .indexing().enabled(true).persistence().passivation(false).addSingleFileStore()
-            // .location("D:/infinispan/db").fetchPersistentState(true).preload(true)
-            // .ignoreModifications(false).purgeOnStartup(false).shared(false).build();
+
             m = new DefaultCacheManager(cacheConfigPath);
             Configuration rc = m.getCacheConfiguration(cacheName);
             Configuration config = new ConfigurationBuilder().read(rc).persistence()
                     .addSingleFileStore()
-                    .location(System.getProperty("java.io.tmpdir") + "/infinispan").build();
+.location(System.getProperty("user.home") + "/infinispan")
+                    .build();
 
             m.defineConfiguration(newCacheName, config);
             cache = m.getCache(newCacheName);
