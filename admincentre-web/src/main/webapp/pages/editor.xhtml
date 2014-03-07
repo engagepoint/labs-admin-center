@@ -222,7 +222,7 @@
 
                    <!--Add button-->
                     <p:commandButton update="treeTable"
-                                     id="AddButton"
+                                     id="addButton"
                                      rendered="#{doc.file}"
                                      oncomplete="addDlg.show()"
                                      title="Add new node"
@@ -271,7 +271,6 @@
                                              style="float:right"
                                              styleClass="ml20"
                                              update="treeTable"
-                                             
                                              oncomplete="addDlg2.show()"/>
                           
                         </uib:gridContainer>
@@ -289,9 +288,7 @@
                               width="auto"
                               modal="true">
                         <uib:gridContainer id="container2" >
-                            
-
-
+                        
                             <h:outputLabel value="Name: " />
                             <p:inputText  value="#{documentsController.tempDoc.name}" style="font-weight:bold" />
 
