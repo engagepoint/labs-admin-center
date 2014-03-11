@@ -33,7 +33,9 @@ public class TempController {
             np.importNode(is);
             np.toString();
         } catch (BackingStoreException e) {
-           LOGGER.warn("onImportZip: message " + e.getMessage());
+           LOGGER.warn("onImportZip: /n ", e);
+        } catch (IOException ioException) {
+            LOGGER.warn("onImportZip: message ", ioException);
         }
     }
 }
