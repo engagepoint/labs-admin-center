@@ -124,8 +124,7 @@
 
                 <p:column id="column4" style="width:25%">
                     <f:facet name="header"></f:facet>
-                    </p:commandButton>
-
+                    
                     <!--Delete button-->
                     <p:commandButton
                         id="delButton"
@@ -181,12 +180,14 @@
                     <p:commandButton id="editButton"
                                      value="#{trans.edit}"
                                      title="#{trans.edit}"
+                                     style="float: right"
                                      update="treeTable"
                                      oncomplete="editDialog.show()"
                                      styleClass="ui-button-icon-only secondary small"
                                      icon="ui-icon-edit">
                         <f:setPropertyActionListener value="#{doc}"
                                                      target="#{documentsController.selectedDoc}"/>
+                    </p:commandButton>
 
                         <!--Edit dialog-->
                         <p:dialog id="editDlg"
