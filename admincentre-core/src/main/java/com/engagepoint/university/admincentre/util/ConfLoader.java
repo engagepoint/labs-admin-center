@@ -17,6 +17,7 @@ import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 /**
  * 
  * @author Bogdan Ponomarchuk
@@ -25,13 +26,14 @@ public class ConfLoader {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConfLoader.class);
     public static final String PREFIX = "stream2file";
     public static final String SUFFIX = ".tmp";
+    private static volatile ConfLoader instance;
 
     Element rootElement;
     FileReader fr;
     Document rDoc;
     File configurationFile;
 
-    public ConfLoader() {
+    private ConfLoader() {
         boolean fileWasFound = false;
         String configPath;
         configPath = System.getProperty("config.path");
@@ -43,7 +45,7 @@ public class ConfLoader {
                 configurationFile = new File(configPath);
                 fileWasFound = true;
             } else {
-                LOGGER.warn("file wasn`t found " + configPath);
+                LOGGER.warn("configurationfile wasn`t found " + configPath);
             }
         }
         // if config file wasn`t entered from console try to find it near .jar
@@ -54,7 +56,7 @@ public class ConfLoader {
                 configurationFile = new File(configPath);
                 fileWasFound = true;
             } else {
-                LOGGER.info("file wasn`t found " + configPath);
+                LOGGER.info("there is no configuration file in working dir: " + configPath);
             }
         }
         // if config file wasn`t entered from console and wasn`t found near .jar
@@ -63,6 +65,13 @@ public class ConfLoader {
             setDefaultConfigurationFile();
         }
 
+    }
+
+    public static synchronized ConfLoader getInstance() {
+        if (instance == null) {
+            instance = new ConfLoader();
+        }
+        return instance;
     }
 
     private boolean isFileExists(String filePath) {
@@ -207,7 +216,7 @@ public class ConfLoader {
         try {
             configurationFile = streamToFile(getClass().getClassLoader().getResourceAsStream(
                     "config.xml"));
-            LOGGER.info("default configurations is used");
+            LOGGER.info("default configurations are used");
         } catch (IOException e) {
             LOGGER.error("error during getting default configurations");
         }

@@ -10,7 +10,7 @@ public class NodeDAO extends AbstractDAO<Node> {
         super(Node.class);
     }
 
-    public static NodeDAO getInstance() {
+    public static synchronized NodeDAO getInstance() {
         if (instance == null) {
             instance = new NodeDAO();
         }

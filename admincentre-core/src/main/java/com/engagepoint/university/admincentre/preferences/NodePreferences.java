@@ -128,8 +128,9 @@ public class NodePreferences extends Preferences {
     public NodePreferences(NodePreferences parent, String name) {
 
         if (parent == null) {
-            if (!"".equals(name))
+            if (!"".equals(name)) {
                 throw new IllegalArgumentException("Root name '" + name + "' must be \"\"");
+            }
             this.absolutePath = "/";
             root = this;
         } else {
@@ -146,19 +147,7 @@ public class NodePreferences extends Preferences {
         try {
 //
             currentNode = nodeDAO.read(this.absolutePath);
-//            for (String childId:currentNode.getChildNodeIdList()){
-//               Node childNode= NodeDAO.getInstance().read(childId);
-//                String childName=childNode.getName();
-//                NodePreferences child = kidCache.get(childName);
-//                if (child == null) {
 
-//                    child = childSpi(childName);
-//                    if (child.newNode) {
-//                        enqueueNodeAddedEvent(child);
-//                    }
-//                    kidCache.put(childName, child);
-//                }
-//            }
             if (currentNode == null) {
                 currentNode = new Node(parent.absolutePath, name);
                 nodeDAO.create(currentNode);
@@ -166,6 +155,22 @@ public class NodePreferences extends Preferences {
                 nodeDAO.update(parent.currentNode);
                 newNode = true;
             }
+
+            for (String childId:currentNode.getChildNodeIdList()){
+               Node childNode= NodeDAO.getInstance().read(childId);
+                String childName=childNode.getName();
+                NodePreferences child = kidCache.get(childName);
+                if (child == null) {
+
+                    child = childSpi(childName);
+                    if (child.newNode) {
+                        enqueueNodeAddedEvent(child);
+                    }
+                    kidCache.put(childName, child);
+                }
+            }
+
+
 
         } catch (IOException e) {
             LOGGER.warn(e.getMessage());

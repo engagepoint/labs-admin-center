@@ -702,7 +702,7 @@ public final class SynchMaster {
 	 * Save configurations (channel name, mode, cluster name if set) to file
 	 */
 	public void saveConfig(){
-		ConfLoader confLoader = new ConfLoader();
+        ConfLoader confLoader = ConfLoader.getInstance();
 		if(getChannelName() != null){
 			confLoader.setChannelName(getChannelName());
 		}
@@ -719,7 +719,7 @@ public final class SynchMaster {
 	 */
 	public void useSavedConfig(){
 		disconnect();
-		ConfLoader confLoader = new ConfLoader();
+        ConfLoader confLoader = ConfLoader.getInstance();
 		String channelName = confLoader.getChannelName();
 		if(!"".equals(channelName)){
 			setChannelName(channelName);

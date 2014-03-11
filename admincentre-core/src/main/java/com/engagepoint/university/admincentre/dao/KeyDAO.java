@@ -4,13 +4,13 @@ import com.engagepoint.university.admincentre.entity.Key;
 
 
 public class KeyDAO extends AbstractDAO<Key> {
-    private static volatile KeyDAO instance;
+    private static KeyDAO instance;
 
     private KeyDAO() {
         super(Key.class);
     }
 
-    public static KeyDAO getInstance() {
+    public static synchronized KeyDAO getInstance() {
         if (instance == null) {
             instance = new KeyDAO();
         }

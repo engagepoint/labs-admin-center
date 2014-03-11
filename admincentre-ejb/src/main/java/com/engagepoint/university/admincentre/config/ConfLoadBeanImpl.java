@@ -1,8 +1,8 @@
 package com.engagepoint.university.admincentre.config;
 
-import com.engagepoint.university.admincentre.util.ConfLoader;
-
 import javax.ejb.Stateless;
+
+import com.engagepoint.university.admincentre.util.ConfLoader;
 
 @Stateless
 public class ConfLoadBeanImpl implements ConfLoadBean {
@@ -10,7 +10,7 @@ public class ConfLoadBeanImpl implements ConfLoadBean {
     ConfLoader confLoader;
 
     public ConfLoadBeanImpl() {
-        this.confLoader = new ConfLoader();
+        this.confLoader = ConfLoader.getInstance();
     }
 
     @Override

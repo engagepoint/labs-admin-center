@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
-  <infinispan basePath="" />
-  <synchronization clusterName="test_cluster" mode="AUTO" channelName="" />
+  <infinispan basePath="#{user.dir}/infinispan/db" />
+<!--   <infinispan basePath="D:/infinispan/db" /> -->
+ <synchronization clusterName="test_cluster" mode="AUTO" channelName="" />
 </config>

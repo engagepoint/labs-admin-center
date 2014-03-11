@@ -9,6 +9,8 @@ import java.util.Observable;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
@@ -20,6 +22,7 @@ import com.engagepoint.university.admincentre.entity.Node;
 import com.engagepoint.university.admincentre.synchronization.CRUDObserver;
 import com.engagepoint.university.admincentre.synchronization.CRUDOperation;
 import com.engagepoint.university.admincentre.synchronization.CRUDPayload;
+import com.engagepoint.university.admincentre.util.ConfLoader;
 
 public abstract class AbstractDAO<T extends AbstractEntity> extends Observable implements
         GenericDAO<T> {
@@ -116,27 +119,33 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
         }
     }
 
-    private Cache<String, T> getCache(String cacheConfigPath, String cacheName) throws IOException {
-        String newCacheName = "distributedWithL1";
+    private void getCache(String cacheConfigPath, String cacheName) throws IOException {
         if (m == null) {
+            GlobalConfiguration gc = new GlobalConfigurationBuilder().globalJmxStatistics()
+                    .enabled(true).allowDuplicateDomains(true).build();
+            m = new DefaultCacheManager(gc);
 
-            m = new DefaultCacheManager(cacheConfigPath);
-            Configuration rc = m.getCacheConfiguration(cacheName);
-            Configuration config = new ConfigurationBuilder().read(rc).persistence()
-                    .addSingleFileStore()
-.location(System.getProperty("user.home") + "/infinispan")
+            // Configuration rc = m.getCacheConfiguration(cacheName);
+            Configuration config = new ConfigurationBuilder().jmxStatistics().enabled(true)
+                    .persistence()
+                    .addSingleFileStore().fetchPersistentState(true).preload(true)
+                    .ignoreModifications(false).purgeOnStartup(false).shared(false)
+                    .location(ConfLoader.getInstance().getBasePath())
                     .build();
 
-            m.defineConfiguration(newCacheName, config);
-            cache = m.getCache(newCacheName);
+            m.defineConfiguration(cacheName, config);
+            cache = m.getCache(cacheName);
+            if (!cache.containsKey("/")) {
+                Cache<String, Node> startCache = m.getCache(cacheName);
+                Node node = new Node("/", "");
+                startCache.put(node.getId(), node);
+
+
+            }
         }
+ else {
         cache.start();
-        if (!cache.containsKey("/")) {
-            Cache<String, Node> startCache = m.getCache(newCacheName);
-            Node node = new Node("/", "");
-            startCache.put(node.getId(), node);
         }
-        return cache;
 
     }
 
@@ -184,7 +193,8 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
     }
 
     public Map<String, T> obtainCache() throws IOException {
-        return getCache(CACHE_CONFIG, USED_CACHE);
+        getCache(CACHE_CONFIG, USED_CACHE);
+        return cache;
 
     }
 }
