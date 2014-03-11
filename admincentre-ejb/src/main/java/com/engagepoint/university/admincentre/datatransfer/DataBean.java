@@ -1,21 +1,20 @@
 package com.engagepoint.university.admincentre.datatransfer;
 
-import java.io.IOException;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
-
-import javax.ejb.Stateful;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.engagepoint.university.admincentre.entity.Key;
 import com.engagepoint.university.admincentre.entity.KeyType;
 import com.engagepoint.university.admincentre.entity.PropertiesDocument;
 import com.engagepoint.university.admincentre.entity.TreeProperties;
 import com.engagepoint.university.admincentre.preferences.NodePreferences;
+import java.io.IOException;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
-@Stateful
+
+import javax.ejb.Stateless;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+@Stateless
 public class DataBean {
 
     private TreeProperties root;

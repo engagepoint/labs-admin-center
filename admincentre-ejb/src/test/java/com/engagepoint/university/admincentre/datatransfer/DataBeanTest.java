@@ -4,18 +4,18 @@ import com.engagepoint.university.admincentre.entity.Node;
 import com.engagepoint.university.admincentre.entity.PropertiesDocument;
 import com.engagepoint.university.admincentre.entity.TreeProperties;
 import com.engagepoint.university.admincentre.preferences.NodePreferences;
-import org.junit.Before;
-import org.junit.Test;
-
-import org.junit.Assert;
-
 import java.util.LinkedList;
 import java.util.List;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 
 /**
  * Created by aleksey.korotysh on 04.03.14.
  */
-public class DataBeanTest {
+@Ignore
+public class  DataBeanTest {
     TreeProperties parentTreeNode;
     DataBean dataBean = new DataBean();
     NodePreferences nodePreferences;

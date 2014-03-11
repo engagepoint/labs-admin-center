@@ -51,7 +51,7 @@ public final class SynchMaster {
 	
 	public enum Mode{
 		AUTO,
-		HAND
+        MANUAL
 	}
 	
 	private class Receiver extends ReceiverAdapter{
@@ -304,7 +304,7 @@ public final class SynchMaster {
 	}
 
 	public void send(CRUDPayload crudPayload) {
-		if(mode == Mode.HAND){
+		if(mode == Mode.MANUAL){
 			return;
 		}
 		boolean removed = lastReceivedUpdates.remove(crudPayload);
