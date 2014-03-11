@@ -3,6 +3,7 @@ package com.engagepoint.university.admincentre.web;
 import com.engagepoint.university.admincentre.datatransfer.DataBean;
 import com.engagepoint.university.admincentre.entity.PropertiesDocument;
 import com.engagepoint.university.admincentre.entity.TreeProperties;
+import org.apache.commons.lang.StringUtils;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
 
@@ -21,13 +22,17 @@ public class DocumentsController implements Serializable {
 
     private static final long serialVersionUID = 123L;
     private static List<TreeNode> keyFolder = new ArrayList<TreeNode>(100);
-    private static List<TreeNode> keyvsvakueFolder = new ArrayList<TreeNode>(100);
+    private static List<TreeNode> keyDocument = new ArrayList<TreeNode>(100);
     private TreeNode root;
     private Document selectedDoc = new Document();
     private TreeNode selectedNode;
     private Document tempDoc = new Document(null, "", "", "");
     @Inject
     DataBean dataBean;
+
+    private String searchKeyName;
+    private String searchKeyValue;
+    private TreeNode searchNode;
 
     public DocumentsController() {
     }
@@ -45,9 +50,9 @@ public class DocumentsController implements Serializable {
                     .getData();
             TreeNode childTreeNode = new DefaultTreeNode(
                     new Document(propertiesDocument.getAbsolutePath(),
-                    propertiesDocument.getName(),
-                    propertiesDocument.getValue(),
-                    propertiesDocument.getType()), treeNode);
+                            propertiesDocument.getName(),
+                            propertiesDocument.getValue(),
+                            propertiesDocument.getType()), treeNode);
             buildTree(child, childTreeNode);
         }
         collapsingORexpanding(root, true);
@@ -88,47 +93,66 @@ public class DocumentsController implements Serializable {
         tempDoc = new Document(null, "", "", "");
     }
 
-    public List<TreeNode> searchByKeyName(String keyName, TreeNode node) {
-        if (node.getChildren() != null) {
-            for (TreeNode a : node.getChildren()) {
-                Document document = (Document) a.getData();
-                String documentName = document.getName();
-                if (keyName.equals(documentName)) {
-                    keyFolder.add(a.getParent());
+    public void search() {
+        init();
+        root = filterRootTree(root);
+    }
+
+    public TreeNode filterRootTree(TreeNode inputNode) {
+        List<TreeNode> children = inputNode.getChildren();
+        int size = children.size();
+        for (int i = 0; i < size; i++) {
+            TreeNode treeNode = children.get(i);
+            if (children.get(i).getChildren().isEmpty()) {
+                String keyName = ((Document) (treeNode.getData())).getName();
+                String keyValue = ((Document) (treeNode.getData())).getValue();
+                if (!isSuitableNode(keyName, keyValue)) {
+                    children.get(i).setParent(null);
+                    i--;
+                    size = children.size();
                 }
-                searchByKeyName(keyName, a);
+            } else {
+                filterRootTree(children.get(i));
+                if (children.get(i).getChildren().isEmpty()) {
+                    children.get(i).setParent(null);
+                    i--;
+                    size = children.size();
+                }
             }
         }
+        return inputNode;
+    }
+
+    private boolean isSuitableNode(String keyName, String keyValue) {
+        return (StringUtils.isEmpty(searchKeyName) && StringUtils.isEmpty(searchKeyValue)) ||  
+               (StringUtils.isEmpty(searchKeyName) && keyValue.toUpperCase().contains(searchKeyValue.toUpperCase())) ||
+               (StringUtils.isEmpty(searchKeyValue) && keyName.toUpperCase().contains(searchKeyName.toUpperCase())) ||
+               ((StringUtils.isNotEmpty(searchKeyName) && keyName.toUpperCase().contains(searchKeyName.toUpperCase())) 
+                && (StringUtils.isNotEmpty(searchKeyValue) && keyValue.toUpperCase().contains(searchKeyValue.toUpperCase())));
+    }
+
+    public static List<TreeNode> getKeyFolder() {
         return keyFolder;
     }
 
-    public List<TreeNode> searchByKeyValue(String keyName, String keyValue,
-            TreeNode node) {
-        if (node.getChildren() != null) {
-            for (TreeNode treeNode : node.getChildren()) {
-                Document document = (Document) treeNode.getData();
-                String documentName = document.getName();
-                String documentValue = document.getValue();
-                if (keyName.equals(documentName)
-                        && (keyValue.equals(documentValue))) {
-                    keyvsvakueFolder.add(treeNode.getParent());
-                }
-                searchByKeyValue(keyName, keyValue, treeNode);
-            }
-        }
-        return keyvsvakueFolder;
+    public static void setKeyFolder(List<TreeNode> keyFolder) {
+        DocumentsController.keyFolder = keyFolder;
     }
 
-    public TreeNode getSelectedNode() {
-        return selectedNode;
+    public static List<TreeNode> getKeyDocument() {
+        return keyDocument;
     }
 
-    public void setSelectedNode(TreeNode selectedNode) {
-        this.selectedNode = selectedNode;
+    public static void setKeyDocument(List<TreeNode> keyDocument) {
+        DocumentsController.keyDocument = keyDocument;
     }
 
     public TreeNode getRoot() {
         return root;
+    }
+
+    public void setRoot(TreeNode root) {
+        this.root = root;
     }
 
     public Document getSelectedDoc() {
@@ -139,6 +163,14 @@ public class DocumentsController implements Serializable {
         this.selectedDoc = selectedDoc;
     }
 
+    public TreeNode getSelectedNode() {
+        return selectedNode;
+    }
+
+    public void setSelectedNode(TreeNode selectedNode) {
+        this.selectedNode = selectedNode;
+    }
+
     public Document getTempDoc() {
         return tempDoc;
     }
@@ -147,6 +179,21 @@ public class DocumentsController implements Serializable {
         this.tempDoc = tempDoc;
     }
 
+    public DataBean getDataBean() {
+        return dataBean;
+    }
+
+    public void setDataBean(DataBean dataBean) {
+        this.dataBean = dataBean;
+    }
+
+    public TreeNode getSearchNode() {
+        return searchNode;
+    }
+
+    public void setSearchNode(TreeNode searchNode) {
+        this.searchNode = searchNode;
+    }
     /**
      * Recursive method for collapse and expand a treeTable.
      * The parameter "node" is the node than you want to expand or collapse.
@@ -167,4 +214,21 @@ public class DocumentsController implements Serializable {
             node.setSelected(false);
         }
     }
+
+    public String getSearchKeyName() {
+        return searchKeyName;
+    }
+
+    public void setSearchKeyName(String searchKeyName) {
+        this.searchKeyName = searchKeyName;
+    }
+
+    public String getSearchKeyValue() {
+        return searchKeyValue;
+    }
+
+    public void setSearchKeyValue(String searchKeyValue) {
+        this.searchKeyValue = searchKeyValue;
+    }
+
 }
