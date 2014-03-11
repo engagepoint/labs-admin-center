@@ -1,9 +1,8 @@
 package com.engagepoint.university.admincentre.web;
 
-import java.io.Serializable;
-
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
+import java.io.Serializable;
 
 @ManagedBean(name = "document")
 @SessionScoped
@@ -153,4 +152,6 @@ public class Document implements Serializable, Comparable<Document> {
     public int compareTo(Document document) {
         return this.getName().compareTo(document.getName());
     }
+
+
 }
