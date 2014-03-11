@@ -144,8 +144,21 @@ public class NodePreferences extends Preferences {
         this.name = name;
         this.parent = parent;
         try {
-            currentNode = nodeDAO.read(this.absolutePath);
 
+            currentNode = nodeDAO.read(this.absolutePath);
+            for (String childId:currentNode.getChildNodeIdList()){
+               Node childNode= NodeDAO.getInstance().read(childId);
+                String childName=childNode.getName();
+                NodePreferences child = kidCache.get(childName);
+                if (child == null) {
+
+                    child = childSpi(childName);
+                    if (child.newNode) {
+                        enqueueNodeAddedEvent(child);
+                    }
+                    kidCache.put(childName, child);
+                }
+            }
             if (currentNode == null) {
                 currentNode = new Node(parent.absolutePath, name);
                 nodeDAO.create(currentNode);
@@ -985,7 +998,6 @@ public class NodePreferences extends Preferences {
                 throw new IllegalStateException(REMOVED_NODE + name);
             if ("".equals(path))
                 return this;
-
             if ("/".equals(path))
                 return root;
             if (path.charAt(0) != '/')
