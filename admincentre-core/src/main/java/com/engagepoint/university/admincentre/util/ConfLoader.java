@@ -149,7 +149,15 @@ public class ConfLoader {
      */
     public String getBasePath() {
         read();
-        return rDoc.getRootElement().getChild("infinispan").getAttributeValue("basePath");
+        String path = rDoc.getRootElement().getChild("infinispan").getAttributeValue("basePath");
+        int firstSlash = path.indexOf('/');
+        if (path.indexOf("#{") == 0 && path.indexOf("}") == firstSlash - 1) {
+            String systemDir = System.getProperty(path.substring(2, firstSlash - 1));
+            if (systemDir != null) {
+                path = systemDir.concat(path.substring(firstSlash));
+            }
+        }
+        return path;
     }
 
     @Deprecated
