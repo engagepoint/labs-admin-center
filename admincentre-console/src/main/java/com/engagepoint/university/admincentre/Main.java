@@ -42,8 +42,10 @@ public final class Main {
             }else if(args.length == 3 && Commands.SYNCH.getName().equals(args[1])
             		&& AdditionalCommands.LOAD.getCommand().equals(args[2])){
             	SynchMaster.getInstance().useSavedConfig();
-            	SynchMaster.getInstance().pull();
-        		SynchMaster.getInstance().push();
+            	if(!SynchMaster.getInstance().info().isSingle()){
+            		SynchMaster.getInstance().pull();
+            		SynchMaster.getInstance().push();
+            	}
             	CONSOLE_CONTROLLER.synchSTATUS();
             }else {
                 LOGGER.warning("Illegal arguments");

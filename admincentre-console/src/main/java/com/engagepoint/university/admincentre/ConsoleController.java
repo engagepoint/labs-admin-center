@@ -387,6 +387,9 @@ public class ConsoleController {
     }
     
     private void connect(ConsoleInputString cis){
+    	if(SynchMaster.getInstance().isConnected()){
+    		LOGGER.info("You are already connected to " + SynchMaster.getInstance().getClusterName());
+    	}
     	SynchMaster.getInstance().connect(cis.getThirdArg());
         if(SynchMaster.getInstance().getMode() == SynchMaster.Mode.AUTO
         	&& !SynchMaster.getInstance().info().isSingle()){
