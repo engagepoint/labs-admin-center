@@ -731,8 +731,10 @@ public final class SynchMaster {
 		String clusterName = confLoader.getClusterName();
 		if(!"".equals(clusterName)){
 			connect(clusterName);
-			pull();
-			push();
+			if(mode == Mode.AUTO){
+				pull();
+				push();
+			}
 		}
 	}
 }
