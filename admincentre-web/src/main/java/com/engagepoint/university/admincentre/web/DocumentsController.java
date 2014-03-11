@@ -17,11 +17,10 @@ import com.engagepoint.university.admincentre.datatransfer.DataBean;
 import com.engagepoint.university.admincentre.entity.PropertiesDocument;
 import com.engagepoint.university.admincentre.entity.TreeProperties;
 
-
 @ManagedBean(name = "documentsController")
 @ViewScoped
 public class DocumentsController implements Serializable {
-    
+
     private static final long serialVersionUID = 123L;
     private static List<TreeNode> keyFolder = new ArrayList<TreeNode>(100);
     private static List<TreeNode> keyvsvakueFolder = new ArrayList<TreeNode>(100);
@@ -53,6 +52,7 @@ public class DocumentsController implements Serializable {
                     propertiesDocument.getType()), treeNode);
             buildTree(child, childTreeNode);
         }
+        collapsingORexpanding(root, true);
     }
 
     public void editDocument(ActionEvent event) {
@@ -147,5 +147,26 @@ public class DocumentsController implements Serializable {
 
     public void setTempDoc(Document tempDoc) {
         this.tempDoc = tempDoc;
+    }
+
+    /**
+     * Recursive method for collapse and expand a treeTable.
+     * The parameter "node" is the node than you want to expand or collapse.
+     * If the parameter "option" is false, all children of the "node" are collapsed.
+     * If "option" == true - all children of the "node" are expanded.
+     * setSelected(false) indicate than this node isn't selected
+     * @param node
+     * @param option 
+     */
+    public void collapsingORexpanding(TreeNode node, boolean option) {
+        if (node.getChildren().isEmpty()) {
+            node.setSelected(false);
+        } else {
+            for (TreeNode s : node.getChildren()) {
+                collapsingORexpanding(s, option);
+            }
+            node.setExpanded(option);
+            node.setSelected(false);
+        }
     }
 }
