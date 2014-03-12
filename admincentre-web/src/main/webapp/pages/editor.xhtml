@@ -103,20 +103,20 @@
                          value="#{documentsController.root}"
                          var="doc">
                 <f:facet name="header">#{trans.propViewer}</f:facet>
-                <p:column style="width:30%">
+                <p:column style="width:35%">
                     <f:facet name="header">#{trans.file}</f:facet>
                     <h:outputText value="#{doc.name}" />
                 </p:column>
 
-                <p:column style="width:30%">
+                <p:column style="width:35%">
                     <f:facet name="header">#{trans.value}</f:facet>
                     <h:outputText value="#{doc.value}"/>
                 </p:column>
-                <p:column style="width:30%">
+                <p:column style="width:15%">
                     <f:facet name="header">#{trans.type}</f:facet>
                     <h:outputText value="#{doc.type}"/>
                 </p:column>
-                <p:column id="column" style="width:10%">
+                <p:column style="width:15%">
                     <f:facet name="header"></f:facet>
                    
 
