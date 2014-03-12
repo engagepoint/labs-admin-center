@@ -9,8 +9,6 @@ import java.util.Observable;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.configuration.global.GlobalConfiguration;
-import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
@@ -121,13 +119,12 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
 
     private void getCache(String cacheConfigPath, String cacheName) throws IOException {
         if (m == null) {
-            GlobalConfiguration gc = new GlobalConfigurationBuilder().globalJmxStatistics()
-                    .enabled(true).allowDuplicateDomains(true).build();
-            m = new DefaultCacheManager(gc);
 
-            // Configuration rc = m.getCacheConfiguration(cacheName);
-            Configuration config = new ConfigurationBuilder().jmxStatistics().enabled(true)
-                    .persistence()
+            m = new DefaultCacheManager(cacheConfigPath);
+
+            Configuration rc = m.getCacheConfiguration(cacheName);
+            Configuration config = new ConfigurationBuilder().read(rc).jmxStatistics()
+                    .enabled(true).persistence()
                     .addSingleFileStore().fetchPersistentState(true).preload(true)
                     .ignoreModifications(false).purgeOnStartup(false).shared(false)
                     .location(ConfLoader.getInstance().getBasePath())
