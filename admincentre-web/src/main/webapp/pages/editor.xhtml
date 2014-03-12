@@ -55,7 +55,6 @@
                     <h:outputText value="#{doc.name}" />
 
 
-
                     <h:outputLabel value="Channel: " />
                     <p:inputText  value="#{configBean.channel}" style="font-weight:bold" />
 
@@ -67,9 +66,6 @@
 
                     <h:outputLabel value="Base Path" />
                     <p:inputText  value="#{configBean.basePath}" style="font-weight:bold" />
-
-
-
                     <br/>
                     <br/>
                     <p:commandButton
@@ -91,7 +87,6 @@
                         actionListener="#{documentsController.addNode()}"
                         oncomplete="addDlg.hide()"/>
 
-
                     <p:commandButton
                         id="confCancelButton"
                         value="Cancel"
@@ -100,6 +95,7 @@
                         action="cancel"
                         update="treeTable"
                         oncomplete="delDialog.hide()"/>
+
                 </p:dialog>
             </ui:remove>
 
@@ -107,23 +103,22 @@
                          value="#{documentsController.root}"
                          var="doc">
                 <f:facet name="header">#{trans.propViewer}</f:facet>
-                <p:column style="width:25%">
+                <p:column style="width:30%">
                     <f:facet name="header">#{trans.file}</f:facet>
                     <h:outputText value="#{doc.name}" />
                 </p:column>
 
-                <p:column style="width:25%">
+                <p:column style="width:30%">
                     <f:facet name="header">#{trans.value}</f:facet>
                     <h:outputText value="#{doc.value}"/>
                 </p:column>
-
-                <p:column style="width:25%">
+                <p:column style="width:30%">
                     <f:facet name="header">#{trans.type}</f:facet>
                     <h:outputText value="#{doc.type}"/>
                 </p:column>
-
-                <p:column id="column4" style="width:25%">
+                <p:column id="column" style="width:10%">
                     <f:facet name="header"></f:facet>
+                   
 
                     <!--Delete button-->
                     <p:commandButton
@@ -203,8 +198,10 @@
                             <h:outputText value="Value:" rendered="#{not documentsController.selectedDoc.file}"/>
                             <p:inputText  id="inputValue" value="#{documentsController.selectedDoc.value}" rendered="#{not documentsController.selectedDoc.file}"/>
                             <h:outputText value="Type:" rendered="#{not documentsController.selectedDoc.file}"/>
+                            <p:selectOneMenu value="#{documentsController.selectedDoc.type}" 
+                                             id="selectTypeMenu"
+                                             rendered="#{not documentsController.selectedDoc.file}">
 
-                            <p:selectOneMenu id="selectTypeMenu" value="#{documentsController.selectedDoc.type}" rendered="#{not documentsController.selectedDoc.file}">
                                 <f:selectItem itemLabel="Select" itemValue="" />
                                 <f:selectItem id="itemString" itemLabel="String" itemValue="String" />
                                 <f:selectItem id="itemInteger" itemLabel="Integer" itemValue="Integer" />
@@ -235,6 +232,7 @@
                     </p:dialog>                        
 
                     <!--Add button-->
+
                     <p:commandButton
                         id="addButton"
                         update="treeTable"
@@ -313,15 +311,16 @@
                             </p:selectOneMenu>
                             <br/>
                             <p:commandButton value="Cancel"
+                                             id="addCancelButton2"
                                              style="float:right"
                                              styleClass="secondary"
                                              update="treeTable"
                                              actionListener="#{documentsController.resetTempDoc()}"
                                              oncomplete="addDlg2.hide()"/>
-
                             <h:outputText value="    "/>
 
                             <p:commandButton value="Ok"
+                                             id="addOkButton2"
                                              style="float:right"
                                              styleClass="ml20"
                                              ajax="false"
