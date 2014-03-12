@@ -37,30 +37,6 @@
 
             </p:dialog>
 
-            <uib:gridContainer id="searchParams">
-                <uib:gridRow fluid="false" styleClass="mb20">
-
-                    <uib:gridColumn column="3">
-                        <h:outputLabel for="s_man" style="margin-left: 10px" value=" PROPERTY NAME"/>
-                        <p:inputText id="s_man" style="margin-left: 10px" value="#{documentsController.searchKeyName}"/>
-                    </uib:gridColumn>
-
-                    <uib:gridColumn column="3">
-                        <h:outputLabel for="s_man2" style="margin-left: 10px" value=" PROPERTY VALUE"/>
-                        <p:inputText id="s_man2" style="margin-left: 10px" value="#{documentsController.searchKeyValue}"/>
-                    </uib:gridColumn>
-
-                    <uib:gridColumn column="2">
-                        <p:commandButton
-                            value="Search"
-                            actionListener="#{documentsController.search()}"
-                            update="treeTable"
-                            style="width:100px;top: 110px; left: 570px; position: absolute;height:38px">
-                        </p:commandButton>
-                    </uib:gridColumn>
-                </uib:gridRow>
-            </uib:gridContainer>
-
             <ui:remove>
                 <p:commandButton value="Configuration" oncomplete="confDialog.show()">
                 </p:commandButton>
@@ -97,7 +73,7 @@
                         style="float:right"
                         ajax="false"
                         oncomplete="delDialog.hide()"/>
-                    
+
                     <h:outputText value="    "/>
 
                     <p:commandButton
@@ -228,7 +204,7 @@
                             ajax="false"
                             oncomplete="editDialog.hide()"
                             actionListener="#{documentsController.editDocument}" />
-                        
+
                         <h:outputText value="    "/>
 
                         <p:commandButton
@@ -319,7 +295,7 @@
                                 <f:selectItem itemLabel="Float" itemValue="Float" />
                             </p:selectOneMenu>
                             <br/>
-                            
+
                             <p:commandButton value="Ok"
                                              id="addOkButton2"
                                              style="float:right"
