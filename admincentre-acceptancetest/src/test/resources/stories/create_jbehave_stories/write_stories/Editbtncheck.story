@@ -7,8 +7,8 @@ Write thucydides story according to the UI logic to have ability to create necce
 Scenario: Check the edit button functionality on a Node and on a Key. 
 
 When the user opens the default page
-And clicks on element with id 'editButton'
-And the user fills 'preferencesForm-treeTable-0_0-inputName' field with 'root'
+And clicks on element with id 'preferencesForm-treeTable-0-editButton'
+And the user fills 'preferencesForm-treeTable-0_0_0_2_0-inputName' field with 'root'
 And clicks on element with id 'preferencesForm-treeTable-0_0-editOkButton'
 Then wait until all animations on page completed
 
@@ -22,4 +22,3 @@ When the user clicks on element with id/name/className 'preferencesForm-treeTabl
 And clicks on element with id/name/className 'preferencesForm-treeTable-0_0-selectTypeMenu_label'
 And clicks on element with id/name/className 'preferencesForm-treeTable-0_0-editOkButton'
 Then wait until all animations on page completed
-
