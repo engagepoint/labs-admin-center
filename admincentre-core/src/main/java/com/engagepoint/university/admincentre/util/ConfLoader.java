@@ -17,7 +17,6 @@ import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * 
  * @author Bogdan Ponomarchuk
@@ -28,15 +27,20 @@ public class ConfLoader {
     public static final String SUFFIX = ".tmp";
     private static volatile ConfLoader instance;
 
-    Element rootElement;
-    FileReader fr;
-    Document rDoc;
-    File configurationFile;
+    private Element rootElement;
+    private FileReader fr;
+    private Document rDoc;
+    private File configurationFile;
+    private String basePath;
+    private String mode;
+    private String clusterName;
+    private String channelName;
+
 
     private ConfLoader() {
         boolean fileWasFound = false;
         String configPath;
-        configPath = System.getProperty("config.path");
+        configPath = System.getProperty("CONFIG_PATH");
 
         // checking if config file from console was entered
         if (configPath != null) {
@@ -64,7 +68,17 @@ public class ConfLoader {
         if (!fileWasFound) {
             setDefaultConfigurationFile();
         }
+        readVariablesFromFile();
+    }
 
+    private void readVariablesFromFile() {
+        read();
+        this.channelName = rDoc.getRootElement().getChild("synchronization")
+                .getAttributeValue("channelName");
+        this.mode = rDoc.getRootElement().getChild("synchronization").getAttributeValue("mode");
+        this.clusterName = rDoc.getRootElement().getChild("synchronization")
+                .getAttributeValue("clusterName");
+        this.basePath = rDoc.getRootElement().getChild("infinispan").getAttributeValue("basePath");
     }
 
     public static synchronized ConfLoader getInstance() {
@@ -88,8 +102,7 @@ public class ConfLoader {
      * @return name of channel
      */
     public String getChannelName() {
-        read();
-        return rDoc.getRootElement().getChild("synchronization").getAttributeValue("channelName");
+        return channelName;
     }
 
     /**
@@ -100,10 +113,10 @@ public class ConfLoader {
      */
     @Deprecated
     public void setChannelName(String channelName) {
-            read();
-            rDoc.getRootElement().getChild("synchronization").getAttribute("channelName")
-                    .setValue(channelName);
-            write();
+        this.channelName = channelName;
+        rDoc.getRootElement().getChild("synchronization").getAttribute("channelName")
+                .setValue(channelName);
+        write();
     }
 
     /**
@@ -112,15 +125,14 @@ public class ConfLoader {
      * @return synchronization mode
      */
     public String getMode() {
-        read();
-        return rDoc.getRootElement().getChild("synchronization").getAttributeValue("mode");
+        return mode;
     }
 
     @Deprecated
     public void setMode(String mode) {
-            read();
-            rDoc.getRootElement().getChild("synchronization").getAttribute("mode").setValue(mode);
-            write();
+        this.mode = mode;
+        rDoc.getRootElement().getChild("synchronization").getAttribute("mode").setValue(mode);
+        write();
     }
 
     /**
@@ -129,16 +141,15 @@ public class ConfLoader {
      * @return name of cluster
      */
     public String getClusterName() {
-            read();
-        return rDoc.getRootElement().getChild("synchronization").getAttributeValue("clusterName");
+        return clusterName;
     }
 
     @Deprecated
     public void setClusterName(String clusterName) {
-            read();
-            rDoc.getRootElement().getChild("synchronization").getAttribute("clusterName")
-                    .setValue(clusterName);
-            write();
+        this.clusterName = clusterName;
+        rDoc.getRootElement().getChild("synchronization").getAttribute("clusterName")
+                .setValue(clusterName);
+        write();
 
     }
 
@@ -148,8 +159,7 @@ public class ConfLoader {
      * @return name of channel
      */
     public String getBasePath() {
-        read();
-        String path = rDoc.getRootElement().getChild("infinispan").getAttributeValue("basePath");
+        String path = basePath;
         int firstSlash = path.indexOf('/');
         if (path.indexOf("#{") == 0 && path.indexOf("}") == firstSlash - 1) {
             String systemDir = System.getProperty(path.substring(2, firstSlash - 1));
@@ -162,7 +172,7 @@ public class ConfLoader {
 
     @Deprecated
     public void setBasePath(String path) {
-        read();
+        this.basePath = path;
         rDoc.getRootElement().getChild("infinispan").getAttribute("basePath").setValue(path);
         write();
 
