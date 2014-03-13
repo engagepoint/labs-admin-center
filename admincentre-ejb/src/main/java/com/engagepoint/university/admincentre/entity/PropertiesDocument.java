@@ -24,13 +24,13 @@ public class PropertiesDocument implements Serializable, Comparable<PropertiesDo
         this.value = value;
         this.type = type;
         this.oldName = name;
-        this.file = "File".equals(type);
+        this.file = "Node".equals(type);
     }
     public PropertiesDocument(String absolutePath, String name, String value, String type, boolean file) {
         this.absolutePath = absolutePath;
         this.name = name;
         this.value = value;
-        this.type = (file) ? "File" : type;
+        this.type = (file) ? "Node" : type;
         this.oldName = oldName;
         this.file = file;
     }
@@ -38,7 +38,7 @@ public class PropertiesDocument implements Serializable, Comparable<PropertiesDo
         this.absolutePath = absolutePath;
         this.name = name;
         this.value = value;
-        this.type = (file) ? "File" : type;
+        this.type = (file) ? "Node" : type;
         this.oldName = oldName;
         this.file = file;
     }
@@ -48,11 +48,11 @@ public class PropertiesDocument implements Serializable, Comparable<PropertiesDo
 
     public void setFile(boolean file) {
         this.file = file;
-        this.type = (file) ? "File" : "";
+        this.type = (file) ? "Node" : "";
     }
 
     public boolean isFile() {
-        return "File".equals(type);
+        return "Node".equals(type);
     }
 
     public String getAbsolutePath() {
@@ -90,7 +90,7 @@ public class PropertiesDocument implements Serializable, Comparable<PropertiesDo
 
     public void setType(String type) {
         this.type = type;
-        file = ("File".equals(type)) ? true : false;
+        file = ("Node".equals(type)) ? true : false;
     }
 
     public boolean isEditable() {

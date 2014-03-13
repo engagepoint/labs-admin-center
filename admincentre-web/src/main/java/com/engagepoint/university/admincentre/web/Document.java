@@ -24,14 +24,14 @@ public class Document implements Serializable, Comparable<Document> {
         this.value = value;
         this.type = type;
         this.oldName = name;
-        this.file = "File".equals(type);
+        this.file = "Node".equals(type);
     }
 
     public Document(String absolutePath, String name, String value, String type, boolean file) {
         this.absolutePath = absolutePath;
         this.name = name;
         this.value = value;
-        this.type = (file) ? "File" : type;
+        this.type = (file) ? "Node" : type;
         this.oldName = name;
         this.file = file;
     }
@@ -41,7 +41,7 @@ public class Document implements Serializable, Comparable<Document> {
 
     public void setFile(boolean file) {
         this.file = file;
-        this.type = (file) ? "File" : "";
+        this.type = (file) ? "Node" : "";
     }
 
     public boolean isFile() {
@@ -85,7 +85,7 @@ public class Document implements Serializable, Comparable<Document> {
 
     public void setType(String type) {
         this.type = type;
-        file = ("File".equals(type)) ? true : false;
+        file = ("Node".equals(type)) ? true : false;
     }
 
     public boolean isEditable() {

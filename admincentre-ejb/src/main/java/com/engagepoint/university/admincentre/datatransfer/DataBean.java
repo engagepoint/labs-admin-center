@@ -30,7 +30,7 @@ public class DataBean {
 
     private void buildTree(NodePreferences preferences, TreeProperties parentTreeNode) {
         TreeProperties treeNode = new TreeProperties(new PropertiesDocument(preferences
-                .getCurrentNode().getId(), preferences.name(), "-", "File"), parentTreeNode);
+                .getCurrentNode().getId(), preferences.name(), "-", "Node"), parentTreeNode);
 
         addLeaves(preferences, treeNode);
         try {
@@ -117,7 +117,7 @@ public class DataBean {
             path = "/".equals(selectedAbsolutePath) ? "/" + newName : selectedAbsolutePath + "/"
                     + newName;
             new NodePreferences(null, "").node(path);
-            new TreeProperties(new PropertiesDocument(path, newName, "-", "File",
+            new TreeProperties(new PropertiesDocument(path, newName, "-", "Node",
                     temporaryDocument.isFile()), returnDirectoryForAdding(root));
         } else {
             path = selectedAbsolutePath;
