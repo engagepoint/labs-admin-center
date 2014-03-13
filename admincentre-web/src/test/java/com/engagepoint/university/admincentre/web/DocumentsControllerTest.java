@@ -95,7 +95,7 @@ public class DocumentsControllerTest {
     public void testResetTempDoc() {
         System.out.println("resetTempDoc");
         DocumentsController instance = new DocumentsController();
-        Document doc = new Document("absPath", "name", "value", "File");
+        Document doc = new Document("absPath", "name", "value", "Node");
         instance.setTempDoc(doc);
         assertNotNull(instance.getTempDoc());
         instance.resetTempDoc();
@@ -109,7 +109,7 @@ public class DocumentsControllerTest {
     public void testGetTempDoc() {
         System.out.println("getTempDoc");
         DocumentsController instance = new DocumentsController();
-        Document doc = new Document("absPath", "name", "value", "File");
+        Document doc = new Document("absPath", "name", "value", "Node");
         instance.setTempDoc(doc);
         Document expResult = doc;
         Document result = instance.getTempDoc();
@@ -123,7 +123,7 @@ public class DocumentsControllerTest {
     public void testSetTempDoc() {
         System.out.println("setTempDoc");
         DocumentsController instance = new DocumentsController();
-        Document doc = new Document("absPath", "name", "value", "File");
+        Document doc = new Document("absPath", "name", "value", "Node");
         instance.setTempDoc(doc);
         assertEquals(doc, instance.getTempDoc());
     }

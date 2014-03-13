@@ -21,7 +21,7 @@ public class DocumentTest {
         Document instance = new Document();
         instance.setFile(file);
         assertEquals(instance.getType(), "");
-        assertNotEquals(instance.getType(), "File");
+        assertNotEquals(instance.getType(), "Node");
         assertNotNull(instance.getType());
     }
 
@@ -32,7 +32,7 @@ public class DocumentTest {
     public void testIsFile() {
         System.out.println("isFile");
         Document instance = new Document();
-        instance.setType("File");
+        instance.setType("Node");
         boolean expResult = true;
         boolean result = instance.isFile();
         assertEquals(expResult, result);
