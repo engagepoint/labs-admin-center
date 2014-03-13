@@ -24,11 +24,11 @@
                             icon="ui-icon-arrowrefresh-1-w"
                             oncomplete="uploadXML.show()"/>
             </p:menuButton>
+       <!--  <ui:remove> -->
 
             <p:commandButton value="Configuration" oncomplete="confDialog.show()">
 
             </p:commandButton>
-
             <!--Config dialog-->
             <p:dialog id="confDialog"
                       header="Configure Dialog"
@@ -38,8 +38,8 @@
                       modal="true"
                       closable="false">
 
-
-                <h:outputLabel value="Channel: " />
+            <ui:remove>
+            <h:outputLabel value="Channel: " />
                 <p:inputText  value="#{configBean.channel}" style="font-weight:bold" />
 
                 <h:outputLabel value="Mode" />
@@ -50,7 +50,7 @@
 
                 <h:outputLabel value="Base Path" />
                 <p:inputText  value="#{configBean.basePath}" style="font-weight:bold" />
-
+            </ui:remove>
                 <br/>
                 <br/>
                 <p:commandButton
@@ -70,7 +70,8 @@
                         action="cancel"
                         update="treeTable"
                         oncomplete="confDialog.hide()"/>
-            </p:dialog>
+              </p:dialog>
+         <!-- </ui:remove> -->
             <br/>
                 <uib:gridContainer id="searchParams">
                     <uib:gridRow fluid="false" styleClass="mb20">
@@ -130,8 +131,6 @@
                 </p:column>
                 <p:column style="width:15%">
                     <f:facet name="header"></f:facet>
-
-
                     <!--Delete button-->
                     <p:commandButton
                         id="delButton"
