@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hamcrest.core.IsSame;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
@@ -24,6 +25,7 @@ import com.engagepoint.university.admincentre.dao.AbstractDAO;
 import com.engagepoint.university.admincentre.entity.AbstractEntity;
 import com.engagepoint.university.admincentre.entity.Key;
 import com.engagepoint.university.admincentre.entity.Node;
+import com.engagepoint.university.admincentre.exception.SynchronizationException;
 import com.engagepoint.university.admincentre.util.ConfLoader;
 import com.engagepoint.university.admincentre.util.Constants;
 
@@ -542,6 +544,25 @@ public final class SynchMaster {
 	}
 	
 	/**
+	 * 
+	 * @return <b>true</b> if operation done well, <b>false</b> if only one member of cluster
+	 * @throws SynchronizationException if synchronization fails
+	 */
+	public boolean autoSynch() throws SynchronizationException{
+		if(info().isSingle()){
+			return false;
+		}else{
+			pull();
+			push();
+			mode = Mode.AUTO;
+			if(isMemberChanged() || isClusterChanged()){
+				throw new SynchronizationException("This member is not synched.");
+			}
+			return true;
+		}
+	}
+	
+	/**
 	 * Creates a sequence of operations which than could be used in push, pull, reset, revert commands.
 	 * @param mergeStatus
 	 * @param crudOperation
@@ -725,7 +746,8 @@ public final class SynchMaster {
 			setChannelName(channelName);
 		}
 		String modeLine = confLoader.getMode();
-		if(!"".equals(modeLine) && ("AUTO".equals(modeLine) || "MODE".equals(modeLine))){
+		if(!"".equals(modeLine) && (SynchMaster.Mode.AUTO.name().equals(modeLine) 
+				|| SynchMaster.Mode.MANUAL.name().equals(modeLine))){
 			setMode(Mode.valueOf(modeLine));
 		}
 		String clusterName = confLoader.getClusterName();

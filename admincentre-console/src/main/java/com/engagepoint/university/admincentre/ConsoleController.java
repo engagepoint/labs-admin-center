@@ -17,6 +17,7 @@ import com.engagepoint.university.admincentre.preferences.NodePreferences;
 import com.engagepoint.university.admincentre.synchronization.Pair;
 import com.engagepoint.university.admincentre.synchronization.SynchMaster;
 import com.engagepoint.university.admincentre.synchronization.SynchMaster.MergeStatus;
+import com.engagepoint.university.admincentre.util.Constants;
 
 public class ConsoleController {
 
@@ -382,24 +383,26 @@ public class ConsoleController {
     		SynchMaster.getInstance().push();
     		SynchMaster.getInstance().setMode(SynchMaster.Mode.AUTO);
     	}else{
-    		LOGGER.info("Already in AURO mode");
+    		LOGGER.info("Already in AUTO mode");
     	}
     }
     
     private void connect(ConsoleInputString cis){
     	if(SynchMaster.getInstance().isConnected()){
     		LOGGER.info("You are already connected to " + SynchMaster.getInstance().getClusterName());
+    		return;
     	}
     	SynchMaster.getInstance().connect(cis.getThirdArg());
         if(SynchMaster.getInstance().getMode() == SynchMaster.Mode.AUTO
         	&& !SynchMaster.getInstance().info().isSingle()){
         	SynchMaster.getInstance().pull();
+        	SynchMaster.getInstance().push();
         }
     }
     
     private void mode(ConsoleInputString cis){
     	if(!cis.getThirdArg().equals("auto") && !cis.getThirdArg().equals("manual")){
-    		LOGGER.info("Wrong argument. Only \"auto\" or \"manual\" could be passed");
+    		LOGGER.info(cis.getThirdArg() + Constants.IS_ILLEGAL_ARGUMENT_ENUM);
     		return;
     	}
     	if(SynchMaster.getInstance().isConnected()){

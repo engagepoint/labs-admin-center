@@ -31,9 +31,13 @@
             </p:ajaxStatus>
         </ui-headerUtilityBar:headerUtilityBar>
 
-        <uib:pageBodyFacet>
+		<uib:pageMenuFacet>
+			<uib:menu id="leftMenu" styleClass="sub-navigation" model="#{leftMenu.model}"/>
+		</uib:pageMenuFacet>
+
+		<uib:pageBodyFacet>
             <p:messages id="messagesBlockId" showDetail="false"/>
-            <ui:insert name="page"/>            
+            <ui:insert name="page"/>
         </uib:pageBodyFacet>
         
     </uib:pageLayout>
