@@ -131,18 +131,23 @@ public class ConsoleController {
     }
 
     public void removeNode(ConsoleInputString cis) throws WrongInputArgException {
+        LOGGER.info("removeNode: cis = " + cis.toString());
         String nodeName = null;
         if (cis.getSecondArg().equals("-node")) {
-            nodeName = cis.getThirdArg();
-            currentPreferences.remove(nodeName);
-            refresh();
+            try {
+                currentPreferences.removeNode();
+            } catch (IllegalStateException e) {
+                LOGGER.warning(e.getMessage());
+            } catch (BackingStoreException e) {
+                e.printStackTrace();
+            }
         } else if (cis.getSecondArg().equals("-key")) {
             nodeName = cis.getThirdArg();
             currentPreferences.remove(nodeName);
-            refresh();
         } else {
             throw new WrongInputArgException();
         }
+        refresh();
     }
 
     public void export(ConsoleInputString cis) {
@@ -186,6 +191,7 @@ public class ConsoleController {
     }
 
     public void refresh() {
+        LOGGER.info("Refresh...");
         currentPreferences = new NodePreferences(null, "");
     }
 

@@ -58,4 +58,16 @@ public class ConsoleInputString {
     public int getLength() {
         return length;
     }
+
+    @Override
+    public String toString() {
+        return "ConsoleInputString{" +
+                "firstArg='" + firstArg + '\'' +
+                ", secondArg='" + secondArg + '\'' +
+                ", thirdArg='" + thirdArg + '\'' +
+                ", fourthArg='" + fourthArg + '\'' +
+                ", fifthArg='" + fifthArg + '\'' +
+                ", length=" + length +
+                '}';
+    }
 }

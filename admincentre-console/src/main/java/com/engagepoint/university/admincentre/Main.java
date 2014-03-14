@@ -70,10 +70,13 @@ public final class Main {
             while ((line = br.readLine()) != null) {
                 if (Commands.EXIT.getName().equals(line)) {
                     SynchMaster.getInstance().close();        //close channel before exit
+
                     break;
                 }
                 analyzeLine(line);
             }
+        } catch (NullPointerException e) {
+            LOGGER.info(e.getStackTrace().toString());
         } catch (IOException ioe) {
             LOGGER.warning("Exception while reading input " + ioe);
         } finally {
@@ -90,6 +93,7 @@ public final class Main {
     }
 
     private static void analyzeLine(String line) {
+        LOGGER.info("analyzeLine: line = " + line.toString());
         if (line != null) {
             String[] args = line.split("\\s+");
             ConsoleInputString cis = new ConsoleInputString(args);
@@ -103,6 +107,7 @@ public final class Main {
     }
 
     private static void checkCommand(ConsoleInputString cis) throws WrongInputArgException {
+        LOGGER.info("checkCommand: cis = " + cis.toString());
         try {
             switch (Commands.valueOf(cis.getFirstArg().toUpperCase(Locale.US).replaceFirst("-", ""))) {
                 case VIEW:
@@ -118,7 +123,8 @@ public final class Main {
                     CONSOLE_CONTROLLER.selectNode(cis);
                     break;
                 case REMOVE:
-                    CONSOLE_CONTROLLER.removeNode(cis);
+                   CONSOLE_CONTROLLER.removeNode(cis);
+                    break;
                 case SYNCH:
                     CONSOLE_CONTROLLER.synch(cis);
                     break;

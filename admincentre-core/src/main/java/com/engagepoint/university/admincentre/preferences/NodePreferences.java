@@ -145,7 +145,7 @@ public class NodePreferences extends Preferences {
         this.name = name;
         this.parent = parent;
         try {
-//
+
             currentNode = nodeDAO.read(this.absolutePath);
 
             if (currentNode == null) {
@@ -278,7 +278,8 @@ public class NodePreferences extends Preferences {
      *             if this node (or an ancestor) has been removed with the
      *             {@link #removeNode()} method.
      */
-    public void remove(String key) {
+    public void
+    remove(String key) {
         synchronized (lock) {
             if (removed)
                 throw new IllegalStateException(REMOVED_NODE + name);
@@ -286,7 +287,7 @@ public class NodePreferences extends Preferences {
             try {
                 removeSpi(key);
             } catch (IOException e) {
-                throw new IllegalStateException("Key was removed" + key, e);
+                throw new IllegalStateException("Key was removed " + key, e);
             }
             enqueuePreferenceChangeEvent(key, null);
         }
