@@ -290,10 +290,10 @@ public class ConsoleController {
                 + "\nConnected............" + SynchMaster.getInstance().isConnected());
         if (SynchMaster.getInstance().isConnected()) {
             LOGGER.info("Cluster name........." + SynchMaster.getInstance().getClusterName()
-                    + "\nCoordinator.........." + SynchMaster.getInstance().info().getCoordinator().toString());
-            if (!SynchMaster.getInstance().info().isCoordinator())
-                LOGGER.info("State synchronized..." + !(SynchMaster.getInstance().isMemberChanged()
-                        || SynchMaster.getInstance().isMemberChanged()));
+            		+ "\nCoordinator.........." + SynchMaster.getInstance().info().getCoordinator().toString());
+            if(!SynchMaster.getInstance().info().isCoordinator())
+            	LOGGER.info("State synchronized..." + !(SynchMaster.getInstance().isMemberChanged()
+            				|| SynchMaster.getInstance().isClusterChanged()));
             String addresses = "Addresses(" + SynchMaster.getInstance().info().getAddressList().size() + "): ";
             for (Iterator<Address> i = SynchMaster.getInstance().info().getAddressList().iterator(); i.hasNext(); ) {
                 addresses = addresses.concat(SynchMaster.getInstance().getChannelName(i.next()));
