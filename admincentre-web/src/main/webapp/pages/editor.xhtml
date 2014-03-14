@@ -37,67 +37,63 @@
                       modal="true"
                       closable="false">
 
-            <ui:remove>
-            <h:outputLabel value="Channel: " />
-                <p:inputText  value="#{configBean.channel}" style="font-weight:bold" />
+                <ui:remove>
+                    <h:outputLabel value="Channel: " />
+                    <p:inputText  value="#{configBean.channel}" style="font-weight:bold" />
 
-                <h:outputLabel value="Mode" />
-                <p:inputText  value="#{configBean.mode}" style="font-weight:bold" />
+                    <h:outputLabel value="Mode" />
+                    <p:inputText  value="#{configBean.mode}" style="font-weight:bold" />
 
-                <h:outputLabel value="Cluster " />
-                <p:inputText  value="#{configBean.cluster}" style="font-weight:bold" />
+                    <h:outputLabel value="Cluster " />
+                    <p:inputText  value="#{configBean.cluster}" style="font-weight:bold" />
 
-                <h:outputLabel value="Base Path" />
-                <p:inputText  value="#{configBean.basePath}" style="font-weight:bold" />
-            </ui:remove>
+                    <h:outputLabel value="Base Path" />
+                    <p:inputText  value="#{configBean.basePath}" style="font-weight:bold" />
+                </ui:remove>
                 <br/>
                 <br/>
                 <p:commandButton
-                        id="confOkButton"
-                        value="Ok"
-                        styleClass="ml20"
-                        style="float:right"
-                        ajax="false"
-                        oncomplete="confDialog.hide()"/>
+                    id="confOkButton"
+                    value="Ok"
+                    styleClass="ml20"
+                    style="float:right"
+                    ajax="false"
+                    oncomplete="confDialog.hide()"/>
                 <h:outputText value="    "/>
 
                 <p:commandButton
-                        id="confCancelButton"
-                        value="Cancel"
-                        styleClass="secondary"
-                        style="float: right"
-                        action="cancel"
-                        update="treeTable"
-                        oncomplete="confDialog.hide()"/>
-              </p:dialog>
-            <br/>
-                <uib:gridContainer id="searchParams">
-                    <uib:gridRow fluid="false" styleClass="mb20">
+                    id="confCancelButton"
+                    value="Cancel"
+                    styleClass="secondary"
+                    style="float: right"
+                    action="cancel"
+                    update="treeTable"
+                    oncomplete="confDialog.hide()"/>
+            </p:dialog>
+            <br/>                          
+            <uib:gridContainer id="searchParams">
+                <uib:gridRow fluid="false" styleClass="mb20">
 
-                        <uib:gridColumn column="4">
-                            <h:outputLabel for="s_man" style="margin-left: 45px" value=" PROPERTY NAME"/>
-                            <p:inputText id="s_man" style="margin-left: 45px" value="#{documentsController.searchKeyName}"/>
-                        </uib:gridColumn>
+                    <uib:gridColumn column="4">
+                        <h:outputLabel for="s_man" style="margin-left: 45px" value=" PROPERTY NAME"/>
+                        <p:inputText id="s_man" style="margin-left: 45px" value="#{documentsController.searchKeyName}"/>
+                    </uib:gridColumn>
 
-                        <uib:gridColumn column="4">
-                            <h:outputLabel for="s_man2" style="margin-left: 45px" value=" PROPERTY VALUE"/>
-                            <p:inputText id="s_man2" style="margin-left: 45px" value="#{documentsController.searchKeyValue}"/>
-                        </uib:gridColumn>
+                    <uib:gridColumn column="4">
+                        <h:outputLabel for="s_man2" style="margin-left: 45px" value=" PROPERTY VALUE"/>
+                        <p:inputText id="s_man2" style="margin-left: 45px" value="#{documentsController.searchKeyValue}"/>
+                    </uib:gridColumn>
 
-                        <uib:gridColumn column="2">
-
-                            <p:commandButton
-                                    value="Search"
-                                    actionListener="#{documentsController.search()}"
-                                    update="treeTable"
-                                    style="width:100px;top:127px; left:765px; position: absolute;height:38px">
-                            </p:commandButton>
-                            <br/>
-
-                        </uib:gridColumn>
-
-                    </uib:gridRow>
-                </uib:gridContainer>
+                    <uib:gridColumn column="2">
+                        <p:commandButton
+                            value="Search"
+                            actionListener="#{documentsController.search()}"
+                            update="treeTable"
+                            style="width:100px;top:127px; left:765px; position: absolute;height:38px">
+                        </p:commandButton>
+                    </uib:gridColumn>
+                </uib:gridRow>
+            </uib:gridContainer>
 
             <p:dialog id="ImportDialog"
                       header="Import Dialog"
@@ -162,6 +158,7 @@
                             value="Ok"
                             styleClass="ml20"
                             style="float:right"
+                            update="treeTable"
                             action="#{documentsController.deleteNode()}"
                             ajax="false"
                             oncomplete="delDialog.hide()"/>
@@ -173,22 +170,24 @@
                             value="#{trans.cancel}"
                             styleClass="secondary"
                             style="float: right"
-                            action="cancel"
-                            update="treeTable"
+                            action="cancel"                                
                             oncomplete="delDialog.hide()"/>
+                        <!--update="treeTable"-->
+
                     </p:dialog>
 
                     <!--Edit button-->
                     <p:commandButton id="editButton"
-                                     value="#{trans.edit}"
-                                     title="#{trans.edit}"
+                                     icon="ui-icon-edit-small"
+                                     styleClass="small secondary"
                                      style="float: right"
                                      update="treeTable"
-                                     oncomplete="editDialog.show()"
-                                     styleClass="ui-button-icon-only secondary small"
-                                     icon="ui-icon-edit">
+                                     oncomplete="editDialog.show()">
                         <f:setPropertyActionListener value="#{doc}"
                                                      target="#{documentsController.selectedDoc}"/>
+
+                        <!--icon="ui-icon-edit"-->
+                        <!--styleClass="ui-button-icon-only secondary small"-->
                     </p:commandButton>
 
                     <!--Edit dialog-->
@@ -240,8 +239,7 @@
 
                     <!--Add button-->
                     <p:commandButton
-                        id="addButton"
-                        update="treeTable"
+                        id="addButton"                                
                         rendered="#{doc.file}"
                         oncomplete="addDlg.show()"
                         title="Add new node"
@@ -251,6 +249,7 @@
                         <f:setPropertyActionListener value="#{doc}"
                                                      target="#{documentsController.selectedDoc}" />
                     </p:commandButton>
+                    <!--update="treeTable"-->
 
                     <!--Add dialog-->
                     <p:dialog id="addDialog"
@@ -285,10 +284,10 @@
                                 value="Cancel"
                                 style="float:right"
                                 styleClass="secondary"
-                                update="treeTable"
+
                                 actionListener="#{documentsController.resetTempDoc()}"
                                 oncomplete="addDlg.hide()"/>
-
+                            <!--update="treeTable"-->
                         </uib:gridContainer>
                     </p:dialog>
 
@@ -332,10 +331,10 @@
                                              id="addCancelButton2"
                                              style="float:right"
                                              styleClass="secondary"
-                                             update="treeTable"
+
                                              actionListener="#{documentsController.resetTempDoc()}"
                                              oncomplete="addDlg2.hide()"/>
-
+                            <!--update="treeTable"-->
                         </uib:gridContainer>
                     </p:dialog>
                 </p:column>
