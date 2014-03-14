@@ -9,6 +9,10 @@ package com.engagepoint.university.admincentre.util;
 public final class Constants {
 	
 	public final static String COULD_NOT_COMPLETE_CRUD_OPERATION = "Could not complete CRUD operation";
+	public final static String IS_ILLEGAL_ARGUMENT_ENUM = " is illegal argument."
+					+ " Only 'AUTO' and 'MANUAL' could be passed";
+	public final static String CHANNEL_IS_DISCONNECTED = "Channel is disconnected";
+	public final static String CHANNEL_IS_CONNECTED = "Channel is already connected";
 	
 	
 	private Constants(){
