@@ -1,6 +1,6 @@
 package com.engagepoint.university.admincentre.dao;
 
-import com.engagepoint.university.admincentre.entity.*;
+import com.engagepoint.university.admincentre.entity.Key;
 import org.junit.Before;
 import org.junit.Test;
 
