@@ -1,15 +1,5 @@
 package com.engagepoint.university.admincentre;
 
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.logging.Logger;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
-
-import org.jgroups.Address;
-
 import com.engagepoint.university.admincentre.entity.AbstractEntity;
 import com.engagepoint.university.admincentre.entity.KeyType;
 import com.engagepoint.university.admincentre.exception.WrongInputArgException;
@@ -17,6 +7,15 @@ import com.engagepoint.university.admincentre.preferences.NodePreferences;
 import com.engagepoint.university.admincentre.synchronization.Pair;
 import com.engagepoint.university.admincentre.synchronization.SynchMaster;
 import com.engagepoint.university.admincentre.synchronization.SynchMaster.MergeStatus;
+import org.jgroups.Address;
+
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 public class ConsoleController {
 
@@ -128,6 +127,13 @@ public class ConsoleController {
             currentPreferences.put(keyName, keyValue);
         }
         displayNodes(currentPreferences);
+
+    }
+
+    public void deleteNode(String nodeName) throws BackingStoreException {
+
+        currentPreferences.removeNode();
+
 
     }
 
