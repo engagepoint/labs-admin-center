@@ -117,6 +117,8 @@ public final class Main {
                 case SELECT:
                     CONSOLE_CONTROLLER.selectNode(cis);
                     break;
+                case REMOVE:
+                    CONSOLE_CONTROLLER.removeNode(cis);
                 case SYNCH:
                     CONSOLE_CONTROLLER.synch(cis);
                     break;
