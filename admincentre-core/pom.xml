@@ -89,6 +89,7 @@
 					</descriptorRefs>
 				</configuration>
 			</plugin>
+
 		</plugins>
 		<resources>
 			<resource>
