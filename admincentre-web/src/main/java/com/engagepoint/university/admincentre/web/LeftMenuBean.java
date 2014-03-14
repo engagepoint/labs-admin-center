@@ -60,6 +60,8 @@ public class LeftMenuBean {
 	    	editorMenu();
 	    }else if(viewId.endsWith("/settings.xhtml")){
 	    	settingsMenu();
+	    }else if(viewId.endsWith("/import_export.xhtml")){
+	    	settingsMenu();
 	    }
 
 	}
@@ -95,7 +97,7 @@ public class LeftMenuBean {
 		UIMenuItem item = new UIMenuItem();
 		item.setId("synch");
 		item.setValue("Synch");
-		item.setUrl("#");
+		item.setUrl("/pages/settings.xhtml");
 		item.setTitle("Synchronization");
 
 		model.addMenuItem(item);
@@ -104,10 +106,11 @@ public class LeftMenuBean {
 		item = new UIMenuItem();
 		item.setId("import_export");
 		item.setValue("Import_export");
-		item.setUrl("#");
+		item.setUrl("/pages/import_export.xhtml");
 		item.setTitle("Import/Export");
 		
 		model.addMenuItem(item);
+                
 	}
 	
 	public MenuModel getModel() {

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition 
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:uib="http://engagepoint.com/uib"
+    xmlns:ui-paginator="http://java.sun.com/jsf/composite/uibootstrap/components/paginator"
+    template="/WEB-INF/templates/default.xhtml"
+    >
+
+    <ui:define name="page">
+
+        <h:form id="importExportForm">
+            <h2><h:outputText value=""/></h2>  
+            
+            <uib:gridContainer>
+                <uib:gridRow fluid="true">
+                    <uib:gridColumn column="3">
+                        <p:commandButton value="Import"
+                                  onclick="uploadXML.show()"
+                                  />
+                    </uib:gridColumn>
+                    <uib:gridColumn column="6">
+                        <p:commandButton value="Export" 
+                                         ajax="false"
+                                         actionListener="#{tempController.onExportZip}">
+                            <p:fileDownload value="#{fileController.downloadFile}"/>
+                        
+                        </p:commandButton>
+                                            
+                    </uib:gridColumn>
+
+
+                </uib:gridRow>
+            </uib:gridContainer>
+            <p:dialog id="ImportDialog"
+                      header="Import Dialog"
+                      widgetVar="uploadXML"
+                      modal="true" height="200" width="800">
+                <p:fileUpload value="#{fileController.uploadFile}"
+                              fileUploadListener="#{tempController.onImportZip}"
+                              multiple="true"
+                              oncomplete="uploadXML.hide()"/>
+            </p:dialog>
+
+
+        </h:form>
+    </ui:define>
+</ui:composition>
