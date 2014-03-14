@@ -130,7 +130,7 @@ public class ConsoleController {
 
     }
 
-    public void removeNode(ConsoleInputString cis) throws WrongInputArgException {
+    public void nodeRemove(ConsoleInputString cis) throws WrongInputArgException {
         LOGGER.info("removeNode: cis = " + cis.toString());
         String nodeName = null;
         if (cis.getSecondArg().equals("-node")) {

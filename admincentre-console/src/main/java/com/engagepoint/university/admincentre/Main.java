@@ -123,7 +123,7 @@ public final class Main {
                     CONSOLE_CONTROLLER.selectNode(cis);
                     break;
                 case REMOVE:
-                   CONSOLE_CONTROLLER.removeNode(cis);
+                   CONSOLE_CONTROLLER.nodeRemove(cis);
                     break;
                 case SYNCH:
                     CONSOLE_CONTROLLER.synch(cis);
