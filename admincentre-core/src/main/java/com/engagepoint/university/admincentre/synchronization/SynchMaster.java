@@ -38,18 +38,19 @@ import com.engagepoint.university.admincentre.util.Constants;
  * 
  * @author Roman Garkavenko
  */
-public final class SynchMaster {
+public class SynchMaster {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SynchMaster.class);
 	
 	private static volatile SynchMaster instance;
 
-	private final JChannel channel;
+	private JChannel channel;
 	private AbstractDAO<AbstractEntity> abstractDAO;
 	private Map<String, AbstractEntity> cacheData;
 	private Map<String, AbstractEntity> receivedState;
 	private final List<CRUDPayload> lastReceivedUpdates = new ArrayList<CRUDPayload>();
 	private Mode mode = Mode.AUTO;
+	private boolean consoleRefreshed = true;
 	
 	public enum Mode{
 		AUTO,
@@ -235,6 +236,14 @@ public final class SynchMaster {
 		return instance;
 	}
 
+	public synchronized void setConsoleRefreshed(boolean consoleRefreshed){
+		this.consoleRefreshed = consoleRefreshed;
+	}
+	
+	public boolean isConsoleRefreshed() {
+		return consoleRefreshed;
+	}
+	
 	/**
 	 * Connects the channel to a group. The client is now able to receive group
 	 * messages, views and to send messages to (all or single) group members.
@@ -335,7 +344,7 @@ public final class SynchMaster {
 		return false;
 	}
 
-	private boolean obtainState() {
+	boolean obtainState() {
 		if (channel.getView().getMembers().size() > 1) {
 			try {
 				channel.getState(null, 40000);
@@ -386,46 +395,30 @@ public final class SynchMaster {
 	}
 	
 	/**
-	 * Use this method to get additional info.
-	 * <br>Info</br> is an inner class containing optional info methods.
-	 * @return
+	 * 	<b>true</b> if the only one member of the cluster
+	 * 	<br><b>false</b> if 2+ members of cluster exist
+	 * @return membership status
 	 */
-	public Info info(){
+	public boolean isSingle(){
 		throwIfDisconnected();
-		if(infoInstance == null){
-			infoInstance = new Info();
-		}
-		return infoInstance;
+		return channel.getView().getMembers().size() == 1;
 	}
 	
-	private static volatile Info infoInstance;
-	
-	public class Info{
-		
-		private Info(){
-		}
-		
-		/**
-		 * 	<b>true</b> if the only one member of the cluster
-		 * 	<br><b>false</b> if 2+ members of cluster exist
-		 * @return membership status
-		 */
-		public boolean isSingle(){
-			return channel.getView().getMembers().size() == 1;
-		}
-		
-		public boolean isCoordinator(){
-			return channel.getAddress().compareTo(getCoordinator()) == 0;
-		}
-		
-		public Address getCoordinator(){
-			return channel.getView().getMembers().get(0);
-		}
-		
-		public List<Address> getAddressList(){
-			return channel.getView().getMembers();
-		}
+	public boolean isCoordinator(){
+		throwIfDisconnected();
+		return channel.getAddress().compareTo(getCoordinator()) == 0;
 	}
+	
+	public Address getCoordinator(){
+		throwIfDisconnected();
+		return channel.getView().getMembers().get(0);
+	}
+	
+	public List<Address> getAddressList(){
+		throwIfDisconnected();
+		return channel.getView().getMembers();
+	}
+	
 	
 	public void obtainCacheData() {
 		try {
@@ -438,7 +431,7 @@ public final class SynchMaster {
 	}
 
 	private void throwIfCoordinator(){
-		if(info().isCoordinator()){
+		if(isCoordinator()){
 			throw new IllegalStateException("Current member is coordinator.");
 		}
 	}
@@ -549,7 +542,7 @@ public final class SynchMaster {
 	 * @throws SynchronizationException if synchronization fails
 	 */
 	public boolean autoSynch() throws SynchronizationException{
-		if(info().isSingle()){
+		if(isSingle()){
 			return false;
 		}else{
 			pull();
@@ -664,10 +657,10 @@ public final class SynchMaster {
 	 * @return sorted list with pair of MergeStatus and entity both from cluster and member
 	 */
 	public List<Pair<MergeStatus, AbstractEntity>> merge() {
-		if(info().isSingle()){
+		if(isSingle()){
 			throw new IllegalStateException("It has to be 2+ members in a cluster.");
 		}
-		if(info().isCoordinator()){
+		if(isCoordinator()){
 			throw new IllegalStateException("Current member is coordinator. It's cache data"
 					+ " is equal to cluster state.");
 		}
@@ -753,7 +746,7 @@ public final class SynchMaster {
 		String clusterName = confLoader.getClusterName();
 		if(!"".equals(clusterName)){
 			connect(clusterName);
-			if(mode == Mode.AUTO){
+			if(mode == Mode.AUTO  && !isSingle()){
 				pull();
 				push();
 			}
