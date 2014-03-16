@@ -7,6 +7,7 @@ import com.engagepoint.university.admincentre.preferences.NodePreferences;
 import com.engagepoint.university.admincentre.synchronization.Pair;
 import com.engagepoint.university.admincentre.synchronization.SynchMaster;
 import com.engagepoint.university.admincentre.synchronization.SynchMaster.MergeStatus;
+
 import org.jgroups.Address;
 
 import java.io.IOException;
@@ -51,6 +52,9 @@ public class ConsoleController {
     }
 
     public void displayNodes(Preferences preference) {
+    	if(refreshIfRemoved(preference)){
+    		LOGGER.info(Constants.NODE_REMOVED_OR_EDITED);
+    	}
         LOGGER.info(ALIGN_STRING + " name = " + preference.name());
         displayKeys(preference);
         try {
@@ -69,7 +73,6 @@ public class ConsoleController {
             LOGGER.warning("displayNodes: message" + e.getMessage());
         }
     }
-
 
     private void displayKeys(Preferences preferance) {
         String[] keys;
@@ -113,6 +116,11 @@ public class ConsoleController {
     }
 
     public void createNode(String nodeName) {
+    	if(refreshIfRemoved(currentPreferences)){
+    		LOGGER.info(Constants.NODE_REMOVED_OR_EDITED);
+    		displayNodes(currentPreferences);
+    		return;
+    	}
         if (nameValidation(nodeName)) {
             String newPath = (("/").equals(currentPreferences.absolutePath()) ? "/" + nodeName
                     : currentPreferences.absolutePath() + "/" + nodeName);
@@ -123,6 +131,11 @@ public class ConsoleController {
     }
 
     public void createKey(String keyName, String keyType, String keyValue) {
+    	if(refreshIfRemoved(currentPreferences)){
+    		LOGGER.info(Constants.NODE_REMOVED_OR_EDITED);
+    		displayNodes(currentPreferences);
+    		return;
+    	}
         if (nameValidation(keyName) && keyTypeValidation(keyType)) {
             currentPreferences.put(keyName, keyValue);
         }
@@ -130,24 +143,32 @@ public class ConsoleController {
 
     }
 
-    public void nodeRemove(ConsoleInputString cis) throws WrongInputArgException {
-        LOGGER.info("removeNode: cis = " + cis.toString());
-        String nodeName = null;
+    public void remove(ConsoleInputString cis) throws WrongInputArgException {
+    	if(refreshIfRemoved(currentPreferences)){
+    		LOGGER.info(Constants.NODE_REMOVED_OR_EDITED);
+    		displayNodes(currentPreferences);
+    		return;
+    	}
+//        LOGGER.info("removeNode: cis = " + cis.toString());
+        String entity = null;
         if (cis.getSecondArg().equals("-node")) {
+        	if("/".equals( currentPreferences.absolutePath() )){
+        		LOGGER.info("Could not remove root node.");
+        		return;
+        	}
             try {
+            	Preferences parentPreferences = currentPreferences.parent();
                 currentPreferences.removeNode();
-            } catch (IllegalStateException e) {
-                LOGGER.warning(e.getMessage());
+                currentPreferences = parentPreferences;
             } catch (BackingStoreException e) {
-                e.printStackTrace();
+            	throw new IllegalStateException("nodeRemove: failure in the backing store", e);
             }
         } else if (cis.getSecondArg().equals("-key")) {
-            nodeName = cis.getThirdArg();
-            currentPreferences.remove(nodeName);
+            entity = cis.getThirdArg();
+            currentPreferences.remove(entity);
         } else {
             throw new WrongInputArgException();
         }
-        refresh();
     }
 
     public void export(ConsoleInputString cis) {
@@ -190,11 +211,27 @@ public class ConsoleController {
 
     }
 
-    public void refresh() {
-        LOGGER.info("Refresh...");
+    public void refresh() {			//TODO remove method
         currentPreferences = new NodePreferences(null, "");
     }
 
+    /**
+     * Changes node to root if it was removed.
+     * @return <b>true</b> if node was removed, <b>false</b> otherwise.
+     * @throws BackingStoreException if failure in the backing store
+     */
+    private boolean refreshIfRemoved(Preferences preference) {
+    	try {
+			if(preference.nodeExists("")){
+				return false;
+			}
+		} catch (BackingStoreException e) {
+			throw new IllegalStateException("refresh: failure in the backing store", e);
+		}
+    	currentPreferences = new NodePreferences(null, "");
+    	preference = currentPreferences;
+    	return true;
+    }
 
     public void synch(ConsoleInputString cis) {
         int length = cis.getLength();
@@ -273,7 +310,7 @@ public class ConsoleController {
      * <br><b>false</br> otherwise
      */
     private boolean isCoordinator() {
-        if (SynchMaster.getInstance().info().isCoordinator()) {
+        if (SynchMaster.getInstance().isCoordinator()) {
             LOGGER.info("This member is coordinator");
             return true;
         }
@@ -290,12 +327,12 @@ public class ConsoleController {
                 + "\nConnected............" + SynchMaster.getInstance().isConnected());
         if (SynchMaster.getInstance().isConnected()) {
             LOGGER.info("Cluster name........." + SynchMaster.getInstance().getClusterName()
-            		+ "\nCoordinator.........." + SynchMaster.getInstance().info().getCoordinator().toString());
-            if(!SynchMaster.getInstance().info().isCoordinator())
+            		+ "\nCoordinator.........." + SynchMaster.getInstance().getCoordinator().toString());
+            if(!SynchMaster.getInstance().isCoordinator())
             	LOGGER.info("State synchronized..." + !(SynchMaster.getInstance().isMemberChanged()
             				|| SynchMaster.getInstance().isClusterChanged()));
-            String addresses = "Addresses(" + SynchMaster.getInstance().info().getAddressList().size() + "): ";
-            for (Iterator<Address> i = SynchMaster.getInstance().info().getAddressList().iterator(); i.hasNext(); ) {
+            String addresses = "Addresses(" + SynchMaster.getInstance().getAddressList().size() + "): ";
+            for (Iterator<Address> i = SynchMaster.getInstance().getAddressList().iterator(); i.hasNext(); ) {
                 addresses = addresses.concat(SynchMaster.getInstance().getChannelName(i.next()));
                 if (i.hasNext()) {
                     addresses = addresses.concat(", ");
@@ -367,7 +404,7 @@ public class ConsoleController {
 
     private void push() {
         if (!isConnected()) return;
-        if (SynchMaster.getInstance().info().isSingle()) {
+        if (SynchMaster.getInstance().isSingle()) {
             LOGGER.info("Only one member in cluster.");
             return;
         }
@@ -404,7 +441,7 @@ public class ConsoleController {
             SynchMaster.getInstance().push();
             SynchMaster.getInstance().setMode(SynchMaster.Mode.AUTO);
         } else {
-            LOGGER.info("Already in AURO mode");
+            LOGGER.info("Already in AUTO mode");
         }
     }
 
@@ -415,7 +452,7 @@ public class ConsoleController {
         }
         SynchMaster.getInstance().connect(cis.getThirdArg());
         if (SynchMaster.getInstance().getMode() == SynchMaster.Mode.AUTO
-                && !SynchMaster.getInstance().info().isSingle()) {
+                && !SynchMaster.getInstance().isSingle()) {
             SynchMaster.getInstance().pull();
             SynchMaster.getInstance().push();
         }
@@ -427,7 +464,7 @@ public class ConsoleController {
             return;
         }
         if (SynchMaster.getInstance().isConnected()) {
-            if (SynchMaster.getInstance().info().isCoordinator()
+            if (SynchMaster.getInstance().isCoordinator()
                     && cis.getThirdArg().equals("manual")) {
                 LOGGER.info("NOT RECOMMENDED. This member is coordinator.");
             } else if (SynchMaster.getInstance().getMode() == SynchMaster.Mode.MANUAL

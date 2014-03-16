@@ -42,7 +42,7 @@ public final class Main {
             }else if(args.length == 3 && Commands.SYNCH.getName().equals(args[1])
             		&& AdditionalCommands.LOAD.getCommand().equals(args[2])){
             	SynchMaster.getInstance().useSavedConfig();
-            	if(!SynchMaster.getInstance().info().isSingle()){
+            	if(!SynchMaster.getInstance().isSingle()){
             		SynchMaster.getInstance().pull();
             		SynchMaster.getInstance().push();
             	}
@@ -93,7 +93,7 @@ public final class Main {
     }
 
     private static void analyzeLine(String line) {
-        LOGGER.info("analyzeLine: line = " + line.toString());
+//        LOGGER.info("analyzeLine: line = " + line.toString());
         if (line != null) {
             String[] args = line.split("\\s+");
             ConsoleInputString cis = new ConsoleInputString(args);
@@ -107,7 +107,7 @@ public final class Main {
     }
 
     private static void checkCommand(ConsoleInputString cis) throws WrongInputArgException {
-        LOGGER.info("checkCommand: cis = " + cis.toString());
+//        LOGGER.info("checkCommand: cis = " + cis.toString());
         try {
             switch (Commands.valueOf(cis.getFirstArg().toUpperCase(Locale.US).replaceFirst("-", ""))) {
                 case VIEW:
@@ -123,7 +123,7 @@ public final class Main {
                     CONSOLE_CONTROLLER.selectNode(cis);
                     break;
                 case REMOVE:
-                   CONSOLE_CONTROLLER.nodeRemove(cis);
+                   CONSOLE_CONTROLLER.remove(cis);
                     break;
                 case SYNCH:
                     CONSOLE_CONTROLLER.synch(cis);
