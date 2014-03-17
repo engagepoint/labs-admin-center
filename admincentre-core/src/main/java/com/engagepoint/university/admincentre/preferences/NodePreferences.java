@@ -1038,6 +1038,19 @@ public class NodePreferences extends Preferences {
     }
 
     /**
+     * Returns whether current node exists in a backstore.
+     * @return <b>true</b> if exists, <b>false</b> if not or exception was cathed
+     */
+    public boolean currentNodeExists(){
+    	try {
+			return nodeDAO.read(currentNode.getId()) != null;
+		} catch (IOException e) {
+			LOGGER.error("Could not read", e);
+			return false;
+		}
+    }
+    
+    /**
      *
      * Implements the <tt>removeNode()</tt> method as per the specification in
      * {@link Preferences#removeNode()}.

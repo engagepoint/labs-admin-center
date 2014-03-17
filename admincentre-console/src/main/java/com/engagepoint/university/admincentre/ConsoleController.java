@@ -52,9 +52,6 @@ public class ConsoleController {
     }
 
     public void displayNodes(Preferences preference) {
-    	if(refreshIfRemoved(preference)){
-    		LOGGER.info(Constants.NODE_REMOVED_OR_EDITED);
-    	}
         LOGGER.info(ALIGN_STRING + " name = " + preference.name());
         displayKeys(preference);
         try {
@@ -116,11 +113,6 @@ public class ConsoleController {
     }
 
     public void createNode(String nodeName) {
-    	if(refreshIfRemoved(currentPreferences)){
-    		LOGGER.info(Constants.NODE_REMOVED_OR_EDITED);
-    		displayNodes(currentPreferences);
-    		return;
-    	}
         if (nameValidation(nodeName)) {
             String newPath = (("/").equals(currentPreferences.absolutePath()) ? "/" + nodeName
                     : currentPreferences.absolutePath() + "/" + nodeName);
@@ -131,11 +123,6 @@ public class ConsoleController {
     }
 
     public void createKey(String keyName, String keyType, String keyValue) {
-    	if(refreshIfRemoved(currentPreferences)){
-    		LOGGER.info(Constants.NODE_REMOVED_OR_EDITED);
-    		displayNodes(currentPreferences);
-    		return;
-    	}
         if (nameValidation(keyName) && keyTypeValidation(keyType)) {
             currentPreferences.put(keyName, keyValue);
         }
@@ -144,12 +131,6 @@ public class ConsoleController {
     }
 
     public void remove(ConsoleInputString cis) throws WrongInputArgException {
-    	if(refreshIfRemoved(currentPreferences)){
-    		LOGGER.info(Constants.NODE_REMOVED_OR_EDITED);
-    		displayNodes(currentPreferences);
-    		return;
-    	}
-//        LOGGER.info("removeNode: cis = " + cis.toString());
         String entity = null;
         if (cis.getSecondArg().equals("-node")) {
         	if("/".equals( currentPreferences.absolutePath() )){
@@ -211,26 +192,24 @@ public class ConsoleController {
 
     }
 
-    public void refresh() {			//TODO remove method
-        currentPreferences = new NodePreferences(null, "");
-    }
-
-    /**
-     * Changes node to root if it was removed.
-     * @return <b>true</b> if node was removed, <b>false</b> otherwise.
-     * @throws BackingStoreException if failure in the backing store
-     */
-    private boolean refreshIfRemoved(Preferences preference) {
-    	try {
-			if(preference.nodeExists("")){
-				return false;
-			}
-		} catch (BackingStoreException e) {
-			throw new IllegalStateException("refresh: failure in the backing store", e);
+    private void refresh() {			//TODO remove method
+		if(((NodePreferences)currentPreferences).currentNodeExists()){
+			currentPreferences = new NodePreferences(null, "").node(currentPreferences.absolutePath());
+		}else{
+			currentPreferences = new NodePreferences(null, "");
 		}
-    	currentPreferences = new NodePreferences(null, "");
-    	preference = currentPreferences;
-    	return true;
+
+    }
+    
+    public boolean showMessageIfRemoved(){
+		if(((NodePreferences)currentPreferences).currentNodeExists()){
+			currentPreferences = new NodePreferences(null, "").node(currentPreferences.absolutePath());
+			return false;
+		}else{
+			LOGGER.info("Current node was removed, refreshing...");
+			currentPreferences = new NodePreferences(null, "");
+			return true;
+		}
     }
 
     public void synch(ConsoleInputString cis) {

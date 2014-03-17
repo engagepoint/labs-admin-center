@@ -50,7 +50,6 @@ public class SynchMaster {
 	private Map<String, AbstractEntity> receivedState;
 	private final List<CRUDPayload> lastReceivedUpdates = new ArrayList<CRUDPayload>();
 	private Mode mode = Mode.AUTO;
-	private boolean consoleRefreshed = true;
 	
 	public enum Mode{
 		AUTO,
@@ -83,7 +82,7 @@ public class SynchMaster {
 				}
 			}
 
-			LOGGER.info("getState: SENT " + cacheData.size() + " items");
+//			LOGGER.info("getState: SENT " + cacheData.size() + " items");
 		}
 
 		/**
@@ -106,8 +105,8 @@ public class SynchMaster {
 			try {
 				receivedState = (HashMap<String, AbstractEntity>) Util
 						.objectFromStream(new DataInputStream(input));
-				LOGGER.info("setState: RECEIVED " + receivedState.size()
-						+ " items");
+//				LOGGER.info("setState: RECEIVED " + receivedState.size()
+//						+ " items");
 			} catch (Exception e) {
 				throw new IllegalStateException(e);
 			}
@@ -234,14 +233,6 @@ public class SynchMaster {
 			instance = new SynchMaster();
 		}
 		return instance;
-	}
-
-	public synchronized void setConsoleRefreshed(boolean consoleRefreshed){
-		this.consoleRefreshed = consoleRefreshed;
-	}
-	
-	public boolean isConsoleRefreshed() {
-		return consoleRefreshed;
 	}
 	
 	/**

@@ -9,16 +9,16 @@ public enum Commands {
     CREATE(
             "-create",
             "Allows you create new Node or Key"),
-    REMOVE("-remove", "--------------"),
+    REMOVE("-remove",
+    		"Removes node or key:"
+    				+ "\n\t -node \t\tremoves current node"
+    				+ "\n\t -key \"keyName\" \tremoves key"),
     EDIT("-edit", "-------------"),
     SELECT("-select",
             "Choose node with the given name"),
-    DEBUG(
-            "-debug",
-            "Produce execute debug output"),
     SYNCH("-synch",
 			"Synchronization commands:"
-					+ "\n\t -connect \"cluster_name\""
+					+ "\n\t -connect \"cluster name\""
 					+ "\n\t -disconnect"
 					+ "\n\t -merge \t\tcompare with state"
 					+ "\n\t -pull \t\t\tpull state"
@@ -29,9 +29,8 @@ public enum Commands {
 					+ "\n\t -mode [auto|manual] \tget or set mode - auto or manual"
 					+ "\n\t -name [new name] \tget or set channel name"
 					+ "\n\t -status \t\tprint all info about channel"
-					+ "\n\t -load \t\t\tuses configurations from file"
+					+ "\n\t -load \t\t\tloads configurations from file"
 					+ "\n\t -save \t\t\tsave configurations to file"),
-    REFRESH("-refresh", "use after obtaining new message or state"),
     EXPORT("-export",
             "exports current base into zip located in entered path");
 

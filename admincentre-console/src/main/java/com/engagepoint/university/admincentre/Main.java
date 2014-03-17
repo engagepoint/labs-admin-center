@@ -93,21 +93,22 @@ public final class Main {
     }
 
     private static void analyzeLine(String line) {
-//        LOGGER.info("analyzeLine: line = " + line.toString());
+    	if(CONSOLE_CONTROLLER.showMessageIfRemoved()){
+    		CONSOLE_CONTROLLER.displayNodes(CONSOLE_CONTROLLER.getCurrentPreferences());
+    		return;
+    	}
         if (line != null) {
             String[] args = line.split("\\s+");
             ConsoleInputString cis = new ConsoleInputString(args);
             try {
                 checkCommand(cis);
             } catch (WrongInputArgException e) {
-                // TODO Auto-generated catch block
                 LOGGER.warning("analyzeLine: message = " + e.getMessage());
             }
         }
     }
 
     private static void checkCommand(ConsoleInputString cis) throws WrongInputArgException {
-//        LOGGER.info("checkCommand: cis = " + cis.toString());
         try {
             switch (Commands.valueOf(cis.getFirstArg().toUpperCase(Locale.US).replaceFirst("-", ""))) {
                 case VIEW:
@@ -128,13 +129,9 @@ public final class Main {
                 case SYNCH:
                     CONSOLE_CONTROLLER.synch(cis);
                     break;
-                case REFRESH:
-                    CONSOLE_CONTROLLER.refresh();
-                    CONSOLE_CONTROLLER.displayNodes(CONSOLE_CONTROLLER.getCurrentPreferences());
-                    break;
-            case EXPORT:
-                CONSOLE_CONTROLLER.export(cis);
-                break;
+	            case EXPORT:
+	                CONSOLE_CONTROLLER.export(cis);
+	                break;
             default:
                 CONSOLE_CONTROLLER.showHelp();
                 break;
