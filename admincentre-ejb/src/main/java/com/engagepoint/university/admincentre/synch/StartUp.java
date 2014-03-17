@@ -6,10 +6,13 @@ import javax.ejb.Startup;
 import com.engagepoint.university.admincentre.exception.SynchronizationException;
 import com.engagepoint.university.admincentre.synchronization.SynchMaster;
 import com.engagepoint.university.admincentre.util.ConfLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Synchronize after starting application.
- * Configurations are loaded from config.xml
+ * Synchronize after starting application. Configurations are loaded from
+ * config.xml
+ *
  * @author Roman Garkavenko
  *
  */
@@ -17,24 +20,21 @@ import com.engagepoint.university.admincentre.util.ConfLoader;
 @Startup
 public class StartUp {
 
-	ConfLoader confLoader;
-	SynchMaster synchMaster;
-	
+    ConfLoader confLoader;
+    SynchMaster synchMaster;
+    private static final Logger LOGGER = LoggerFactory.getLogger(StartUp.class.getName());
+
     /**
-     * Default constructor. 
+     * Default constructor.
      */
     public StartUp() {
-//    	confLoader = ConfLoader.getInstance();
-//    	synchMaster = SynchMaster.getInstance();
-//    	
-//    	synchMaster.connect(confLoader.getClusterName());
-//    	try {
-//			synchMaster.autoSynch();
-////			System.out.println("DONE WELL!!!! synchMaster.autoSynch()");
-//		} catch (SynchronizationException e) {
-////			System.out.println("ERROR synchMaster.autoSynch()");
-//			//TODO	catch ex
-//		}
+confLoader = ConfLoader.getInstance();
+        synchMaster = SynchMaster.getInstance();
+        synchMaster.connect(confLoader.getClusterName());
+        try {
+            synchMaster.autoSynch();
+        } catch (SynchronizationException e) {
+            LOGGER.error("ERROR synchMaster.autoSynch() /n", e);
+        }
     }
-
 }

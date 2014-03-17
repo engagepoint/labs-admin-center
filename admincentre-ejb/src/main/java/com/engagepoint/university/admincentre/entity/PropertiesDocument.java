@@ -1,13 +1,9 @@
 package com.engagepoint.university.admincentre.entity;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.Serializable;
 
 public class PropertiesDocument implements Serializable, Comparable<PropertiesDocument> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PropertiesDocument.class.getName());
-
+    
     private static final long serialVersionUID = 12L;
     private String absolutePath;
     private String name;
