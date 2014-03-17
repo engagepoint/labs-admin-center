@@ -1,5 +1,5 @@
+package main.java.com.engagepoint.university.admincentre.admincentre.restws;
 
-package com.engagepoint.university.admincentre.admincentre.restws;
 
 //import com.engagepoint.university.admincentre.preferences.NodePreferences;
 //import java.util.prefs.BackingStoreException;

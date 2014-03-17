@@ -56,7 +56,7 @@
             <artifactId>mockito-all</artifactId>
             <version>1.9.5</version>
         </dependency>
-
+       
 		<!-- XML writer -->
 		<dependency>
 			<groupId>org.jdom</groupId>

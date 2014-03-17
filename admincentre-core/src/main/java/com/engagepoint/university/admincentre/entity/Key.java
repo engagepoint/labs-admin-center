@@ -1,7 +1,9 @@
 package com.engagepoint.university.admincentre.entity;
 
+import org.hibernate.search.annotations.Indexed;
 
 
+@Indexed
 public class Key extends AbstractEntity {
 
     private static final long serialVersionUID = -5430748795395302687L;

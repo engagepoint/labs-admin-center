@@ -4,7 +4,9 @@ package com.engagepoint.university.admincentre.entity;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.hibernate.search.annotations.Indexed;
 
+@Indexed
 public class Node extends AbstractEntity {
 
     private static final long serialVersionUID = 7481984532481844209L;

@@ -1,16 +1,22 @@
 package com.engagepoint.university.admincentre.dao;
 
-import com.engagepoint.university.admincentre.preferences.NodePreferences;
+import java.io.IOException;
+import java.util.List;
 
-import java.util.prefs.Preferences;
+import com.engagepoint.university.admincentre.entity.Key;
 
 public class Test2 {
     public static void main(String[] args) {
 
-        Preferences preferences = new NodePreferences(null, "");
-        Preferences another = preferences.node("/newNode/Node1/Node1.1");
-        Preferences another1 = preferences.node("/newNode/Node1/Node1.2");
-        Preferences another2 = preferences.node("/newNode/Node1");
+        // Preferences preferences = new NodePreferences(null, "");
+        // Preferences another = preferences.node("/newNode/Node1/Node1.1");
+        // Preferences another1 = preferences.node("/newNode/Node1/Node1.2");
+        // Preferences another2 = preferences.node("/newNode/Node1");
+        //
+        // another.put("11", "11");
+        // another1.put("12", "12");
+        // another2.put("13", "13");
+
         // try {
         // another2.removeNode();
         // } catch (BackingStoreException e) {
@@ -18,23 +24,20 @@ public class Test2 {
         // e.printStackTrace();
         // }
 
-        another.put("11", "11");
-
-        another1.put("12", "12");
-        another2.put("13", "13");
 //        another1.put("14", "14");
 //        another2.put("15", "15");
 //        another1.put("16", "16");
 //        another2.put("17", "17");
 
-        // NodeDAO nodeDAO = new NodeDAO();
-        //
-        // try {
-        // System.out.println(nodeDAO.search("ewNo").get(0).getName());
-        // } catch (IOException e) {
-        // // TODO Auto-generated catch block
-        // e.printStackTrace();
-        // }
+        KeyDAO keyDAO = KeyDAO.getInstance();
+
+        try {
+            List<Key> = keyDAO.search("11");
+           
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
     }
 
