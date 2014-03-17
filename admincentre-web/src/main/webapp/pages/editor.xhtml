@@ -17,6 +17,7 @@
             <p:commandButton value="Configuration" oncomplete="confDialog.show()">
 
             </p:commandButton>
+
             <!--Config dialog-->
             <p:dialog id="confDialog"
                       header="Configure Dialog"
@@ -61,6 +62,7 @@
             </p:dialog>
             </ui:remove>
             <br/>                          
+
             <uib:gridContainer id="searchParams">
                 <uib:gridRow fluid="false" styleClass="mb20">
 
@@ -94,40 +96,64 @@
                               fileUploadListener="#{tempController.onImportZip}"
                               multiple="true"
                               oncomplete="uploadXML.hide()"/>
-
             </p:dialog>
 
             <p:treeTable id="treeTable"
                          value="#{documentsController.root}"
                          var="doc">
                 <f:facet name="header">#{trans.propViewer}</f:facet>
-                <p:column style="width:35%">
+                <p:column style="width:34%">
                     <f:facet name="header">#{trans.file}</f:facet>
                     <h:outputText value="#{doc.name}" />
                 </p:column>
 
-                <p:column style="width:35%">
+                <p:column style="width:34%">
                     <f:facet name="header">#{trans.value}</f:facet>
                     <h:outputText value="#{doc.value}"/>
                 </p:column>
-                <p:column style="width:10%">
+                <p:column style="width:9%">
                     <f:facet name="header">#{trans.type}</f:facet>
                     <h:outputText value="#{doc.type}"/>
                 </p:column>
-                <p:column style="width:20%">
+                <p:column style="width:23%">
                     <f:facet name="header"></f:facet>
+
+                    <!--Buttons-->
+
                     <!--Delete button-->
                     <p:commandButton
                         id="delButton"
-                        value="#{trans.del}"
-                        alt="#{trans.del}"
-                        styleClass="ui-button-icon-only secondary small"
+                        title="#{trans.del}"
+                        icon="ui-icon-close"
+                        styleClass="small secondary"
                         style="float: right"
-                        icon="ui-icon-remove"
-                        update="treeTable"
                         oncomplete="delDialog.show()">
                         <f:setPropertyActionListener value="#{doc}"
                                                      target="#{documentsController.selectedDoc}"/>
+                    </p:commandButton>
+
+                    <!--Edit button-->
+                    <p:commandButton id="editButton"
+                                     title="Edit"
+                                     icon="ui-icon-edit-small"
+                                     styleClass="small secondary"
+                                     style="float: right"
+                                     oncomplete="editDialog.show()">
+                        <f:setPropertyActionListener value="#{doc}"
+                                                     target="#{documentsController.selectedDoc}"/>
+                    </p:commandButton>
+
+                    <!--Add button-->
+                    <p:commandButton
+                        id="addButton"                                
+                        title="Add"
+                        styleClass="ui-button-icon-only secondary small"
+                        icon="ui-icon-add"
+                        style="float: right"
+                        rendered="#{doc.file}"
+                        oncomplete="addDlg.show()">
+                        <f:setPropertyActionListener value="#{doc}"
+                                                     target="#{documentsController.selectedDoc}" />
                     </p:commandButton>
 
                     <!--Delete dialog-->
@@ -163,23 +189,7 @@
                             style="float: right"
                             action="cancel"                                
                             oncomplete="delDialog.hide()"/>
-                        <!--update="treeTable"-->
-
                     </p:dialog>
-
-                    <!--Edit button-->
-                    <p:commandButton id="editButton"
-                                     icon="ui-icon-edit-small"
-                                     styleClass="small secondary"
-                                     style="float: right"
-                                     update="treeTable"
-                                     oncomplete="editDialog.show()">
-                        <f:setPropertyActionListener value="#{doc}"
-                                                     target="#{documentsController.selectedDoc}"/>
-
-                        <!--icon="ui-icon-edit"-->
-                        <!--styleClass="ui-button-icon-only secondary small"-->
-                    </p:commandButton>
 
                     <!--Edit dialog-->
                     <p:dialog id="editDlg"
@@ -223,24 +233,10 @@
                             value="#{trans.cancel}"
                             style="float: right"
                             styleClass="secondary"
-                            oncomplete="editDialog.hide()"
                             action="cancel"
-                            process="@this"/>
+                            process="@this"
+                            oncomplete="editDialog.hide()"/>
                     </p:dialog>
-
-                    <!--Add button-->
-                    <p:commandButton
-                        id="addButton"                                
-                        rendered="#{doc.file}"
-                        oncomplete="addDlg.show()"
-                        title="Add new node"
-                        styleClass="ui-button-icon-only secondary small"
-                        icon="ui-icon-add"
-                        style="float: right">
-                        <f:setPropertyActionListener value="#{doc}"
-                                                     target="#{documentsController.selectedDoc}" />
-                    </p:commandButton>
-                    <!--update="treeTable"-->
 
                     <!--Add dialog-->
                     <p:dialog id="addDialog"
@@ -265,7 +261,6 @@
                                 value="Ok"
                                 style="float:right"
                                 styleClass="ml20"
-                                update="treeTable"
                                 oncomplete="addDlg2.show()"/>
 
                             <h:outputText value="    "/>
@@ -275,14 +270,11 @@
                                 value="Cancel"
                                 style="float:right"
                                 styleClass="secondary"
-
                                 actionListener="#{documentsController.resetTempDoc()}"
                                 oncomplete="addDlg.hide()"/>
-                            <!--update="treeTable"-->
                         </uib:gridContainer>
                     </p:dialog>
 
-                    <!--Add dialog 2 edition-->
                     <p:dialog id="addDialog2"
                               header="Add Node"
                               position="top"
@@ -322,10 +314,8 @@
                                              id="addCancelButton2"
                                              style="float:right"
                                              styleClass="secondary"
-
                                              actionListener="#{documentsController.resetTempDoc()}"
                                              oncomplete="addDlg2.hide()"/>
-                            <!--update="treeTable"-->
                         </uib:gridContainer>
                     </p:dialog>
                 </p:column>
