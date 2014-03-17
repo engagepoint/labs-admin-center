@@ -203,9 +203,11 @@
     <h:panelGrid id="editPanelGrid" columns="2" cellpadding="4">
         <h:outputText value="Name:"/>
         <p:inputText id="inputName" value="#{documentsController.selectedDoc.name}"/>
+
         <h:outputText value="Value:" rendered="#{not documentsController.selectedDoc.file}"/>
-        <p:inputText id="inputValue" value="#{documentsController.selectedDoc.value}"
-                     rendered="#{not documentsController.selectedDoc.file}"/>
+        <p:inputText label="Value" id="inputValue" value="#{documentsController.selectedDoc.value}"
+                     rendered="#{not documentsController.selectedDoc.file}" validator="#{validaorEdit.validateAlpha}"/>
+
         <h:outputText value="Type:" rendered="#{not documentsController.selectedDoc.file}"/>
         <p:selectOneMenu value="#{documentsController.selectedDoc.type}"
                          id="selectTypeMenu"
@@ -312,7 +314,7 @@
         <h:outputLabel value="Value: " rendered="#{not documentsController.tempDoc.file}"/>
         <h:inputText label="Value" id="inputValue2" rendered="#{not documentsController.tempDoc.file}"
                      value="#{documentsController.tempDoc.value}" style="font-weight:bold"
-                     validator="#{alphaValidator.validateAlpha}" >
+                     validator="#{validatorAdd.validateAlpha}">
         </h:inputText>
 
 

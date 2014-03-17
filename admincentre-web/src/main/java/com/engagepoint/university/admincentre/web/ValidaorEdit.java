@@ -5,31 +5,32 @@ import org.primefaces.component.selectonemenu.SelectOneMenu;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
 import javax.faces.component.UIComponent;
 import javax.faces.component.html.HtmlInputText;
 import javax.faces.context.FacesContext;
 import javax.faces.validator.ValidatorException;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
- * Created by aleksey.korotysh on 13.03.14.
+ * Created by aleksey.korotysh on 17.03.14.
  */
-@ManagedBean
-public class AlphaValidator {
+@Named
+public class ValidaorEdit {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AlphaValidator.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(ValidatorAdd.class.getName());
     @Inject
     DocumentsController documentsController;
-
 
     public void validateAlpha(FacesContext facesContext, UIComponent
             uiComponent, Object value) throws ValidatorException {
         String selectedValue;
         UIComponent parent = uiComponent.getParent();
         if (null != parent) {
-            UIComponent sone = parent.findComponent("selectTypeMenu2");
+            UIComponent sone = parent.findComponent("selectTypeMenu");
+
             if (null != sone) {
                 System.out.println("----------SELECTED-------------------" + parent.getId() + "----------------------------------------------");
                 SelectOneMenu selectOneMenu = (SelectOneMenu) sone;
@@ -44,13 +45,14 @@ public class AlphaValidator {
                     }
                 } else if (("Double".equals(selectedValue) || "Float".equals(selectedValue)) && (!isDouble((String) value))) {
 
-                        HtmlInputText htmlInputText = (HtmlInputText) uiComponent;
-                        FacesMessage facesMessage = new FacesMessage(htmlInputText.getLabel() + ": Must be Floating-Point Number");
-                        throw new ValidatorException(facesMessage);
-                    }
+                    HtmlInputText htmlInputText = (HtmlInputText) uiComponent;
+                    FacesMessage facesMessage = new FacesMessage(htmlInputText.getLabel() + ": Must be Floating-Point Number");
+                    throw new ValidatorException(facesMessage);
                 }
             }
+
         }
+    }
 
 
     private boolean isDouble(String str) {
