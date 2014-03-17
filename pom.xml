@@ -33,7 +33,8 @@
         <module>admincentre-ear</module>
         <module>admincentre-console</module>
         <module>admincentre-acceptancetest</module>
-    </modules>
+    <module>admincentre-restws</module>
+  </modules>
 	
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -50,7 +51,7 @@
         </repository>
 
         <repository>
-            <snapshots />
+            <snapshots/>
             <id>snapshots</id>
             <name>libs-snapshot</name>
             <url>http://sonar.cht:8081/artifactory/libs-snapshot</url>
@@ -67,7 +68,7 @@
         </pluginRepository>
 
         <pluginRepository>
-            <snapshots />
+            <snapshots/>
             <id>snapshots</id>
             <name>plugins-snapshot</name>
             <url>http://sonar.cht:8081/artifactory/plugins-snapshot</url>
