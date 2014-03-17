@@ -12,19 +12,8 @@
         <h:form id="preferencesForm">
             <br/>
             <h2><h:outputText value="#{trans.prefAdm}"/></h2>
-            <p:menuButton value="Options" id="Options" >
-                <p:menuitem value="Export" id="export"
-                            icon="ui-icon-disk"
-                            ajax="false"
-                            actionListener="#{tempController.onExportZip}">
-                    <p:fileDownload value="#{fileController.downloadFile}"/>
-                </p:menuitem>
-                <p:menuitem value="Import"
-                            update="ImportDialog"
-                            icon="ui-icon-arrowrefresh-1-w"
-                            oncomplete="uploadXML.show()"/>
-            </p:menuButton>
-
+           
+            <ui:remove>
             <p:commandButton value="Configuration" oncomplete="confDialog.show()">
 
             </p:commandButton>
@@ -37,7 +26,7 @@
                       modal="true"
                       closable="false">
 
-                <ui:remove>
+               
                     <h:outputLabel value="Channel: " />
                     <p:inputText  value="#{configBean.channel}" style="font-weight:bold" />
 
@@ -49,7 +38,7 @@
 
                     <h:outputLabel value="Base Path" />
                     <p:inputText  value="#{configBean.basePath}" style="font-weight:bold" />
-                </ui:remove>
+               
                 <br/>
                 <br/>
                 <p:commandButton
@@ -70,6 +59,7 @@
                     update="treeTable"
                     oncomplete="confDialog.hide()"/>
             </p:dialog>
+            </ui:remove>
             <br/>                          
             <uib:gridContainer id="searchParams">
                 <uib:gridRow fluid="false" styleClass="mb20">
