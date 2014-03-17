@@ -32,7 +32,7 @@ public class Test2 {
         KeyDAO keyDAO = KeyDAO.getInstance();
 
         try {
-            List<Key> = keyDAO.search("11");
+            List<Key> list = keyDAO.search("11");
            
         } catch (IOException e) {
             // TODO Auto-generated catch block

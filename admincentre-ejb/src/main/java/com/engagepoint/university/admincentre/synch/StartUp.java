@@ -24,17 +24,17 @@ public class StartUp {
      * Default constructor. 
      */
     public StartUp() {
-    	confLoader = ConfLoader.getInstance();
-    	synchMaster = SynchMaster.getInstance();
-    	
-    	synchMaster.connect(confLoader.getClusterName());
-    	try {
-			synchMaster.autoSynch();
-//			System.out.println("DONE WELL!!!! synchMaster.autoSynch()");
-		} catch (SynchronizationException e) {
-//			System.out.println("ERROR synchMaster.autoSynch()");
-			//TODO	catch ex
-		}
+//    	confLoader = ConfLoader.getInstance();
+//    	synchMaster = SynchMaster.getInstance();
+//    	
+//    	synchMaster.connect(confLoader.getClusterName());
+//    	try {
+//			synchMaster.autoSynch();
+////			System.out.println("DONE WELL!!!! synchMaster.autoSynch()");
+//		} catch (SynchronizationException e) {
+////			System.out.println("ERROR synchMaster.autoSynch()");
+//			//TODO	catch ex
+//		}
     }
 
 }

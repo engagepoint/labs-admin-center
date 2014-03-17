@@ -33,7 +33,7 @@
         <module>admincentre-ear</module>
         <module>admincentre-console</module>
         <module>admincentre-acceptancetest</module>
-    <module>admincentre-restws</module>
+<!--    <module>admincentre-restws</module>           -->
   </modules>
 	
     <properties>
