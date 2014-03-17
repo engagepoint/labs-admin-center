@@ -2,6 +2,8 @@ package com.engagepoint.university.admincentre.web;
 
 import org.apache.commons.lang.StringUtils;
 import org.primefaces.component.selectonemenu.SelectOneMenu;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
@@ -17,6 +19,7 @@ import javax.inject.Inject;
 @ManagedBean
 public class AlphaValidator {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AlphaValidator.class.getName());
     @Inject
     DocumentsController documentsController;
 
@@ -25,35 +28,38 @@ public class AlphaValidator {
             uiComponent, Object value) throws ValidatorException {
         String selectedValue;
         UIComponent parent = uiComponent.getParent();
-        if(null!=parent){
-        UIComponent sone = parent.findComponent("selectTypeMenu2");
-        if(null!=sone){
-            System.out.println("----------SELECTED-------------------"+parent.getId()+"----------------------------------------------");
-        SelectOneMenu selectOneMenu=(SelectOneMenu)sone;
-        selectedValue = (String) selectOneMenu.getSubmittedValue();
-            System.out.println("++++++++++++++++++++++++++SELECTED VALUE++++++++++++++++++++++++++++++++++"+selectedValue);
-            if (selectedValue.equals("Integer")) {
-                if (!StringUtils.isNumeric((String) value)) {
-                    HtmlInputText htmlInputText = (HtmlInputText) uiComponent;
-                    FacesMessage facesMessage = new FacesMessage(htmlInputText.getLabel() + ": Must be Integer number");
-                    throw new ValidatorException(facesMessage);
-                }
-            }
-            else if (selectedValue.equals("Double") || selectedValue.equals("Float")) {
-                if (!StringUtils.isNumeric((String) value)) {
-                    HtmlInputText htmlInputText = (HtmlInputText) uiComponent;
-                    FacesMessage facesMessage = new FacesMessage(htmlInputText.getLabel() + ": Must be Integer number");
-                    throw new ValidatorException(facesMessage);
+        if (null != parent) {
+            UIComponent sone = parent.findComponent("selectTypeMenu2");
+            if (null != sone) {
+                System.out.println("----------SELECTED-------------------" + parent.getId() + "----------------------------------------------");
+                SelectOneMenu selectOneMenu = (SelectOneMenu) sone;
+                selectedValue = (String) selectOneMenu.getSubmittedValue();
+                System.out.println("++++++++++++++++++++++++++SELECTED VALUE++++++++++++++++++++++++++++++++++" + selectedValue);
+
+                if ("Integer".equals(selectedValue)) {
+                    if (!StringUtils.isNumeric((String) value)) {
+                        HtmlInputText htmlInputText = (HtmlInputText) uiComponent;
+                        FacesMessage facesMessage = new FacesMessage(htmlInputText.getLabel() + ": Must be Integer Number");
+                        throw new ValidatorException(facesMessage);
+                    }
+                } else if (("Double".equals(selectedValue) || "Float".equals(selectedValue)) && (!isDouble((String) value))) {
+
+                        HtmlInputText htmlInputText = (HtmlInputText) uiComponent;
+                        FacesMessage facesMessage = new FacesMessage(htmlInputText.getLabel() + ": Must be Floating-Point Number");
+                        throw new ValidatorException(facesMessage);
+                    }
                 }
             }
         }
+
+
+    private boolean isDouble(String str) {
+        try {
+            Double.parseDouble(str);
+        } catch (NumberFormatException e) {
+            LOGGER.error("", e);
+            return false;
         }
-
-
-//       else if (!StringUtils.isNumeric((String) value)) {
-//            HtmlInputText htmlInputText = (HtmlInputText) uiComponent;
-//            FacesMessage facesMessage = new FacesMessage(htmlInputText.getLabel() + ": only numbers must be .");
-//            throw new ValidatorException(facesMessage);
-//    }
-}
+        return true;
+    }
 }
