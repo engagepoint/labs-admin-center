@@ -19,22 +19,22 @@ import org.slf4j.LoggerFactory;
 @Singleton
 @Startup
 public class StartUp {
-
-    ConfLoader confLoader;
-    SynchMaster synchMaster;
-    private static final Logger LOGGER = LoggerFactory.getLogger(StartUp.class.getName());
-
-    /**
-     * Default constructor.
-     */
-    public StartUp() {
-confLoader = ConfLoader.getInstance();
-        synchMaster = SynchMaster.getInstance();
-        synchMaster.connect(confLoader.getClusterName());
-        try {
-            synchMaster.autoSynch();
-        } catch (SynchronizationException e) {
-            LOGGER.error("ERROR synchMaster.autoSynch() /n", e);
-        }
-    }
+//
+//    ConfLoader confLoader;
+//    SynchMaster synchMaster;
+//    private static final Logger LOGGER = LoggerFactory.getLogger(StartUp.class.getName());
+//
+//    /**
+//     * Default constructor.
+//     */
+//    public StartUp() {
+//    	confLoader = ConfLoader.getInstance();
+//        synchMaster = SynchMaster.getInstance();
+//        synchMaster.connect(confLoader.getClusterName());
+//        try {
+//            synchMaster.autoSynch();
+//        } catch (SynchronizationException e) {
+//            LOGGER.error("ERROR synchMaster.autoSynch() /n", e);
+//        }
+//    }
 }
