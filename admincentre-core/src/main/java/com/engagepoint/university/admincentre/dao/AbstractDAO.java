@@ -27,7 +27,6 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
 
     private static final String CACHE_CONFIG = "cache_config.xml";
     private static final String USED_CACHE = "evictionCache";
-
     private DefaultCacheManager m = null;
     private Cache<String, T> cache = null;
     private Class<T> type;
@@ -53,7 +52,6 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
 
             stopCacheManager();
         }
-
     }
 
     public T read(String id) throws IOException {
@@ -71,6 +69,7 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
         }
     }
 
+    @Override
     public void update(T transientObject) throws IOException {
         try {
             getCache(CACHE_CONFIG, USED_CACHE);
@@ -80,9 +79,9 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
         } finally {
             stopCacheManager();
         }
-
     }
 
+    @Override
     public void delete(String keyId) throws IOException {
         try {
             getCache(CACHE_CONFIG, USED_CACHE);
@@ -96,9 +95,9 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
         } finally {
             stopCacheManager();
         }
-
     }
 
+    @Override
     public List<T> search(String name) throws IOException {
         try {
             getCache(CACHE_CONFIG, USED_CACHE);
@@ -110,9 +109,7 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
                 return resultList;
             }
             return new LinkedList<T>();
-        }
-
-        finally {
+        } finally {
             stopCacheManager();
         }
     }
@@ -136,28 +133,23 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
                 Cache<String, Node> startCache = m.getCache(cacheName);
                 Node node = new Node("/", "");
                 startCache.put(node.getId(), node);
-
-
             }
+        } else {
+            cache.start();
         }
- else {
-        cache.start();
-        }
-
     }
 
     private void stopCacheManager() {
         if (m != null) {
             cache.stop();
-            // m.stop();
         }
     }
 
     /**
      * Puts new received cache
-     * 
-     * @throws UnsupportedOperationException
-     *             if could not put all
+     * @param cacheData
+     * @throws IOException
+     * @throws UnsupportedOperationException if could not put all
      */
     public void putAll(Map<String, T> cacheData) throws IOException {
 
@@ -173,9 +165,9 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
 
     /**
      * Clears cache
-     * 
-     * @throws UnsupportedOperationException
-     *             if cache could not be clear
+     *
+     * @throws IOException
+     * @throws UnsupportedOperationException if cache could not be clear
      */
     public void clear() throws IOException {
 
@@ -192,6 +184,5 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
     public Map<String, T> obtainCache() throws IOException {
         getCache(CACHE_CONFIG, USED_CACHE);
         return cache;
-
     }
 }
