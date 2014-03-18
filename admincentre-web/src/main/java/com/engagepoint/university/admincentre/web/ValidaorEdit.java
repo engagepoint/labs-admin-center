@@ -21,8 +21,7 @@ import javax.inject.Named;
 public class ValidaorEdit {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ValidatorAdd.class.getName());
-    @Inject
-    DocumentsController documentsController;
+
 
     public void validateAlpha(FacesContext facesContext, UIComponent
             uiComponent, Object value) throws ValidatorException {

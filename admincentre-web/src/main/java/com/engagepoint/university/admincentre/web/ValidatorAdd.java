@@ -20,8 +20,7 @@ import javax.inject.Inject;
 public class ValidatorAdd {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ValidatorAdd.class.getName());
-    @Inject
-    DocumentsController documentsController;
+
 
 
     public void validateAlpha(FacesContext facesContext, UIComponent

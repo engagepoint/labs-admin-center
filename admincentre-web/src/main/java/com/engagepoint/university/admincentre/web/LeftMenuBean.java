@@ -24,94 +24,57 @@ import org.slf4j.LoggerFactory;
 @RequestScoped
 public class LeftMenuBean {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DataBean.class.getName());
-    @EJB
-    private Synch synch;
-    private String clusterName;
+	private MenuModel model;
+    public static final String EDITOR_URL = "/editor.xhtml";
+    public static final String SETTINGS_URL = "/settings.xhtml";
 
-    public String getClusterName() {
-        return clusterName;
-    }
+	@PostConstruct
+	 public void init() {
 
-    public void setClusterName(String clusterName) {
-        try {
-            synch.autoConnect(clusterName);
-            this.clusterName = clusterName;
-        } catch (IllegalStateException e) {
-            LOGGER.warn("Failed to set cluster name " + clusterName, e);
-        } catch (SynchronizationException ex) {
-            LOGGER.warn("Failed to syncronize with cluster name " + clusterName, ex);
-        }
-    }
+		UIViewRoot viewRoot = FacesContext.getCurrentInstance().getViewRoot();
+	    String viewId = viewRoot.getViewId();
+		
+	    if(viewId.endsWith(EDITOR_URL)){
+	    	editorMenu();
+	    }else if(viewId.endsWith(SETTINGS_URL)){
+	    	settingsMenu();
+	    }
 
-    public String getInfo() {
-        if (synch.isConnected()) {
-            return "Connected. Channel name: " + synch.getChannelName()
-                    + "; Cluster name: " + synch.getClusterName();
-        } else {
-            return "Disconnected.";
-        }
-    }
-    private MenuModel model;
+	}
 
-    @PostConstruct
-    public void init() {
+	private void editorMenu(){
+		model = new DefaultMenuModel();
 
-        UIViewRoot viewRoot = FacesContext.getCurrentInstance().getViewRoot();
-        String viewId = viewRoot.getViewId();
+		// menuItem creation
 
-        if (viewId.endsWith("/editor.xhtml")) {
-            editorMenu();
-        } else if (viewId.endsWith("/settings.xhtml")) {
-            settingsMenu();
-        } else if (viewId.endsWith("/import_export.xhtml")) {
-            settingsMenu();
-        }
-    }
+		UIMenuItem item = new UIMenuItem();
+		item.setId("view_table");
+		item.setValue("View_table");
+		item.setUrl("/pages/editor.xhtml");
+		item.setTitle("View table");
 
-    /**
-     * Menu creation
-     */
-    private void editorMenu() {
-        model = new DefaultMenuModel();
-        UIMenuItem item = new UIMenuItem();
-        item.setId("view_table");
-        item.setValue("View_table");
-        item.setUrl("#");
-        item.setTitle("View table");
-        model.addMenuItem(item);
-        item = new UIMenuItem();
-        item.setId("search");
-        item.setValue("Search");
-        item.setUrl("#");
-        item.setTitle("Search");
-        model.addMenuItem(item);
-    }
+		model.addMenuItem(item);
 
-    /**
-     * Menu item "Synch" creation
-     */
-    private void settingsMenu() {
-        model = new DefaultMenuModel();
-        UIMenuItem item = new UIMenuItem();
-        item.setId("synch");
-        item.setValue("Synch");
-        item.setUrl("/pages/settings.xhtml");
-        item.setTitle("Synchronization");
-        model.addMenuItem(item);
-        item = new UIMenuItem();
+	}
+	
+	private void settingsMenu(){
+		model = new DefaultMenuModel();
+		// menuItem creation
+
+		UIMenuItem item = new UIMenuItem();
         item.setId("import_export");
         item.setValue("Import_export");
-        item.setUrl("/pages/import_export.xhtml");
+        item.setUrl("/pages/settings.xhtml");
         item.setTitle("Import/Export");
+        item.setActiveLinkSelection(true);
         model.addMenuItem(item);
-    }
+	}
+	
+	public MenuModel getModel() {
+		return model;
+	}
 
-    public MenuModel getModel() {
-        return model;
-    }
-
-    public void setModel(MenuModel model) {
-        this.model = model;
-    }
+	public void setModel(MenuModel model) {
+		this.model = model;
+	}
 }

@@ -13,6 +13,8 @@
 <br/>
 
 <h2><h:outputText value="#{trans.prefAdm}"/></h2>
+
+<ui:remove>
 <p:menuButton value="Options" id="Options">
     <p:menuitem value="Export" id="export"
                 icon="ui-icon-disk"
@@ -29,6 +31,7 @@
 <p:commandButton value="Configuration" oncomplete="confDialog.show()">
 
 </p:commandButton>
+</ui:remove>
 <!--Config dialog-->
 <p:dialog id="confDialog"
           header="Configure Dialog"
@@ -72,26 +75,27 @@
             oncomplete="confDialog.hide()"/>
 </p:dialog>
 <br/>
-<uib:gridContainer id="searchParams">
+<uib:gridContainer  id="searchParams">
     <uib:gridRow fluid="false" styleClass="mb20">
 
-        <uib:gridColumn column="4">
-            <h:outputLabel for="s_man" style="margin-left: 45px" value=" PROPERTY NAME"/>
-            <p:inputText id="s_man" style="margin-left: 45px" value="#{documentsController.searchKeyName}"/>
+        <uib:gridColumn column="3">
+            <h:outputLabel for="s_man"  value=" PROPERTY NAME"/>
+            <p:inputText id="s_man"  value="#{documentsController.searchKeyName}"/>
         </uib:gridColumn>
 
-        <uib:gridColumn column="4">
-            <h:outputLabel for="s_man2" style="margin-left: 45px" value=" PROPERTY VALUE"/>
-            <p:inputText id="s_man2" style="margin-left: 45px" value="#{documentsController.searchKeyValue}"/>
+        <uib:gridColumn column="3">
+            <h:outputLabel for="s_man2"  value=" PROPERTY VALUE"/>
+            <p:inputText id="s_man2"  value="#{documentsController.searchKeyValue}"/>
         </uib:gridColumn>
 
-        <uib:gridColumn column="2">
-
+        <uib:gridColumn column="1">
+            <br/>
             <p:commandButton
+                    id="searchButton"
                     value="Search"
                     actionListener="#{documentsController.search()}"
                     update="treeTable"
-                    style="width:100px;top:127px; left:765px; position: absolute;height:38px">
+                    >
             </p:commandButton>
             <br/>
 
