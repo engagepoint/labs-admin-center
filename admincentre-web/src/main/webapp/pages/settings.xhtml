@@ -12,7 +12,7 @@
 
     <ui:define name="page">
 
-        <h:form id="importExportForm">
+        <h:form id="importExportForm" enctype="multipart/form-data">
             <h2><h:outputText value="Import/Export"/></h2>
 
             <uib:gridContainer>
@@ -37,10 +37,34 @@
                       header="Import Dialog"
                       widgetVar="uploadXML"
                       modal="true" height="200" width="800">
-                <p:fileUpload value="#{fileController.uploadFile}"
-                              fileUploadListener="#{tempController.onImportZip}"
-                              multiple="true"
-                              oncomplete="uploadXML.hide()"/>
+
+
+                <h:commandButton value="Choose File" id="butt_choose"
+                                 style="position: relative; "
+                                 class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"
+                                 action="#">
+                </h:commandButton>
+
+                <h:inputFile id="fileid"
+                             style="position:
+                                        relative; margin-left: -150px;
+                                        opacity:0;
+                                        height: 34px;
+                                        width: 150px;"
+                             title="Please choose your zip archive"
+                             value="#{fileUploadController.file}">
+                </h:inputFile>
+
+
+                <h:commandButton id="upload_button"
+                                 class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"
+                                 style="margin-left: 20px;"
+                                 value="Upload"
+                                 action="#{fileUploadController.onImportZip}"
+                                 actionListener="#{fileUploadController.upload}"
+                                 onclick="uploadXML.hide()">
+                </h:commandButton>
+
             </p:dialog>
 
 
