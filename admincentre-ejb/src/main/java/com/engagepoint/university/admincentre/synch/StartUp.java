@@ -2,7 +2,7 @@ package com.engagepoint.university.admincentre.synch;
 
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
-
+								
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,24 +19,24 @@ import com.engagepoint.university.admincentre.util.ConfLoader;
  */
 @Singleton
 @Startup
-public class StartUp {
-
-    ConfLoader confLoader;
-    SynchMaster synchMaster;
-    private static final Logger LOGGER = LoggerFactory.getLogger(StartUp.class.getName());
-
-    /**
-     * Default constructor.
-     */
-    public StartUp() {
-    	confLoader = ConfLoader.getInstance();
-        synchMaster = SynchMaster.getInstance();
-        synchMaster.connect(confLoader.getClusterName());
-        try {
-            synchMaster.autoSynch();
-        } catch (SynchronizationException e) {
-            LOGGER.error("ERROR synchMaster.autoSynch() /n", e);
-        }
-    }
+public class StartUp {						//do not make changes here!
+//
+//    ConfLoader confLoader;
+//    SynchMaster synchMaster;
+//    private static final Logger LOGGER = LoggerFactory.getLogger(StartUp.class.getName());
+//
+//    /**
+//     * Default constructor.
+//     */
+//    public StartUp() {
+//    	confLoader = ConfLoader.getInstance();
+//        synchMaster = SynchMaster.getInstance();
+//        synchMaster.connect(confLoader.getClusterName());
+//        try {
+//            synchMaster.autoSynch();
+//        } catch (SynchronizationException e) {
+//            LOGGER.error("ERROR synchMaster.autoSynch() /n", e);
+//        }
+//    }
 
 }
