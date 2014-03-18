@@ -12,10 +12,37 @@
 
     <ui:define name="page">
 
-        <h:form id="settingsForm">
-            <h2><h:outputText value=""/></h2>  
-            
-            
+        <h:form id="importExportForm">
+            <h2><h:outputText value="Import/Export"/></h2>
+
+            <uib:gridContainer>
+                <uib:gridRow fluid="true">
+
+                    <uib:gridColumn column="6">
+                        <uib:buttonGroup>
+                            <p:commandButton value="Import"
+                                             styleClass="secondary"
+                                             onclick="uploadXML.show()"/>
+                            <p:commandButton value="Export"
+                                             styleClass="secondary"
+                                             ajax="false"
+                                             actionListener="#{tempController.onExportZip}">
+                                <p:fileDownload value="#{fileController.downloadFile}"/>
+                            </p:commandButton>
+                        </uib:buttonGroup>
+                    </uib:gridColumn>
+                </uib:gridRow>
+            </uib:gridContainer>
+            <p:dialog id="ImportDialog"
+                      header="Import Dialog"
+                      widgetVar="uploadXML"
+                      modal="true" height="200" width="800">
+                <p:fileUpload value="#{fileController.uploadFile}"
+                              fileUploadListener="#{tempController.onImportZip}"
+                              multiple="true"
+                              oncomplete="uploadXML.hide()"/>
+            </p:dialog>
+
 
         </h:form>
     </ui:define>

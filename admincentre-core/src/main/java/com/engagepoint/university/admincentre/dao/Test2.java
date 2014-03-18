@@ -33,7 +33,7 @@ public class Test2 {
 
         try {
             List<Key> list = keyDAO.search("11");
-           
+            System.out.println(list.get(0).getName() + "\n" + list.get(0).getValue());
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

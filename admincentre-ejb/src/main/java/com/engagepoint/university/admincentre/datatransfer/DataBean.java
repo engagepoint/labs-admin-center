@@ -54,10 +54,10 @@ public class DataBean {
             }
         } catch (BackingStoreException e) {
             LOGGER.error("error during constructing tree on key from node: "
-                    + nodePreferences.name());
+                    + nodePreferences.name(), e);
         } catch (IOException e) {
             LOGGER.error("error during constructing tree on reading key from node: "
-                    + nodePreferences.name());
+                    + nodePreferences.name(), e);
         }
     }
 
@@ -79,8 +79,7 @@ public class DataBean {
                             KeyType.valueOf(selectedDocument.getType()),
                             selectedDocument.getValue());
                 } catch (IOException iOException) {
-                    LOGGER.error(this.getClass().getName(),
-                            "public void editDocument(ActionEvent event)", iOException);
+                    LOGGER.error("Editing failed. Node/Key: " + selectedDocument.getName(), iOException);
                 }
             }
         }
@@ -126,8 +125,7 @@ public class DataBean {
                         KeyType.valueOf(temporaryDocument.getType()), temporaryDocument.getValue());
 
             } catch (IOException e) {
-                LOGGER.warn("Cannot complete this:\n"
-                        + ".put(newName, KeyType.valueOf(temporaryDocument.getType()), temporaryDocument.getValue());\n }", e);
+                LOGGER.warn("Adding the Node/Key: " + newName + " failed", e);
             }
             new TreeProperties(new PropertiesDocument(path, newName, temporaryDocument.getValue(),
                     temporaryDocument.getType(), temporaryDocument.isFile()),
