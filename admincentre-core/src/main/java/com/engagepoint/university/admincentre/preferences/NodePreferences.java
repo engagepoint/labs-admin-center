@@ -1888,14 +1888,15 @@ public class NodePreferences extends Preferences {
     }
 
     /**
-     * Method exports Node with all it SubNodes
-     *
-     * @param os the output stream on which to emit the ZIP document.
-     * @throws IOException if writing to the specified output stream results in
-     * an
-     * <tt>IOException</tt>.
-     * @throws BackingStoreException if preference data cannot be read from
-     * backing store.
+     * Method exports Node with all it SubNodes into ZIP with properties files
+     * 
+     * @param os
+     *            the output stream on which to emit the ZIP document.
+     * @throws IOException
+     *             if writing to the specified output stream results in an
+     *             <tt>IOException</tt>.
+     * @throws BackingStoreException
+     *             if preference data cannot be read from backing store.
      */
     @Override
     public void exportNode(OutputStream os) throws IOException, BackingStoreException {
@@ -1906,6 +1907,24 @@ public class NodePreferences extends Preferences {
         new ZipFiles().exportZipPreferences(this, path);
     }
 
+    /**
+     * Method exports Node with all it SubNodes into into ZIP with XML file
+     * 
+     * @param os
+     *            the output stream on which to emit the ZIP document.
+     * @throws IOException
+     *             if writing to the specified output stream results in an
+     *             <tt>IOException</tt>.
+     * @throws BackingStoreException
+     *             if preference data cannot be read from backing store.
+     */
+    public void exportNodeXML(OutputStream os) throws IOException, BackingStoreException {
+        new ZipFiles().exportZipPreferencesXML(this, os);
+    }
+
+    public void exportNodeXML(String path) throws IOException, BackingStoreException {
+        new ZipFiles().exportZipPreferencesXML(this, path);
+    }
     /**
      * Method exports Node with all it SubNodes
      *
@@ -1933,5 +1952,21 @@ public class NodePreferences extends Preferences {
      */
     public void importNode(InputStream is) throws IOException, BackingStoreException {
         new ZipFiles().importZipPreferences(is, absolutePath);
+    }
+
+    /**
+     * Method imports Node with all it SubNodes from ZIP with XMLs to current
+     * node
+     * 
+     * @param is
+     *            the input stream on which to emit the ZIP document.
+     * @throws IOException
+     *             if writing to the specified output stream results in an
+     *             <tt>IOException</tt>.
+     * @throws BackingStoreException
+     *             if preference data cannot be read from backing store.
+     */
+    public void importNodeXML(InputStream is) throws IOException, BackingStoreException {
+        new ZipFiles().importZipPreferencesXML(is, absolutePath);
     }
 }

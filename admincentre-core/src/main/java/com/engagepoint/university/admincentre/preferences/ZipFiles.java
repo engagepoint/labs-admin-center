@@ -1,5 +1,6 @@
 package com.engagepoint.university.admincentre.preferences;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -7,14 +8,25 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import com.engagepoint.university.admincentre.entity.Key;
 import com.engagepoint.university.admincentre.entity.KeyType;
@@ -43,6 +55,28 @@ public class ZipFiles {
         }
     }
 
+    public void exportZipPreferencesXML(Preferences rootPreferences, String zipDirName)
+            throws BackingStoreException {
+        try {
+            OutputStream fos = new FileOutputStream(zipDirName);
+            exportZipPreferencesXML(rootPreferences, fos);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exportZipPreferencesXML(Preferences rootPreferences, OutputStream fos)
+            throws BackingStoreException {
+        try {
+            ZipOutputStream zos = new ZipOutputStream(fos);
+            writeByteXML(zos, rootPreferences, rootPreferences.absolutePath());
+
+            zos.close();
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     public void exportZipPreferences(Preferences rootPreferences, OutputStream fos)
             throws BackingStoreException {
         try {
@@ -60,6 +94,50 @@ public class ZipFiles {
                     "Probably it is something wrong with the Output Stream", e);
         }
     }
+
+    private void writeByteXML(ZipOutputStream zos, Preferences rootPreferences, String rootPath)
+            throws BackingStoreException, IOException {
+        String rootName = rootPreferences.absolutePath();
+        String rightFormatPath = rootName.replaceFirst(rootPath, "");
+        System.out.println("Zipping " + rightFormatPath);
+        // Preferences childNode = rootPreferences.node(rootName);
+        // for ZipEntry we need to keep only relative file path, so we
+        // used substring on absolute path
+        String[] keys = rootPreferences.keys();
+        if (keys.length != 0) {
+            String zipEntryName = rightFormatPath + "/" + rootPreferences.name() + ".xml";
+            if (zipEntryName.charAt(0) == '/') {
+                zipEntryName = zipEntryName.substring(1);
+            }
+            ZipEntry ze = new ZipEntry(zipEntryName);
+            zos.putNextEntry(ze);
+            byte[] openingTag = ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+
+            + "\n<properties>").getBytes();
+            zos.write(openingTag, 0, openingTag.length);
+            for (String keyName : keys) {
+                String writedString = "\n<entry ";
+                Key key = ((NodePreferences) rootPreferences).getKey(keyName);
+                String preferenceName = saveConvert(key.getName(), true);
+                writedString = writedString + "key=\"" + preferenceName + "\" ";
+                // + KEY_TYPE_SEPARATOR + key.getType(), true);
+                String preferenceType = saveConvert(key.getType().toString(), true);
+                writedString = writedString + "type=\"" + preferenceType + "\">";
+                String preferenceValue = saveConvert(key.getValue(), false);
+                writedString = writedString + preferenceValue + "</entry>";
+                byte[] writedByte = writedString.getBytes();
+                zos.write(writedByte, 0, writedByte.length);
+            }
+            byte[] closingTag = "\n</properties>".getBytes();
+            zos.write(closingTag, 0, closingTag.length);
+            zos.closeEntry();
+        }
+        for (String filePath : rootPreferences.childrenNames()) {
+            writeByte(zos, rootPreferences.node(filePath), rootPath);
+        }
+
+    }
+
 /**
  * 
  * @param zos
@@ -474,4 +552,100 @@ public class ZipFiles {
         zis.close();
         // zipFile.close();
     }
+
+    public void importZipPreferencesXML(String zipDirName, String preferencesPath)
+            throws IOException {
+        importZipPreferencesXML(new FileInputStream(zipDirName), preferencesPath);
+    }
+
+    public void importZipPreferencesXML(InputStream is, String preferencesPath) throws IOException {
+        ZipInputStream zis = new ZipInputStream(is);
+
+        ZipEntry entry = zis.getNextEntry();
+
+        while (entry != null) {
+
+            String path = entry.getName();
+            int lastIndex = path.lastIndexOf('/');
+            if (lastIndex != -1) {
+                path = "/" + path.substring(0, lastIndex);
+            } else {
+                path = "";
+            }
+            System.out.println(path);
+            // InputStream stream = zis.
+            loadXML(streamToFile(zis), preferencesPath, path);
+            // String myString = IOUtils.toString(stream, "UTF-8");
+            // System.out.println(myString);
+            // stream.close();
+            entry = zis.getNextEntry();
+        }
+        zis.close();
+
+    }
+
+    private static final String PREFIX = "stream2file";
+    private static final String SUFFIX = ".tmp";
+    private File streamToFile(InputStream in) throws IOException {
+        final File tempFile = File.createTempFile(PREFIX, SUFFIX);
+        tempFile.deleteOnExit();
+
+        FileOutputStream out = new FileOutputStream(tempFile);
+        byte[] buffer = new byte[1024];
+        int bytesRead;
+        // read from is to buffer
+        while ((bytesRead = in.read(buffer)) != -1) {
+            out.write(buffer, 0, bytesRead);
+        }
+
+        return tempFile;
+    }
+    
+    static void loadXML(File file, String rootPath, String relativePath) throws IOException,
+            InvalidPropertiesFormatException {
+        String path = rootPath + relativePath;
+        if (path.indexOf("//") != -1) {
+            path = path.replace("//", "/");
+        }
+        NodePreferences currentPreferences = (NodePreferences) new NodePreferences(null, "")
+                .node(path);
+
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+
+        Document doc;
+        try {
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            doc = dBuilder.parse(file);
+            // optional, but recommended
+            // read this -
+            // http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
+            doc.getDocumentElement().normalize();
+            System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
+
+            NodeList nList = doc.getDocumentElement().getChildNodes();
+            for (int temp = 0; temp < nList.getLength(); temp++) {
+                Node nNode = nList.item(temp);
+                if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                    Element eElement = (Element) nNode;
+                    System.out.println("key id : " + eElement.getAttribute("key"));
+                    System.out.println("type id : " + eElement.getAttribute("type"));
+
+                    System.out.println("Value Name : " + eElement.getTextContent());
+                    currentPreferences.put(eElement.getAttribute("key"),
+                            KeyType.valueOf(eElement.getAttribute("type")),
+                            eElement.getTextContent());
+                }
+            }
+        } catch (SAXException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+
+
+    }
+
 }
