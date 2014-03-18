@@ -51,7 +51,7 @@ public class ZipFiles {
             OutputStream fos = new FileOutputStream(zipDirName);
             exportZipPreferences(rootPreferences, fos);
         } catch (IOException e) {
-            LOGGER.warn("Failed to export preference: " + rootPreferences + " to: " +  zipDirName, e);
+            LOGGER.warn("Failed to export preference: " + rootPreferences + " to: " + zipDirName, e);
         }
     }
 
@@ -61,7 +61,7 @@ public class ZipFiles {
             OutputStream fos = new FileOutputStream(zipDirName);
             exportZipPreferencesXML(rootPreferences, fos);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Preferances export failed ", e);
         }
     }
 
@@ -70,28 +70,27 @@ public class ZipFiles {
         try {
             ZipOutputStream zos = new ZipOutputStream(fos);
             writeByteXML(zos, rootPreferences, rootPreferences.absolutePath());
-
             zos.close();
             fos.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("Preferances export to XML failed ", e);
         }
     }
+
+    /**
+     * Now zip files are transfered to the ZipOutputStream one by one
+     */
     public void exportZipPreferences(Preferences rootPreferences, OutputStream fos)
             throws BackingStoreException {
         try {
-
-            // now zip files one by one
-            // create ZipOutputStream to write to the zip file
             ZipOutputStream zos = new ZipOutputStream(fos);
             writeByte(zos, rootPreferences,
                     rootPreferences.absolutePath());
-
             zos.close();
             fos.close();
         } catch (IOException e) {
-            LOGGER.warn("Failed to export preference: " + rootPreferences + "/n" +
-                    "Probably it is something wrong with the Output Stream", e);
+            LOGGER.warn("Failed to export preference: " + rootPreferences + "/n"
+                    + "Probably it is something wrong with the Output Stream", e);
         }
     }
 
@@ -100,9 +99,6 @@ public class ZipFiles {
         String rootName = rootPreferences.absolutePath();
         String rightFormatPath = rootName.replaceFirst(rootPath, "");
         System.out.println("Zipping " + rightFormatPath);
-        // Preferences childNode = rootPreferences.node(rootName);
-        // for ZipEntry we need to keep only relative file path, so we
-        // used substring on absolute path
         String[] keys = rootPreferences.keys();
         if (keys.length != 0) {
             String zipEntryName = rightFormatPath + "/" + rootPreferences.name() + ".xml";
@@ -112,15 +108,13 @@ public class ZipFiles {
             ZipEntry ze = new ZipEntry(zipEntryName);
             zos.putNextEntry(ze);
             byte[] openingTag = ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-
-            + "\n<properties>").getBytes();
+                    + "\n<properties>").getBytes();
             zos.write(openingTag, 0, openingTag.length);
             for (String keyName : keys) {
                 String writedString = "\n<entry ";
                 Key key = ((NodePreferences) rootPreferences).getKey(keyName);
                 String preferenceName = saveConvert(key.getName(), true);
                 writedString = writedString + "key=\"" + preferenceName + "\" ";
-                // + KEY_TYPE_SEPARATOR + key.getType(), true);
                 String preferenceType = saveConvert(key.getType().toString(), true);
                 writedString = writedString + "type=\"" + preferenceType + "\">";
                 String preferenceValue = saveConvert(key.getValue(), false);
@@ -135,24 +129,23 @@ public class ZipFiles {
         for (String filePath : rootPreferences.childrenNames()) {
             writeByte(zos, rootPreferences.node(filePath), rootPath);
         }
-
     }
 
-/**
- * 
- * @param zos
- * @param rootPreferences
- * @param rootPath
- * @throws BackingStoreException
- * @throws IOException
- * For ZipEntry we need to keep only relative file path, so we used substring on absolute path.
- */
+    /**
+     *
+     * @param zos
+     * @param rootPreferences
+     * @param rootPath
+     * @throws BackingStoreException
+     * @throws IOException For ZipEntry we need to keep only relative file path,
+     * so we used substring on absolute path.
+     */
     private void writeByte(ZipOutputStream zos, Preferences rootPreferences, String rootPath)
             throws BackingStoreException,
             IOException {
         String rootName = rootPreferences.absolutePath();
         String rightFormatPath = rootName.replaceFirst(rootPath, "");
-        System.out.println("Zipping " + rightFormatPath);
+        LOGGER.info("Zipping " + rightFormatPath);
         String[] keys = rootPreferences.keys();
         if (keys.length != 0) {
             String zipEntryName = rightFormatPath + "/"
@@ -315,7 +308,7 @@ public class ZipFiles {
             int separatorIndex = key.indexOf(KEY_TYPE_SEPARATOR);
             KeyType type = KeyType.valueOf(key.substring(separatorIndex + 1));
             key = key.substring(0, separatorIndex);
-            System.out.println("Key: " + key + "\nType: " + type + "\nValue: " + value);
+            LOGGER.info("Key: " + key + "\nType: " + type + "\nValue: " + value);
             currentPreferences.put(key, type, value);
         }
     }
@@ -362,8 +355,7 @@ public class ZipFiles {
                     }
                 }
                 if (inStream != null) {
-                    //The line below is equivalent to calling a
-                    //ISO8859-1 decoder.
+                    /*The line below is equivalent to calling a ISO8859-1 decoder.*/
                     c = (char) (0xff & inByteBuf[inOff++]);
                 } else {
                     c = inCharBuf[inOff++];
@@ -391,7 +383,6 @@ public class ZipFiles {
                         continue;
                     }
                 }
-
                 if (c != '\n' && c != '\r') {
                     lineBuf[len++] = c;
                     if (len == lineBuf.length) {
@@ -403,14 +394,14 @@ public class ZipFiles {
                         System.arraycopy(lineBuf, 0, buf, 0, lineBuf.length);
                         lineBuf = buf;
                     }
-                    //flip the preceding backslash flag
+                    /* flip the preceding backslash flag*/
                     if (c == '\\') {
                         precedingBackslash = !precedingBackslash;
                     } else {
                         precedingBackslash = false;
                     }
                 } else {
-                    // reached EOL
+                    /*reached EOL*/
                     if (isCommentLine || len == 0) {
                         isCommentLine = false;
                         isNewLine = true;
@@ -429,7 +420,7 @@ public class ZipFiles {
                     }
                     if (precedingBackslash) {
                         len -= 1;
-                        //skip the leading whitespace characters in following line
+                        /*skip the leading whitespace characters in following line */
                         skipWhiteSpace = true;
                         appendedLineBegin = true;
                         precedingBackslash = false;
@@ -444,9 +435,9 @@ public class ZipFiles {
         }
     }
 
-    /*
-     * Converts encoded &#92;uxxxx to unicode chars
-     * and changes special saved chars to their original forms
+    /**
+     * Converts encoded &#92;uxxxx to unicode chars and changes special saved
+     * chars to their original forms
      */
     private String loadConvert(char[] in, int off, int len, char[] convtBuf) {
         if (convtBuf.length < len) {
@@ -529,11 +520,8 @@ public class ZipFiles {
      */
     public void importZipPreferences(InputStream is, String preferencesPath) throws IOException {
         ZipInputStream zis = new ZipInputStream(is);
-
         ZipEntry entry = zis.getNextEntry();
-
         while (entry != null) {
-
             String path = entry.getName();
             int lastIndex = path.lastIndexOf('/');
             if (lastIndex != -1) {
@@ -541,16 +529,11 @@ public class ZipFiles {
             } else {
                 path = "";
             }
-            System.out.println(path);
-            // InputStream stream = zis.
+            LOGGER.info(path);
             load0(new LineReader(zis), preferencesPath, path);
-            // String myString = IOUtils.toString(stream, "UTF-8");
-            // System.out.println(myString);
-            // stream.close();
             entry = zis.getNextEntry();
         }
         zis.close();
-        // zipFile.close();
     }
 
     public void importZipPreferencesXML(String zipDirName, String preferencesPath)
@@ -583,9 +566,9 @@ public class ZipFiles {
         zis.close();
 
     }
-
     private static final String PREFIX = "stream2file";
     private static final String SUFFIX = ".tmp";
+
     private File streamToFile(InputStream in) throws IOException {
         final File tempFile = File.createTempFile(PREFIX, SUFFIX);
         tempFile.deleteOnExit();
@@ -600,7 +583,10 @@ public class ZipFiles {
 
         return tempFile;
     }
-    
+
+    /**
+     * http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
+     */
     static void loadXML(File file, String rootPath, String relativePath) throws IOException,
             InvalidPropertiesFormatException {
         String path = rootPath + relativePath;
@@ -616,36 +602,26 @@ public class ZipFiles {
         try {
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
             doc = dBuilder.parse(file);
-            // optional, but recommended
-            // read this -
-            // http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
             doc.getDocumentElement().normalize();
-            System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
+            LOGGER.info("Root element :" + doc.getDocumentElement().getNodeName());
 
             NodeList nList = doc.getDocumentElement().getChildNodes();
             for (int temp = 0; temp < nList.getLength(); temp++) {
                 Node nNode = nList.item(temp);
                 if (nNode.getNodeType() == Node.ELEMENT_NODE) {
                     Element eElement = (Element) nNode;
-                    System.out.println("key id : " + eElement.getAttribute("key"));
-                    System.out.println("type id : " + eElement.getAttribute("type"));
-
-                    System.out.println("Value Name : " + eElement.getTextContent());
+                    LOGGER.info("key id : " + eElement.getAttribute("key"));
+                    LOGGER.info("type id : " + eElement.getAttribute("type"));
+                    LOGGER.info("Value Name : " + eElement.getTextContent());
                     currentPreferences.put(eElement.getAttribute("key"),
                             KeyType.valueOf(eElement.getAttribute("type")),
                             eElement.getTextContent());
                 }
             }
         } catch (SAXException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOGGER.error("XML parsing error", e);
         } catch (ParserConfigurationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOGGER.error("XML parser configuration error", e);
         }
-
-
-
     }
-
 }
