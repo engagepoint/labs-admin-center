@@ -17,18 +17,8 @@ import java.util.prefs.BackingStoreException;
 @RequestScoped
 public class FileUploadController implements Serializable, ActionListener {
 
+    private static final Logger LOGGER = Logger.getLogger(FileUploadController.class.getName());
     private Part file;
-    //    private String path;
-    private static final Logger logger = Logger.getLogger(FileUploadController.class.getName());
-
-
-//    public String getPath() {
-//        return path;
-//    }
-//
-//    public void setPath(String path) {
-//        this.path = path;
-//    }
 
     public Part getFile() {
         return file;
@@ -39,8 +29,6 @@ public class FileUploadController implements Serializable, ActionListener {
     }
 
     public void upload() throws IOException {
-        // path = new String("D:\\temp.zip");
-
             InputStream inStream = null;
             OutputStream outStream = null;
             try {
@@ -51,9 +39,9 @@ public class FileUploadController implements Serializable, ActionListener {
                 while ((length = inStream.read(buffer)) > 0) {
                     outStream.write(buffer, 0, length);
                 }
-                System.err.println("File is copied successful!");
+                LOGGER.info("File is copied successful!");
             } catch (IOException e) {
-                logger.severe("Cannot create inputStream");
+                LOGGER.severe("Cannot create inputStream");
             } finally {
                 if (inStream != null) {
                     inStream.close();
@@ -71,13 +59,12 @@ public class FileUploadController implements Serializable, ActionListener {
         try {
             upload();
         } catch (IOException e) {
-            logger.severe("Cannot upload");
+            LOGGER.severe("Cannot upload");
         }
     }
 
     public void onImportZip() {
         InputStream is = null;
-
             try {
                 is = file.getInputStream();
                 NodePreferences np = new NodePreferences(null, "");
@@ -85,9 +72,9 @@ public class FileUploadController implements Serializable, ActionListener {
                 np.toString();
                 file.delete();
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.warning("Can't import file. Exception -" + e);
             } catch (BackingStoreException e) {
-                e.printStackTrace();
+                LOGGER.warning("Can't import file. Exception -" + e);
             }
 
     }

@@ -14,9 +14,6 @@ import org.primefaces.model.UploadedFile;
 @ManagedBean
 @SessionScoped
 public class TempController {
-
-    private static final Logger LOGGER = Logger.getLogger(TempController.class.getName());
-
     public void onExportZip() throws IOException, BackingStoreException {
         File tmpFile = FileController.createTempZip();
         FileController.setPathToTempFile(tmpFile.getPath());
