@@ -224,7 +224,6 @@ public class SynchMaster {
 		
 	}
 	
-//	private ProtocolStack stack;
 	/**
 	 * Private constructor, used in realization of singleton pattern.
 	 */
@@ -238,7 +237,6 @@ public class SynchMaster {
 			ProtocolStack stack = new ProtocolStack();
 			channel.setProtocolStack(stack);
 			stack.addProtocol(new UDP()
-//			 				.setValue("bind_addr", InetAddress.getLocalHost().getHostAddress())
 			 				.setValue("bind_addr", InetAddress.getLocalHost())
 			 				.setValue("bind_port", 0))
 			.addProtocol(new PING())
