@@ -18,15 +18,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
+ *
  * @author Bogdan Ponomarchuk
  */
 public class ConfLoader {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ConfLoader.class);
     public static final String PREFIX = "stream2file";
     public static final String SUFFIX = ".tmp";
     private static volatile ConfLoader instance;
-
     private Element rootElement;
     private FileReader fr;
     private Document rDoc;
@@ -36,24 +36,24 @@ public class ConfLoader {
     private String clusterName;
     private String channelName;
 
-
+    /*
+     * Checking if config file from console was entered
+     * Checking if config file from console was entered right
+     * If config file wasn`t entered from console try to find it near .jar package
+     * If config file wasn`t entered from console and wasn`t found near .jar package use default config
+     */
     private ConfLoader() {
         boolean fileWasFound = false;
         String configPath;
         configPath = System.getProperty("CONFIG_PATH");
-
-        // checking if config file from console was entered
         if (configPath != null) {
-            // checking if config file from console was entered right
             if (isFileExists(configPath)) {
                 configurationFile = new File(configPath);
                 fileWasFound = true;
             } else {
-                LOGGER.warn("configurationfile wasn`t found " + configPath);
+                LOGGER.warn("Configuration file was not found at " + configPath);
             }
         }
-        // if config file wasn`t entered from console try to find it near .jar
-        // package
         if (!fileWasFound) {
             configPath = System.getProperty("user.dir").concat("/config.xml");
             if (isFileExists(configPath)) {
@@ -63,8 +63,6 @@ public class ConfLoader {
                 LOGGER.info("there is no configuration file in working dir: " + configPath);
             }
         }
-        // if config file wasn`t entered from console and wasn`t found near .jar
-        // package use default config
         if (!fileWasFound) {
             setDefaultConfigurationFile();
         }
@@ -98,7 +96,7 @@ public class ConfLoader {
 
     /**
      * Allows to get synchronization channel name from configuration file
-     * 
+     *
      * @return name of channel
      */
     public String getChannelName() {
@@ -107,9 +105,9 @@ public class ConfLoader {
 
     /**
      * Allows to set synchronization channel name
-     * 
-     * @param channelName
-     *            name of synchronization channel to configuration file
+     *
+     * @param channelName name of synchronization channel to configuration file
+     * @deprecated
      */
     @Deprecated
     public void setChannelName(String channelName) {
@@ -121,12 +119,15 @@ public class ConfLoader {
 
     /**
      * Allows to get synchronization mode from configuration file
-     * 
+     *
      * @return synchronization mode
      */
     public String getMode() {
         return mode;
     }
+    /*
+     * @deprecated
+     */
 
     @Deprecated
     public void setMode(String mode) {
@@ -137,25 +138,27 @@ public class ConfLoader {
 
     /**
      * Allows to get synchronization cluster name from configuration file
-     * 
+     *
      * @return name of cluster
      */
     public String getClusterName() {
         return clusterName;
     }
 
+    /*
+     * @deprecated
+     */
     @Deprecated
     public void setClusterName(String clusterName) {
         this.clusterName = clusterName;
         rDoc.getRootElement().getChild("synchronization").getAttribute("clusterName")
                 .setValue(clusterName);
         write();
-
     }
 
     /**
-     * Allows to get infinispan base location from configuration file
-     * 
+     * Allows to get Infinispan's base location from configuration file
+     *
      * @return name of channel
      */
     public String getBasePath() {
@@ -170,63 +173,59 @@ public class ConfLoader {
         return path;
     }
 
+    /*
+     * @deprecated
+     */
     @Deprecated
     public void setBasePath(String path) {
         this.basePath = path;
         rDoc.getRootElement().getChild("infinispan").getAttribute("basePath").setValue(path);
         write();
-
     }
 
     private void write() {
-
         XMLOutputter outputter = new XMLOutputter();
         outputter.setFormat(Format.getPrettyFormat());
-
         FileWriter fw;
         try {
             fw = new FileWriter(configurationFile);
             outputter.output(this.rDoc, fw);
             fw.close();
         } catch (IOException e) {
-            LOGGER.warn("Error during writing config file: " + e.getMessage());
+            LOGGER.warn("Error during writing configuration file ", e);
         }
-
     }
 
     private void read() {
         SAXBuilder parser = new SAXBuilder();
-
         try {
             fr = new FileReader(configurationFile);
         } catch (FileNotFoundException e) {
-            LOGGER.warn("file wasn`t found: " + e.getMessage());
+            LOGGER.warn("File was not found ", e);
         }
-
         try {
             this.rDoc = parser.build(fr);
             fr.close();
         } catch (IOException ex) {
-            LOGGER.warn("Error during reading config file: " + ex.getMessage());
-        }
-        // Element root = rDoc.getRootElement();
-        catch (JDOMException e) {
-            LOGGER.warn("Error during reading building DOM : " + e.getMessage());
+            LOGGER.warn("Error during reading configuration file ", ex);
+        } catch (JDOMException e) {
+            LOGGER.warn("Error during reading building DOM ", e);
         }
     }
+    
+    /*
+     * Read from is to buffer
+     */
 
     private File streamToFile(InputStream in) throws IOException {
         final File tempFile = File.createTempFile(PREFIX, SUFFIX);
         tempFile.deleteOnExit();
-
         FileOutputStream out = new FileOutputStream(tempFile);
         byte[] buffer = new byte[1024];
         int bytesRead;
-        // read from is to buffer
         while ((bytesRead = in.read(buffer)) != -1) {
             out.write(buffer, 0, bytesRead);
         }
-
         return tempFile;
     }
 
@@ -234,9 +233,9 @@ public class ConfLoader {
         try {
             configurationFile = streamToFile(getClass().getClassLoader().getResourceAsStream(
                     "config.xml"));
-            LOGGER.info("default configurations are used");
+            LOGGER.info("Default configurations are used");
         } catch (IOException e) {
-            LOGGER.error("error during getting default configurations");
+            LOGGER.error("Error during getting default configurations ", e);
         }
     }
 }
