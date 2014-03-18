@@ -78,6 +78,10 @@ public class NodePreferences extends Preferences {
      * prior to calling childSpi() or getChild().
      */
     private Map<String, NodePreferences> kidCache = new HashMap<String, NodePreferences>();
+
+    public Map<String, NodePreferences> getKidCache() {
+        return kidCache;
+    }
     /**
      * This field is used to keep track of whether or not this node has been
      * removed. Once it's set to true, it will never be reset to false.

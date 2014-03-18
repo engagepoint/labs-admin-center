@@ -29,13 +29,13 @@
                             <groupId>${project.groupId}</groupId>
                             <artifactId>admincentre-ejb</artifactId>
                         </ejbModule>
-<!--
+
                         <webModule>
                             <groupId>${project.groupId}</groupId>
                             <artifactId>admincentre-restws</artifactId>
                             <contextRoot>/admincentre</contextRoot>
                         </webModule>
-  -->                        
+                      
                         <webModule>
                             <groupId>${project.groupId}</groupId>
                             <artifactId>admincentre-web</artifactId>
@@ -59,12 +59,12 @@
             <version>${project.version}</version>
             <type>war</type>
         </dependency>
-<!--    <dependency>
+    <dependency>
             <groupId>com.engagepoint.university.admincentre</groupId>
             <artifactId>admincentre-restws</artifactId>
             <version>${project.version}</version>
             <type>war</type>
-        </dependency>          -->
+        </dependency>          
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>

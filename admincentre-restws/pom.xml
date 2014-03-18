@@ -14,11 +14,26 @@
         <jersey-version>1.9-ea04</jersey-version>
     </properties>
     <dependencies>
-<!--        <dependency>
+     <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-web-api</artifactId>
+            <version>6.0</version>
+            <scope>compile</scope>
+        </dependency>
+       <dependency>
             <groupId>com.engagepoint.university.admincentre</groupId>
-            <artifactId>admincentre-core</artifactId>
+            <artifactId>admincentre-ejb</artifactId>
             <version>${project.version}</version>
-        </dependency>	-->	
+            <type>ejb</type>
+            <scope>provided</scope>
+        </dependency>
+        <!-- CDI -->
+        <dependency>
+            <groupId>javax.enterprise</groupId>
+            <artifactId>cdi-api</artifactId>
+            <scope>provided</scope>
+            <version>1.0-SP4</version>
+        </dependency>	
         <dependency>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-server</artifactId>

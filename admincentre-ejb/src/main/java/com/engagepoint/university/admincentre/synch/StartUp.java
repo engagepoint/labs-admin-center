@@ -3,12 +3,6 @@ package com.engagepoint.university.admincentre.synch;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 
-import com.engagepoint.university.admincentre.exception.SynchronizationException;
-import com.engagepoint.university.admincentre.synchronization.SynchMaster;
-import com.engagepoint.university.admincentre.util.ConfLoader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Synchronize after starting application. Configurations are loaded from
  * config.xml
@@ -19,6 +13,7 @@ import org.slf4j.LoggerFactory;
 @Singleton
 @Startup
 public class StartUp {
+
 //
 //    ConfLoader confLoader;
 //    SynchMaster synchMaster;
@@ -37,4 +32,5 @@ public class StartUp {
 //            LOGGER.error("ERROR synchMaster.autoSynch() /n", e);
 //        }
 //    }
+
 }
