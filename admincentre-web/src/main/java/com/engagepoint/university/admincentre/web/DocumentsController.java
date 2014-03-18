@@ -29,7 +29,6 @@ public class DocumentsController implements Serializable {
     private Document tempDoc = new Document(null, "", "", "");
     @Inject
     DataBean dataBean;
-
     private String searchKeyName;
     private String searchKeyValue;
     private TreeNode searchNode;
@@ -50,9 +49,9 @@ public class DocumentsController implements Serializable {
                     .getData();
             TreeNode childTreeNode = new DefaultTreeNode(
                     new Document(propertiesDocument.getAbsolutePath(),
-                            propertiesDocument.getName(),
-                            propertiesDocument.getValue(),
-                            propertiesDocument.getType()), treeNode);
+                    propertiesDocument.getName(),
+                    propertiesDocument.getValue(),
+                    propertiesDocument.getType()), treeNode);
             buildTree(child, childTreeNode);
         }
         collapsingORexpanding(root, true);
@@ -124,10 +123,10 @@ public class DocumentsController implements Serializable {
     }
 
     private boolean isSuitableNode(String keyName, String keyValue) {
-        return (StringUtils.isEmpty(searchKeyName) && StringUtils.isEmpty(searchKeyValue)) ||  
-               (StringUtils.isEmpty(searchKeyName) && keyValue.toUpperCase().contains(searchKeyValue.toUpperCase())) ||
-               (StringUtils.isEmpty(searchKeyValue) && keyName.toUpperCase().contains(searchKeyName.toUpperCase())) ||
-               ((StringUtils.isNotEmpty(searchKeyName) && keyName.toUpperCase().contains(searchKeyName.toUpperCase())) 
+        return (StringUtils.isEmpty(searchKeyName) && StringUtils.isEmpty(searchKeyValue))
+                || (StringUtils.isEmpty(searchKeyName) && keyValue.toUpperCase().contains(searchKeyValue.toUpperCase()))
+                || (StringUtils.isEmpty(searchKeyValue) && keyName.toUpperCase().contains(searchKeyName.toUpperCase()))
+                || ((StringUtils.isNotEmpty(searchKeyName) && keyName.toUpperCase().contains(searchKeyName.toUpperCase()))
                 && (StringUtils.isNotEmpty(searchKeyValue) && keyValue.toUpperCase().contains(searchKeyValue.toUpperCase())));
     }
 
@@ -194,12 +193,14 @@ public class DocumentsController implements Serializable {
     public void setSearchNode(TreeNode searchNode) {
         this.searchNode = searchNode;
     }
+
     /**
-     * Recursive method for collapse and expand a treeTable.
-     * The parameter "node" is the node than you want to expand or collapse.
-     * If the parameter "option" is false, all children of the "node" are collapsed.
-     * If "option" == true - all children of the "node" are expanded.
-     * setSelected(false) indicate than this node isn't selected
+     * Recursive method for collapse and expand a treeTable. The parameter
+     * "node" is the node than you want to expand or collapse. If the parameter
+     * "option" is false, all children of the "node" are collapsed. If "option"
+     * == true - all children of the "node" are expanded. setSelected(false)
+     * indicate than this node isn't selected
+     *
      * @param node
      * @param option
      */
@@ -230,5 +231,4 @@ public class DocumentsController implements Serializable {
     public void setSearchKeyValue(String searchKeyValue) {
         this.searchKeyValue = searchKeyValue;
     }
-
 }
