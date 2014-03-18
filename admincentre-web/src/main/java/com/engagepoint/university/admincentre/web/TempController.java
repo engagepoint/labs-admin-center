@@ -21,13 +21,4 @@ public class TempController {
         File tmpFile = FileController.createTempZip();
         FileController.setPathToTempFile(tmpFile.getPath());
     }
-
-    public void onImportZip(FileUploadEvent event) throws IOException, BackingStoreException {
-        LOGGER.severe("onImportZip : start import ...");
-        UploadedFile file = event.getFile();
-        InputStream is = file.getInputstream();
-        NodePreferences np = new NodePreferences(null, "");
-        np.importNode(is);
-        np.toString();
-    }
 }

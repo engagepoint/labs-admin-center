@@ -22,7 +22,6 @@ public class FileController implements Serializable {
     private static String pathToTempFile;
     private static final long serialVersionUID = 111L;
     private StreamedContent downloadFile;
-    private UploadedFile uploadFile;
     private static final Logger LOGGER = LoggerFactory
             .getLogger(DocumentsController.class.getName());
 
@@ -59,11 +58,5 @@ public class FileController implements Serializable {
         return downloadFile;
     }
 
-    public UploadedFile getUploadFile() {
-        return uploadFile;
-    }
 
-    public void setUploadFile(UploadedFile uploadFile) {
-        this.uploadFile = uploadFile;
-    }
 }
