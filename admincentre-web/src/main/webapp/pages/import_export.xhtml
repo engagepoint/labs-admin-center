@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:p="http://primefaces.org/ui"
+    xmlns:uib="http://engagepoint.com/uib"
+    xmlns:ui-paginator="http://java.sun.com/jsf/composite/uibootstrap/components/paginator"
+    template="/WEB-INF/templates/default.xhtml"
+    >
+
+    <ui:define name="page">
+
+        <h:form id="importExportForm" enctype="multipart/form-data">
+            <h2><h:outputText value="Import/Export"/></h2>
+
+            <uib:gridContainer>
+                <uib:gridRow fluid="true">
+
+                     <uib:gridColumn column="6">
+              <uib:buttonGroup>
+                        <p:commandButton value="Import"
+                                         styleClass="secondary"
+                                         onclick="uploadXML.show()"/>
+                        <p:commandButton value="Export"
+                                         styleClass="secondary"
+                                         ajax="false"
+                                         actionListener="#{tempController.onExportZip}">
+                            <p:fileDownload value="#{fileController.downloadFile}"/>
+                        </p:commandButton>
+              </uib:buttonGroup>
+                </uib:gridColumn>
+              </uib:gridRow>
+            </uib:gridContainer>
+            <p:dialog id="ImportDialog"
+                      header="Import Dialog"
+                      widgetVar="uploadXML"
+                      modal="true" height="200" width="800">
+
+
+                           <h:commandButton value="Choose File" id="butt_choose"
+                                            style="position: relative; "
+                                            class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"
+                                            action="#">
+                           </h:commandButton>
+
+                           <h:inputFile id="fileid"
+                                        style="position:
+                                        relative; margin-left: -150px;
+                                        opacity:0;
+                                        height: 34px;
+                                        width: 150px;"
+                                        title="Please choose your zip archive"
+                                        value="#{fileUploadController.file}">
+                           </h:inputFile>
+
+
+                           <h:commandButton id="upload_button"
+                                   class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"
+                                   style="margin-left: 20px;"
+                                   value="Upload"
+                                   action="#{fileUploadController.onImportZip}"
+                                   actionListener="#{fileUploadController.upload}"
+                                   onclick="uploadXML.hide()">
+                           </h:commandButton>
+
+            </p:dialog>
+
+
+        </h:form>
+    </ui:define>
+</ui:composition>
