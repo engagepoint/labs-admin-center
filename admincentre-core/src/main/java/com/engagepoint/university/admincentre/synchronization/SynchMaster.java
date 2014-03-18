@@ -5,6 +5,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -17,6 +19,22 @@ import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.ReceiverAdapter;
+import org.jgroups.protocols.BARRIER;
+import org.jgroups.protocols.FD_ALL;
+import org.jgroups.protocols.FD_SOCK;
+import org.jgroups.protocols.FRAG2;
+import org.jgroups.protocols.MERGE2;
+import org.jgroups.protocols.MFC;
+import org.jgroups.protocols.PING;
+import org.jgroups.protocols.UDP;
+import org.jgroups.protocols.UFC;
+import org.jgroups.protocols.UNICAST2;
+import org.jgroups.protocols.VERIFY_SUSPECT;
+import org.jgroups.protocols.pbcast.GMS;
+import org.jgroups.protocols.pbcast.NAKACK;
+import org.jgroups.protocols.pbcast.STABLE;
+import org.jgroups.protocols.pbcast.STATE_TRANSFER;
+import org.jgroups.stack.ProtocolStack;
 import org.jgroups.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -206,6 +224,7 @@ public class SynchMaster {
 		
 	}
 	
+//	private ProtocolStack stack;
 	/**
 	 * Private constructor, used in realization of singleton pattern.
 	 */
@@ -214,11 +233,36 @@ public class SynchMaster {
 		abstractDAO = new AbstractDAO<AbstractEntity>(AbstractEntity.class) {
 		};
 		try {
-			channel = new JChannel();
+			channel = new JChannel(false);
+
+			ProtocolStack stack = new ProtocolStack();
+			channel.setProtocolStack(stack);
+			stack.addProtocol(new UDP()
+//			 				.setValue("bind_addr", InetAddress.getLocalHost().getHostAddress())
+			 				.setValue("bind_addr", InetAddress.getLocalHost())
+			 				.setValue("bind_port", 0))
+			.addProtocol(new PING())
+			.addProtocol(new MERGE2())
+			.addProtocol(new FD_SOCK())
+			.addProtocol(new FD_ALL()
+							.setValue("timeout", 12000)
+							.setValue("interval", 3000))
+			.addProtocol(new VERIFY_SUSPECT())
+			.addProtocol(new BARRIER())
+			.addProtocol(new NAKACK())
+			.addProtocol(new UNICAST2())
+			.addProtocol(new STABLE())
+			.addProtocol(new GMS())
+			.addProtocol(new UFC())
+			.addProtocol(new MFC())
+			.addProtocol(new FRAG2())
+			.addProtocol(new STATE_TRANSFER());
+			stack.init();
+			
 			channel.setDiscardOwnMessages(true);
 			channel.setReceiver(new Receiver());
 		} catch (Exception e) {
-			throw new IllegalStateException("Something wrong with channel", e);
+			throw new RuntimeException("Something wrong with channel", e);
 		}
 	}
 
