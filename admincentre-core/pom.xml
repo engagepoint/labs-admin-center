@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>admincentre-bom</artifactId>
 		<groupId>com.engagepoint.university.admincentre</groupId>
-		<version>1.0-M2-SNAPSHOT</version>
+		<version>1.0-M6-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>admincentre-core</artifactId>

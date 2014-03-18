@@ -5,10 +5,9 @@
     <parent>
         <groupId>com.engagepoint.university.admincentre</groupId>
         <artifactId>admincentre-bom</artifactId>
-        <version>1.0-M2-SNAPSHOT</version>
+        <version>1.0-M6-SNAPSHOT</version>
     </parent>
     <artifactId>admincentre-restws</artifactId>
-    <version>1.0-M2-SNAPSHOT</version>
     <packaging>war</packaging>
     <name>EngagePoint University Admin Centre REST Service</name>
     <properties>
