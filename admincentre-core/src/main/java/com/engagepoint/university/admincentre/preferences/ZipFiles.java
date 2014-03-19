@@ -45,6 +45,7 @@ public class ZipFiles {
      * @throws BackingStoreException now zip files one by one create
      * ZipOutputStream to write to the zip file
      */
+
     public void exportZipPreferences(Preferences rootPreferences, String zipDirName)
             throws BackingStoreException {
         try {
@@ -127,7 +128,7 @@ public class ZipFiles {
             zos.closeEntry();
         }
         for (String filePath : rootPreferences.childrenNames()) {
-            writeByte(zos, rootPreferences.node(filePath), rootPath);
+            writeByteXML(zos, rootPreferences.node(filePath), rootPath);
         }
     }
 
