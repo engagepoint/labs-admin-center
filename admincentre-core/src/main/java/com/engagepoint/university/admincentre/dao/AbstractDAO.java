@@ -14,6 +14,8 @@ import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
 import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.engagepoint.university.admincentre.entity.AbstractEntity;
 import com.engagepoint.university.admincentre.entity.Node;
@@ -24,7 +26,7 @@ import com.engagepoint.university.admincentre.util.ConfLoader;
 
 public abstract class AbstractDAO<T extends AbstractEntity> extends Observable implements
         GenericDAO<T> {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDAO.class);
     private static final String CACHE_CONFIG = "cache_config.xml";
     private static final String USED_CACHE = "evictionCache";
     private DefaultCacheManager m = null;
@@ -43,7 +45,14 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
             if (!cache.containsKey(instanceId)) {
                 cache.put(instanceId, newInstance);
                 setChanged();
+                //TODO find out why it doesn`t work on LTE
+                try{
                 notifyObservers(new CRUDPayload(CRUDOperation.CREATE, newInstance));
+                }
+                catch(Exception e){
+                    LOGGER.warn("exception when create was occured, sychroniztion might not work ",
+                            newInstance.getId(), e);
+                }
             } else {
                 throw new IOException("This entity already exists" + newInstance.getName());
             }
