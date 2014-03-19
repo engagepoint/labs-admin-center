@@ -445,7 +445,8 @@ public class ConsoleController {
         if (SynchMaster.getInstance().isConnected()) {
             if (SynchMaster.getInstance().isCoordinator()
                     && cis.getThirdArg().equals("manual")) {
-                LOGGER.info("NOT RECOMMENDED. This member is coordinator.");
+                LOGGER.info("This member is coordinator.");
+                return;
             } else if (SynchMaster.getInstance().getMode() == SynchMaster.Mode.MANUAL
                     && cis.getThirdArg().equals("auto")
                     && (SynchMaster.getInstance().isMemberChanged()

@@ -228,7 +228,11 @@ public class SynchMaster {
 	 * Private constructor, used in realization of singleton pattern.
 	 */
 	private SynchMaster() {
-		System.setProperty("java.net.preferIPv4Stack", "true");
+		try{
+			System.setProperty("java.net.preferIPv4Stack", "true");
+		}catch(Exception e){
+			throw new RuntimeException("PERMISSION DENIED", e);
+		}
 		abstractDAO = new AbstractDAO<AbstractEntity>(AbstractEntity.class) {
 		};
 		try {

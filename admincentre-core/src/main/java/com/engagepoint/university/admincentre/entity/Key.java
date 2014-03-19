@@ -61,6 +61,6 @@ public class Key extends AbstractEntity {
     /* do not delete!*/
     @Override
     public String toString() {
-        return super.getId() + " " + type + " " + value;
+        return super.parentNodeId + "/" + super.id + " " + type + " " + value;
     }
 }
