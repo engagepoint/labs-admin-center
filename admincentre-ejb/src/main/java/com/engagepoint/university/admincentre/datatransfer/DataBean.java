@@ -53,8 +53,8 @@ public class DataBean {
                         key.getValue(), key.getType().toString()), parentTreeNode);
             }
         } catch (BackingStoreException e) {
-            LOGGER.error("error during constructing tree on key from node: "
-                    + nodePreferences.name(), e);
+            LOGGER.error(
+                    "error during constructing tree on key from node: " + nodePreferences.name(), e);
         } catch (IOException e) {
             LOGGER.error("error during constructing tree on reading key from node: "
                     + nodePreferences.name(), e);
@@ -79,7 +79,8 @@ public class DataBean {
                             KeyType.valueOf(selectedDocument.getType()),
                             selectedDocument.getValue());
                 } catch (IOException iOException) {
-                    LOGGER.error("Editing failed. Node/Key: " + selectedDocument.getName(), iOException);
+                    LOGGER.error("Editing failed. Node/Key: " + selectedDocument.getName(),
+                            iOException);
                 }
             }
         }
@@ -135,17 +136,21 @@ public class DataBean {
     }
 
     public TreeProperties getNodeByDoc(PropertiesDocument document, TreeProperties root) {
+
         TreeProperties foundTree = null;
-        for (TreeProperties treeNode : root.getChildren()) {
+
+
+         for (TreeProperties treeNode : root.getChildren()) {
             PropertiesDocument currentDocument = (PropertiesDocument) treeNode.getData();
 
-            if (document.equals(currentDocument)) {
+            if (document.getAbsolutePath().equals(currentDocument.getAbsolutePath())) {
                 return treeNode;
             } else {
                 foundTree = getNodeByDoc(document, treeNode);
             }
         }
         return foundTree;
+
     }
 
     private TreeProperties returnDirectoryForAdding(TreeProperties rootNode) {
