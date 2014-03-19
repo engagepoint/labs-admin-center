@@ -18,7 +18,11 @@ public class CRUDObserver implements Observer {
 				if(payload.getCrudOperation() != null
 						&& payload.getCrudOperation() != CRUDOperation.READ
 						&& payload.getEntity() != null){
-				SynchMaster.getInstance().send(payload);
+					
+					if(SynchMaster.connected){
+						SynchMaster.getInstance().send(payload);
+					}
+					
 				}
 			}else{
 				throw new IllegalArgumentException("Wrong type of the second argument");

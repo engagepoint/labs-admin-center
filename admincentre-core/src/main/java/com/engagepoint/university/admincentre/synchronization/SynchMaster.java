@@ -5,7 +5,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,7 +13,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hamcrest.core.IsSame;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
@@ -61,7 +59,8 @@ public class SynchMaster {
 	private static final Logger LOGGER = LoggerFactory.getLogger(SynchMaster.class);
 	
 	private static volatile SynchMaster instance;
-
+	public static boolean connected = false;
+	
 	private JChannel channel;
 	private AbstractDAO<AbstractEntity> abstractDAO;
 	private Map<String, AbstractEntity> cacheData;
@@ -295,6 +294,7 @@ public class SynchMaster {
 	public void connect(String clusterName) {
 		try {
 			channel.connect(clusterName);
+			connected = true;
 		} catch (Exception e) {
 			throw new IllegalStateException("Could not connect to "
 					+ clusterName, e);
@@ -308,6 +308,7 @@ public class SynchMaster {
 	 */
 	public void disconnect() {
 		channel.disconnect();
+		connected = false;
 	}
 
 	/**
@@ -321,6 +322,7 @@ public class SynchMaster {
 	 */
 	public void close() {
 		channel.close();
+		connected = false;
 	}
 
 	/**
