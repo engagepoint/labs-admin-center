@@ -16,8 +16,13 @@ public class Key extends AbstractEntity {
         super(name, parentNodeId);
         this.type = type;
         this.value = value;
+        this.id = name;
     }
 
+    @Override
+    public void setParentNodeId(String parentNodeId) {
+        this.parentNodeId = parentNodeId;
+    }
     public KeyType getType() {
         return type;
     }

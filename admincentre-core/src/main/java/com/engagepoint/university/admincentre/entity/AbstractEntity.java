@@ -8,11 +8,11 @@ import org.hibernate.search.annotations.Indexed;
 @Indexed
 public abstract class AbstractEntity implements Serializable {
     @Field(analyze = Analyze.NO)
-    private String id;
+    protected String id;
     @Field(analyze = Analyze.NO)
     private String name;
     @Field(analyze = Analyze.NO)
-    private String parentNodeId = "";
+    protected String parentNodeId = "";
 
     public AbstractEntity() {
 
