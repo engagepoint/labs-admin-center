@@ -71,7 +71,12 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
                 variable = cache.get(id);
             }
             setChanged();
+            try {
             notifyObservers(new CRUDPayload(CRUDOperation.READ, variable));
+            } catch (Exception e) {
+                LOGGER.warn("exception when read was occured, sychroniztion might not work ", id,
+                        e);
+            }
             return variable;
         } finally {
             stopCacheManager();
@@ -84,7 +89,12 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
             getCache(CACHE_CONFIG, USED_CACHE);
             cache.replace(transientObject.getId(), transientObject);
             setChanged();
+            try {
             notifyObservers(new CRUDPayload(CRUDOperation.UPDATE, transientObject));
+            } catch (Exception e) {
+                LOGGER.warn("exception when update was occured, sychroniztion might not work ",
+                        transientObject.getId(), e);
+            }
         } finally {
             stopCacheManager();
         }
@@ -100,7 +110,12 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
             }
             cache.remove(keyId);
             setChanged();
+            try {
             notifyObservers(new CRUDPayload(CRUDOperation.DELETE, temp));
+            } catch (Exception e) {
+                LOGGER.warn("exception when update was occured, sychroniztion might not work ",
+                        keyId, e);
+            }
         } finally {
             stopCacheManager();
         }
