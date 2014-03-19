@@ -12,18 +12,20 @@ public class Key extends AbstractEntity {
 
     private String value;
 
-
     public Key() {
-
     }
 
     public Key(String parentNodeId, String name, KeyType type, String value) {
         super(name, parentNodeId);
-
         this.type = type;
         this.value = value;
+        this.id = name;
     }
 
+    @Override
+    public void setParentNodeId(String parentNodeId) {
+        this.parentNodeId = parentNodeId;
+    }
     public KeyType getType() {
         return type;
     }

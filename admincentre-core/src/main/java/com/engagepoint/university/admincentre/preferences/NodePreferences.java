@@ -238,8 +238,7 @@ public class NodePreferences extends Preferences {
 
             Key result = null;
             try {
-                String keyId = ("/".equals(absolutePath) ? "/" + key : absolutePath + "/" + key);
-                result = getSpi(keyId);
+                result = getSpi(key);
             } catch (Exception e) {
                 LOGGER.warn("Key's Id assignment failed", e);
             }
@@ -1099,6 +1098,8 @@ public class NodePreferences extends Preferences {
                 LOGGER.warn("Failed to remove Node " + name, e);
             }
             parent.kidCache.remove(name);
+//            parent.kidCache.remove("/".equals(absolutePath) ? "/" + name : absolutePath + "/"
+//                    + name);
         }
     }
 
@@ -1117,7 +1118,7 @@ public class NodePreferences extends Preferences {
             for (int i = 0; i < kidNames.length; i++) {
                 String kidName = kidNames[i].split("/")[kidNames[i].split("/").length - 1];
                 if (!kidCache.containsKey(kidNames[i])) {
-                    kidCache.put(kidNames[i], childSpi(kidName));
+                    kidCache.put(kidName, childSpi(kidName));
                 }
             }
             // Recursively remove all cached children
@@ -1333,7 +1334,7 @@ public class NodePreferences extends Preferences {
     }
 
     public Key getKey(String key) throws IOException {
-        return getSpi("/".equals(absolutePath) ? "/" + key : absolutePath + "/" + key);
+        return getSpi(key);
     }
 
     /**
@@ -1349,7 +1350,7 @@ public class NodePreferences extends Preferences {
      */
     protected void removeSpi(String key) throws IOException {
 
-        keyDAO.delete("/".equals(absolutePath) ? "/" + key : absolutePath + "/" + key);
+        keyDAO.delete(key);
         currentNode.getKeyIdList().remove(key);
         nodeDAO.update(this.currentNode);
     }
@@ -1383,7 +1384,7 @@ public class NodePreferences extends Preferences {
         this.parent.currentNode.getChildNodeIdList().remove(this.absolutePath);
         nodeDAO.update(this.parent.currentNode);
         for (int i = 0; i < keys().length; i++) {
-            keyDAO.delete(absolutePath + "/" + keys()[i]);
+            keyDAO.delete(keys()[i]);
         }
     }
 
@@ -1862,9 +1863,7 @@ public class NodePreferences extends Preferences {
         try {
             parentNode.setChildNodeIdList(childNodeIdList);
             nodeDAO.update(parentNode);
-            for (Key key : keyList) {
-                putSpi(key);
-            }
+
         } catch (IOException e) {
             LOGGER.warn("Couldn't update node with id " + parentNode.getId() + "/n" + e);
         }
@@ -1873,11 +1872,9 @@ public class NodePreferences extends Preferences {
     private void changeNodeKeyId(Node node, String oldPath) {
         for (String keyId : node.getKeyIdList()) {
             try {
-                String fullOldId = "/".equals(node.getId()) ? "/" + keyId : node.getId() + "/"
-                        + keyId;
 
-                Key key = keyDAO.read(fullOldId);
-                keyDAO.delete(fullOldId);
+                Key key = keyDAO.read(keyId);
+                keyDAO.delete(keyId);
                 key.setParentNodeId(node.getId().replaceFirst(oldPath, absolutePath));
 
                 keyDAO.create(key);
