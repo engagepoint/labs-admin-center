@@ -49,6 +49,9 @@ public class PropertiesDocument implements Serializable, Comparable<PropertiesDo
         this.type = (file) ? "Node" : "";
     }
 
+    public boolean areFile(){
+        return this.file;
+    }
     public boolean isFile() {
         return "Node".equals(type);
     }

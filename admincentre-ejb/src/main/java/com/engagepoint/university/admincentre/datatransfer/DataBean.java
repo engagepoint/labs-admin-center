@@ -1,22 +1,20 @@
 package com.engagepoint.university.admincentre.datatransfer;
 
-import java.io.IOException;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
-
-import javax.ejb.Stateless;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.engagepoint.university.admincentre.entity.Key;
 import com.engagepoint.university.admincentre.entity.KeyType;
 import com.engagepoint.university.admincentre.entity.PropertiesDocument;
 import com.engagepoint.university.admincentre.entity.TreeProperties;
 import com.engagepoint.university.admincentre.preferences.NodePreferences;
+import java.io.IOException;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
+import javax.ejb.Stateless;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Stateless
 public class DataBean {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(DataBean.class.getName());
 
     private TreeProperties root;
@@ -137,21 +135,19 @@ public class DataBean {
     public TreeProperties getNodeByDoc(PropertiesDocument document, TreeProperties root) {
 
         TreeProperties foundTree = null;
-         for (TreeProperties treeNode : root.getChildren()) {
+        for (TreeProperties treeNode : root.getChildren()) {
             PropertiesDocument currentDocument = (PropertiesDocument) treeNode.getData();
             if (foundTree == null) {
-            if (document.equals(currentDocument)) {
-                return treeNode;
+                if (document.equals(currentDocument)) {
+                    return treeNode;
+                } else {
+                    foundTree = getNodeByDoc(document, treeNode);
+                }
             } else {
-                foundTree = getNodeByDoc(document, treeNode);
-            }
-            }
- else {
                 return foundTree;
             }
         }
         return foundTree;
-
     }
 
     private TreeProperties returnDirectoryForAdding(TreeProperties rootNode) {

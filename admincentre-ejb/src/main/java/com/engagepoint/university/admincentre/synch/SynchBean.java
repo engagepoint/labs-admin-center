@@ -31,7 +31,7 @@ public class SynchBean implements Synch {
     }
 
     @Override
-    public void setChannelName(String name) throws IllegalStateException {
+    public void setChannelName(String name) {
         SynchMaster.getInstance().setChannelName(name);
     }
 
@@ -41,7 +41,7 @@ public class SynchBean implements Synch {
     }
 
     @Override
-    public void setMode(String modeLine) throws IllegalStateException {
+    public void setMode(String modeLine) {
         if (SynchMaster.Mode.AUTO.name().equals(modeLine)
                 || SynchMaster.Mode.MANUAL.name().equals(modeLine)) {
             SynchMaster.getInstance().setMode(SynchMaster.Mode.valueOf(modeLine));
@@ -64,7 +64,7 @@ public class SynchBean implements Synch {
     }
 
     @Override
-    public boolean autoConnect(String clusterName) throws IllegalStateException, SynchronizationException {
+    public boolean autoConnect(String clusterName) throws SynchronizationException {
         connect(clusterName);
         return SynchMaster.getInstance().autoSynch();
     }
@@ -73,5 +73,4 @@ public class SynchBean implements Synch {
     public void disconnect() {
         SynchMaster.getInstance().disconnect();
     }
-
 }

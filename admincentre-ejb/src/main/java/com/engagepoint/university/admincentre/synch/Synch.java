@@ -42,7 +42,7 @@ public interface Synch {
      *
      * @throws IllegalStateException if member of cluster is not synchronized.
      */
-    void setMode(String mode) throws IllegalStateException;
+    void setMode(String mode);
 
     /**
      * @return cluster name, null if disconnected.
@@ -54,7 +54,7 @@ public interface Synch {
      * @param clusterName - name of the cluster to connect
      * @throws IllegalStateException if channel is already connected
      */
-    void connect(String clusterName) throws IllegalStateException;
+    void connect(String clusterName);
 
     /**
      * Connects to cluster and auto-synchronize.
@@ -62,7 +62,7 @@ public interface Synch {
      * @throws IllegalStateException if already connected
      * @throws SynchronizationException if synchronization fails
      */
-    boolean autoConnect(String clusterName) throws IllegalStateException, SynchronizationException;
+    boolean autoConnect(String clusterName) throws SynchronizationException;
 
     /**
      * Disconnects the channel, does nothing if channel is disconnected or
