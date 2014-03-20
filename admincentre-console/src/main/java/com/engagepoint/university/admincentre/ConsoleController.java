@@ -92,24 +92,20 @@ public class ConsoleController {
 
     }
 
-    public boolean selectNode(ConsoleInputString cis) {
+    public void selectNode(ConsoleInputString cis) {
         if (cis.getLength() == 2) {
             String path = cis.getSecondArg();
             try {
                 if (currentPreferences.nodeExists(path)) {
-//                    String argument = cis.getSecondArg();
-//                    String absPath = currentPreferences.absolutePath();
-//                    String fullPath = "/".equals(absPath)
-//                            ? absPath + argument : absPath +"/"+ argument;
                     this.currentPreferences = currentPreferences.node(path);
-                }
+                }else {
+                    LOGGER.info("Node with such name does not exist");
+                 }
             } catch (BackingStoreException e) {
                 LOGGER.warning("displayKeys: message" + e.getMessage());
             }
             displayNodes(currentPreferences);
-            return true;
         }
-        return false;
 
     }
 
@@ -118,7 +114,6 @@ public class ConsoleController {
             String newPath = (("/").equals(currentPreferences.absolutePath()) ? "/" + nodeName
                     : currentPreferences.absolutePath() + "/" + nodeName);
             currentPreferences.node(newPath);
-//            currentPreferences.node(currentPreferences.absolutePath());
         }
         displayNodes(this.currentPreferences);
     }
