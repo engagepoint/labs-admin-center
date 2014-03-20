@@ -40,7 +40,7 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
         addObserver(new CRUDObserver());
     }
 
-    public void create(T newInstance) throws IOException {
+    public synchronized void create(T newInstance) throws IOException {
         try {
             getCache(CACHE_CONFIG, USED_CACHE);
             String instanceId = newInstance.getId();
@@ -66,7 +66,7 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
         }
     }
 
-    public T read(String id) throws IOException {
+    public synchronized T read(String id) throws IOException {
         try {
             T variable = null;
             getCache(CACHE_CONFIG, USED_CACHE);
@@ -81,7 +81,7 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
     }
 
     @Override
-    public void update(T transientObject) throws IOException {
+    public synchronized void update(T transientObject) throws IOException {
         try {
             getCache(CACHE_CONFIG, USED_CACHE);
             cache.replace(transientObject.getId(), transientObject);
@@ -100,7 +100,7 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
     }
 
     @Override
-    public void delete(String keyId) throws IOException {
+    public synchronized void delete(String keyId) throws IOException {
         try {
             getCache(CACHE_CONFIG, USED_CACHE);
             T temp = cache.get(keyId);
@@ -123,7 +123,7 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
     }
 
     @Override
-    public List<T> search(String name) throws IOException {
+    public synchronized List<T> search(String name) throws IOException {
         try {
             getCache(CACHE_CONFIG, USED_CACHE);
             SearchManager searchManager = Search.getSearchManager(cache);
@@ -139,7 +139,7 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
         }
     }
 
-    private void getCache(String cacheConfigPath, String cacheName) throws IOException {
+    private synchronized void getCache(String cacheConfigPath, String cacheName) throws IOException {
         if (m == null) {
 
             m = new DefaultCacheManager(cacheConfigPath);
@@ -164,7 +164,7 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
         }
     }
 
-    private void stopCacheManager() {
+    private synchronized void stopCacheManager() {
         if (m != null) {
             cache.stop();
         }
@@ -177,7 +177,7 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
      * @throws IOException
      * @throws UnsupportedOperationException if could not put all
      */
-    public void putAll(Map<String, T> cacheData) throws IOException {
+    public synchronized void putAll(Map<String, T> cacheData) throws IOException {
 
         try {
             getCache(CACHE_CONFIG, USED_CACHE);
@@ -195,7 +195,7 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
      * @throws IOException
      * @throws UnsupportedOperationException if cache could not be clear
      */
-    public void clear() throws IOException {
+    public synchronized void clear() throws IOException {
 
         try {
             getCache(CACHE_CONFIG, USED_CACHE);
@@ -207,7 +207,7 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
         }
     }
 
-    public Map<String, T> obtainCache() throws IOException {
+    public synchronized Map<String, T> obtainCache() throws IOException {
         getCache(CACHE_CONFIG, USED_CACHE);
         return cache;
     }
