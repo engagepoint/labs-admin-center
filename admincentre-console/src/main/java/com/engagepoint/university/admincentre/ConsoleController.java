@@ -8,15 +8,17 @@ import com.engagepoint.university.admincentre.preferences.NodePreferences;
 import com.engagepoint.university.admincentre.synchronization.Pair;
 import com.engagepoint.university.admincentre.synchronization.SynchMaster;
 import com.engagepoint.university.admincentre.synchronization.SynchMaster.MergeStatus;
+
+import org.jgroups.Address;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import org.jgroups.Address;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ConsoleController {
 
@@ -142,16 +144,16 @@ public class ConsoleController {
             entity = cis.getThirdArg();
             NodePreferences nodePreferences = new NodePreferences(null, "");
             Key key;
-            try {
-                key = nodePreferences.getKey(entity);
-                if (null != key) {
-                    nodePreferences.node(key.getParentNodeId()).remove(entity);
-                } else {
-                    LOGGER.info("Selected key does not exist.");
-                }
-            } catch (IOException e) {
-                LOGGER.warn("Cannot read from storage " + e.getMessage());
-            }
+			try {
+				key = nodePreferences.getKey(entity);
+				if(null != key){
+					nodePreferences.node(key.getParentNodeId()).remove(entity);
+				}else{
+					LOGGER.info("Selected key does not exist.");
+				}
+			} catch (IOException e) {
+				LOGGER.error("Cannot read from storage ", e);
+			}
         } else {
             throw new WrongInputArgException();
         }
@@ -162,9 +164,9 @@ public class ConsoleController {
         try {
             new NodePreferences(null, "").exportNode(path);
         } catch (BackingStoreException e) {
-            LOGGER.error("Can`t export using path: " + path, e);
+            LOGGER.error("Can`t export using path {}", path, e);
         } catch (IOException e) {
-            LOGGER.error("Can`t export using path: " + path, e);
+            LOGGER.error("Can`t export using path {}", path, e);
         }
     }
 
@@ -183,18 +185,13 @@ public class ConsoleController {
      * @return true if key type exist in enum KeyType
      */
     public boolean keyTypeValidation(String keyType) {
-        try {
-            KeyType.valueOf(keyType);
-        } catch (IllegalArgumentException e) {
-            LOGGER.warn("Invalid key type /n", e);
-            KeyType[] keyTypeList = KeyType.values();
-            LOGGER.debug("You have entered invalid key type. Use one of the next types :");
-            for (KeyType keyTypeTemp : keyTypeList) {
-                LOGGER.debug("  " + keyTypeTemp.toString());
-            }
-            return false;
-        }
-        return true;
+    	KeyType[] keyTypeList = KeyType.values();
+    	 for (KeyType keyTypeTemp : keyTypeList) {
+             if(keyType.equals(keyTypeTemp.name())){
+            	 return true;
+             }
+         }
+    	 return false;
     }
 
     private void refresh() {
@@ -252,13 +249,13 @@ public class ConsoleController {
                 autosynch();
                 break;
             case MODE:
-                LOGGER.info("Mode: " + SynchMaster.getInstance().getMode().name());
+                LOGGER.info("Mode: {}", SynchMaster.getInstance().getMode().name());
                 break;
             case STATUS:
                 synchSTATUS();
                 break;
             case NAME:
-                LOGGER.info("Channel name: " + SynchMaster.getInstance().getChannelName());
+                LOGGER.info("Channel name: {}", SynchMaster.getInstance().getChannelName());
                 break;
             case LOAD:
                 SynchMaster.getInstance().useSavedConfig();
@@ -306,16 +303,17 @@ public class ConsoleController {
      */
     void synchSTATUS() {
         LOGGER.info("-----------Synch status-----------"
-                + "\nChannel name........." + SynchMaster.getInstance().getChannelName()
-                + "\nMode................." + SynchMaster.getInstance().getMode().name()
-                + "\nConnected............" + SynchMaster.getInstance().isConnected());
+                + "\nChannel name.........{}\nMode.................{}\nConnected............{}",
+                SynchMaster.getInstance().getChannelName(),
+                SynchMaster.getInstance().getMode().name(),
+                SynchMaster.getInstance().isConnected());
         if (SynchMaster.getInstance().isConnected()) {
-            LOGGER.info("Cluster name........." + SynchMaster.getInstance().getClusterName()
-                    + "\nCoordinator.........." + SynchMaster.getInstance().getCoordinator().toString());
-            if (!SynchMaster.getInstance().isCoordinator()) {
-                LOGGER.info("State synchronized..." + !(SynchMaster.getInstance().isMemberChanged()
-                        || SynchMaster.getInstance().isClusterChanged()));
-            }
+            LOGGER.info("Cluster name.........{}\nCoordinator..........{}",
+            		SynchMaster.getInstance().getClusterName(),
+            		SynchMaster.getInstance().getCoordinator().toString());
+            if(!SynchMaster.getInstance().isCoordinator())
+            	LOGGER.info("State synchronized...{}", !(SynchMaster.getInstance().isMemberChanged()
+            				|| SynchMaster.getInstance().isClusterChanged()));
             String addresses = "Addresses(" + SynchMaster.getInstance().getAddressList().size() + "): ";
             for (Iterator<Address> i = SynchMaster.getInstance().getAddressList().iterator(); i.hasNext();) {
                 addresses = addresses.concat(SynchMaster.getInstance().getChannelName(i.next()));
@@ -456,7 +454,7 @@ public class ConsoleController {
 
     private void connect(ConsoleInputString cis) {
         if (SynchMaster.getInstance().isConnected()) {
-            LOGGER.info("You are already connected to " + SynchMaster.getInstance().getClusterName());
+            LOGGER.info("You are already connected to cluster{}", SynchMaster.getInstance().getClusterName());
             return;
         }
         SynchMaster.getInstance().connect(cis.getThirdArg());
@@ -494,7 +492,7 @@ public class ConsoleController {
     private void name(ConsoleInputString cis) {
         if (!SynchMaster.getInstance().isConnected()) {
             SynchMaster.getInstance().setChannelName(cis.getThirdArg());
-            LOGGER.info("You have set channel name: " + SynchMaster.getInstance().getChannelName());
+            LOGGER.info("You have set channel name: name{} ", SynchMaster.getInstance().getChannelName());
         } else {
             LOGGER.info("Impossible to set channel name when channel is connected");
         }

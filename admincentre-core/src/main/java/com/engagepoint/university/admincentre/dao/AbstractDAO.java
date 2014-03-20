@@ -46,16 +46,7 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
             String instanceId = newInstance.getId();
             if (!cache.containsKey(instanceId)) {
                 cache.put(instanceId, newInstance);
-                //TODO find out why it doesn`t work on LTE
-                try {
-                    if (SynchMaster.connected) {
-                        setChanged();
-                        notifyObservers(new CRUDPayload(CRUDOperation.CREATE, newInstance));
-                    }
-                } catch (Exception e) {
-                    LOGGER.warn("Exception when create was occured, sychroniztion might not work ",
-                            newInstance.getId(), e);
-                }
+                tryToSend(CRUDOperation.CREATE, newInstance);
             } else {
                 throw new IOException("This entity already exists" + newInstance.getName());
             }
@@ -73,7 +64,6 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
             if (cache.containsKey(id)) {
                 variable = cache.get(id);
             }
-
             return variable;
         } finally {
             stopCacheManager();
@@ -85,15 +75,7 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
         try {
             getCache(CACHE_CONFIG, USED_CACHE);
             cache.replace(transientObject.getId(), transientObject);
-            try {
-                if (SynchMaster.connected) {
-                    setChanged();
-                    notifyObservers(new CRUDPayload(CRUDOperation.UPDATE, transientObject));
-                }
-            } catch (Exception e) {
-                LOGGER.warn("Exception when update was occured, sychroniztion might not work ",
-                        transientObject.getId(), e);
-            }
+           tryToSend(CRUDOperation.UPDATE, transientObject);
         } finally {
             stopCacheManager();
         }
@@ -108,15 +90,7 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
                 throw new IOException();
             }
             cache.remove(keyId);
-            try {
-                if (SynchMaster.connected) {
-                    setChanged();
-                    notifyObservers(new CRUDPayload(CRUDOperation.DELETE, temp));
-                }
-            } catch (Exception e) {
-                LOGGER.warn("Exception when update was occured, sychroniztion might not work ",
-                        keyId, e);
-            }
+            tryToSend(CRUDOperation.DELETE, temp);
         } finally {
             stopCacheManager();
         }
@@ -210,5 +184,20 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
     public synchronized Map<String, T> obtainCache() throws IOException {
         getCache(CACHE_CONFIG, USED_CACHE);
         return cache;
+    }
+    
+    private void tryToSend(CRUDOperation crudOperation, T t){
+    	try{
+        	if(SynchMaster.connected() 
+        			&& SynchMaster.getInstance().isConnected()
+        			&& !SynchMaster.getInstance().isSingle()){
+        		setChanged();
+        		notifyObservers(new CRUDPayload(crudOperation, t));
+        	}
+        }
+        catch(Exception e){
+            LOGGER.error("exception when {} {} was occured, sychroniztion might not work.",
+                    crudOperation, t.toString(), e);
+        }
     }
 }

@@ -10,13 +10,13 @@ import java.io.Serializable;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.RequestScoped;
-import javax.faces.event.AbortProcessingException;
 import javax.faces.event.ActionEvent;
 import javax.faces.event.ActionListener;
 import javax.servlet.http.Part;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.prefs.BackingStoreException;
 
 @ManagedBean
@@ -45,7 +45,7 @@ public class FileUploadController implements Serializable, ActionListener {
             while ((length = inStream.read(buffer)) > 0) {
                 outStream.write(buffer, 0, length);
             }
-            LOGGER.debug("File is copied successfuly!");
+            LOGGER.info("File is copied successfuly!");
         } catch (IOException e) {
             LOGGER.error("Can not create inputStream", e);
         } finally {
