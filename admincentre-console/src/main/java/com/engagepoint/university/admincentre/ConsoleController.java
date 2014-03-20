@@ -98,6 +98,8 @@ public class ConsoleController {
             try {
                 if (currentPreferences.nodeExists(path)) {
                     this.currentPreferences = currentPreferences.node(path);
+                } else {
+                    LOGGER.warn("Node with such name does not exist");
                 }
             } catch (BackingStoreException e) {
                 LOGGER.warn("Failed to select node. Probably there some problems"
