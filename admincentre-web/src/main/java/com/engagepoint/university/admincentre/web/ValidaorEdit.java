@@ -17,9 +17,9 @@ import org.slf4j.LoggerFactory;
 @Named
 public class ValidaorEdit {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ValidatorAdd.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(ValidaorEdit.class.getName());
 
-    public void validateAlpha(FacesContext facesContext, UIComponent uiComponent, Object value) throws ValidatorException {
+    public void validateAlpha(FacesContext facesContext, UIComponent uiComponent, Object value) {
         String selectedValue;
         UIComponent parent = uiComponent.getParent();
         if (null != parent) {

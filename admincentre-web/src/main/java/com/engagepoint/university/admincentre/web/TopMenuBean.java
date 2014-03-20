@@ -17,8 +17,8 @@ public class TopMenuBean {
     private static final String ACTIVE = "active";
     public static final String EDITOR_URL = "/pages/editor.xhtml";
     public static final String SETTINGS_URL = "/pages/settings.xhtml";
-    private MenuModel model;        
-    
+    private MenuModel model;
+
     @PostConstruct
     public void initModel() {
         model = new DefaultMenuModel();
@@ -27,7 +27,7 @@ public class TopMenuBean {
         model.addMenuItem(getEditorItem(viewId, null));
         model.addMenuItem(getSettingsItem(viewId, null));
     }
-    
+
     public static MenuItem getEditorItem(String viewId, String itemId) {
         MenuItem item = getMenuItem(viewId, itemId, "Editor", EDITOR_URL);
         if (EDITOR_URL.equals(viewId)) {
@@ -35,7 +35,7 @@ public class TopMenuBean {
         }
         return item;
     }
-    
+
     public static MenuItem getSettingsItem(String viewId, String itemId) {
         MenuItem item = getMenuItem(viewId, itemId, "Settings", SETTINGS_URL);
         if (SETTINGS_URL.equals(viewId)) {
@@ -43,7 +43,7 @@ public class TopMenuBean {
         }
         return item;
     }
-    
+
     public static MenuItem getMenuItem(String viewId, String itemId, String itemName, String url) {
         MenuItem item = new MenuItem();
         item.setValue(itemName);
@@ -58,5 +58,4 @@ public class TopMenuBean {
     public MenuModel getModel() {
         return model;
     }
-
 }

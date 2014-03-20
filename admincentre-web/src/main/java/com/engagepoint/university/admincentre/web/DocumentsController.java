@@ -3,18 +3,17 @@ package com.engagepoint.university.admincentre.web;
 import com.engagepoint.university.admincentre.datatransfer.DataBean;
 import com.engagepoint.university.admincentre.entity.PropertiesDocument;
 import com.engagepoint.university.admincentre.entity.TreeProperties;
-import org.apache.commons.lang.StringUtils;
-import org.primefaces.model.DefaultTreeNode;
-import org.primefaces.model.TreeNode;
-
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.event.ActionEvent;
 import javax.inject.Inject;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import org.apache.commons.lang.StringUtils;
+import org.primefaces.model.DefaultTreeNode;
+import org.primefaces.model.TreeNode;
 
 @ManagedBean(name = "documentsController")
 @ViewScoped

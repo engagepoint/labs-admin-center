@@ -41,15 +41,15 @@ public class FileController implements Serializable {
         FileController.pathToTempFile = pathToTempFile;
     }
 
-    public static File createTempZip() throws IOException, BackingStoreException {
+    public static File createTempZip() throws IOException {
         File tmpFile = File.createTempFile("temp", ".zip");
         try {
             new NodePreferences(null, "").exportNode(tmpFile.getPath());
             tmpFile.deleteOnExit();
         } catch (BackingStoreException bse) {
-            LOGGER.warn("createTempZip()", bse);
+            LOGGER.warn("Failed to create file temp.zip", bse);
         } catch (IOException ioe) {
-            LOGGER.warn("createTempZip() /n", ioe);
+            LOGGER.warn("Failed to create file temp.zip", ioe);
         }
         return tmpFile;
     }
@@ -57,6 +57,4 @@ public class FileController implements Serializable {
     public StreamedContent getDownloadFile() {
         return downloadFile;
     }
-
-
 }

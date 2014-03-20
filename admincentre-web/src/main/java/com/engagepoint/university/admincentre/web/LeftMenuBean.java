@@ -3,7 +3,6 @@ package com.engagepoint.university.admincentre.web;
 import com.engagepoint.component.menu.UIMenuItem;
 import com.engagepoint.component.menu.model.DefaultMenuModel;
 import com.engagepoint.component.menu.model.MenuModel;
-import com.engagepoint.university.admincentre.datatransfer.DataBean;
 import com.engagepoint.university.admincentre.synch.Synch;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -11,8 +10,6 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.RequestScoped;
 import javax.faces.component.UIViewRoot;
 import javax.faces.context.FacesContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @ManagedBean(name = "leftMenu")
 @RequestScoped
@@ -20,7 +17,7 @@ public class LeftMenuBean {
 
     public static final String EDITOR_URL = "/editor.xhtml";
     public static final String SETTINGS_URL = "/settings.xhtml";
-    private static final Logger LOGGER = LoggerFactory.getLogger(DataBean.class.getName());
+    
     @EJB
     private Synch synch;
     private String clusterName;
