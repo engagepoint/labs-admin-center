@@ -23,6 +23,7 @@ public class Key extends AbstractEntity {
     public void setParentNodeId(String parentNodeId) {
         this.parentNodeId = parentNodeId;
     }
+
     public KeyType getType() {
         return type;
     }
@@ -57,7 +58,7 @@ public class Key extends AbstractEntity {
     public int hashCode() {
         return (super.getId() + type.toString() + value).hashCode();
     }
-    
+
     /* do not delete!*/
     @Override
     public String toString() {

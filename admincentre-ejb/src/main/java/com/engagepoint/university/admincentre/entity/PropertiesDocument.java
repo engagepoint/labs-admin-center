@@ -3,7 +3,7 @@ package com.engagepoint.university.admincentre.entity;
 import java.io.Serializable;
 
 public class PropertiesDocument implements Serializable, Comparable<PropertiesDocument> {
-    
+
     private static final long serialVersionUID = 12L;
     private String absolutePath;
     private String name;
@@ -22,6 +22,7 @@ public class PropertiesDocument implements Serializable, Comparable<PropertiesDo
         this.oldName = name;
         this.file = "Node".equals(type);
     }
+
     public PropertiesDocument(String absolutePath, String name, String value, String type, boolean file) {
         this.absolutePath = absolutePath;
         this.name = name;
@@ -30,6 +31,7 @@ public class PropertiesDocument implements Serializable, Comparable<PropertiesDo
         this.oldName = oldName;
         this.file = file;
     }
+
     public PropertiesDocument(String absolutePath, String name, String value, String type, String oldName, boolean file) {
         this.absolutePath = absolutePath;
         this.name = name;
@@ -108,7 +110,6 @@ public class PropertiesDocument implements Serializable, Comparable<PropertiesDo
         //return to current page
         return null;
     }
-
 
     public boolean isDirectoryForAdding() {
         return directoryForAdding;

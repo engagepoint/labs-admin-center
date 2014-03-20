@@ -1,5 +1,7 @@
 package com.engagepoint.university.admincentre.preferences;
 
+import com.engagepoint.university.admincentre.entity.Key;
+import com.engagepoint.university.admincentre.entity.KeyType;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -15,11 +17,9 @@ import java.util.prefs.Preferences;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -27,9 +27,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-
-import com.engagepoint.university.admincentre.entity.Key;
-import com.engagepoint.university.admincentre.entity.KeyType;
 
 public class ZipFiles {
 
@@ -45,7 +42,6 @@ public class ZipFiles {
      * @throws BackingStoreException now zip files one by one create
      * ZipOutputStream to write to the zip file
      */
-
     public void exportZipPreferences(Preferences rootPreferences, String zipDirName)
             throws BackingStoreException {
         try {
@@ -219,9 +215,9 @@ public class ZipFiles {
                     outBuffer.append('\\');
                     outBuffer.append('f');
                     break;
-                case '=': // Fall through
-                case ':': // Fall through
-                case '#': // Fall through
+                case '=':
+                case ':':
+                case '#':
                 case '!':
                     outBuffer.append('\\');
                     outBuffer.append(aChar);
@@ -458,7 +454,6 @@ public class ZipFiles {
             if (aChar == '\\') {
                 aChar = in[off++];
                 if (aChar == 'u') {
-                    // Read the xxxx
                     int value = 0;
                     for (int i = 0; i < 4; i++) {
                         aChar = in[off++];
@@ -556,12 +551,8 @@ public class ZipFiles {
             } else {
                 path = "";
             }
-            System.out.println(path);
-            // InputStream stream = zis.
+            LOGGER.info(path);
             loadXML(streamToFile(zis), preferencesPath, path);
-            // String myString = IOUtils.toString(stream, "UTF-8");
-            // System.out.println(myString);
-            // stream.close();
             entry = zis.getNextEntry();
         }
         zis.close();
@@ -577,11 +568,9 @@ public class ZipFiles {
         FileOutputStream out = new FileOutputStream(tempFile);
         byte[] buffer = new byte[1024];
         int bytesRead;
-        // read from is to buffer
         while ((bytesRead = in.read(buffer)) != -1) {
             out.write(buffer, 0, bytesRead);
         }
-
         return tempFile;
     }
 

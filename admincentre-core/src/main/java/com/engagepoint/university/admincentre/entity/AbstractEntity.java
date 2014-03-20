@@ -1,12 +1,13 @@
 package com.engagepoint.university.admincentre.entity;
-import java.io.Serializable;
 
+import java.io.Serializable;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 
 @Indexed
 public abstract class AbstractEntity implements Serializable {
+
     @Field(analyze = Analyze.NO)
     protected String id;
     @Field(analyze = Analyze.NO)
@@ -23,7 +24,6 @@ public abstract class AbstractEntity implements Serializable {
         this.parentNodeId = parentNodeId;
         this.id = ("/".equals(parentNodeId) ? "/" + name : this.parentNodeId + "/" + name);
         this.name = name;
-       
     }
 
     public String getParentNodeId() {
@@ -47,5 +47,4 @@ public abstract class AbstractEntity implements Serializable {
     public String getId() {
         return id;
     }
-
 }

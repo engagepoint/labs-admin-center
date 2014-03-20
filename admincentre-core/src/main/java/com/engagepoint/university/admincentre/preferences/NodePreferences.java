@@ -67,7 +67,7 @@ public class NodePreferences extends Preferences {
     /**
      * Our root node.
      */
-    private final NodePreferences root; // Relative to this node
+    private final NodePreferences root;
     /**
      * This field should be <tt>true</tt> if this node did not exist in the
      * backing store prior to the creation of this object. The field is
@@ -98,7 +98,7 @@ public class NodePreferences extends Preferences {
      * Registered node change listeners.
      */
     private NodeChangeListener[] nodeListeners = new NodeChangeListener[0];
-    
+
     /**
      * An object whose monitor is used to lock this node. This object is used in
      * preference to the node itself to reduce the likelihood of intentional or
@@ -167,7 +167,7 @@ public class NodePreferences extends Preferences {
                 }
             }
         } catch (IOException e) {
-            LOGGER.warn("Can not create NodePreferences instance /n", e);
+            LOGGER.error("Can not create NodePreferences instance /n", e);
         }
     }
 
@@ -246,7 +246,7 @@ public class NodePreferences extends Preferences {
             try {
 
                 result = getSpi(key);
-            } catch (Exception e) {
+            } catch (IOException e) {
                 LOGGER.warn("Key's Id assignment failed", e);
             }
             return ((result == null) ? def : result.getValue());
@@ -965,7 +965,7 @@ public class NodePreferences extends Preferences {
             if (!path.hasMoreTokens()) {
                 return child;
             }
-            path.nextToken(); // Consume slash
+            path.nextToken();
             if (!path.hasMoreTokens()) {
                 throw new IllegalArgumentException("Path ends with slash: " + path);
             }
@@ -1101,8 +1101,6 @@ public class NodePreferences extends Preferences {
                 LOGGER.warn("Failed to remove Node " + name, e);
             }
             parent.kidCache.remove(name);
-//            parent.kidCache.remove("/".equals(absolutePath) ? "/" + name : absolutePath + "/"
-//                    + name);
         }
     }
 
@@ -1115,8 +1113,6 @@ public class NodePreferences extends Preferences {
             if (removed) {
                 throw new IllegalStateException("Node already removed.");
             }
-
-            // Ensure that all children are cached
             String[] kidNames = childrenNamesSpi();
             for (int i = 0; i < kidNames.length; i++) {
                 String kidName = kidNames[i].split("/")[kidNames[i].split("/").length - 1];
@@ -1124,7 +1120,6 @@ public class NodePreferences extends Preferences {
                     kidCache.put(kidName, childSpi(kidName));
                 }
             }
-            // Recursively remove all cached children
             for (Iterator<NodePreferences> i = kidCache.values().iterator(); i.hasNext();) {
                 try {
                     i.next().removeNode2();
@@ -1133,8 +1128,6 @@ public class NodePreferences extends Preferences {
                     LOGGER.warn("Failed to recursively remove all cached children", e);
                 }
             }
-
-            // Now we have no descendants - it's time to die!
             removeNodeSpi();
             removed = true;
             parent.enqueueNodeRemovedEvent(this);
@@ -1201,8 +1194,6 @@ public class NodePreferences extends Preferences {
             if (removed) {
                 throw new IllegalStateException(REMOVED_NODE + name);
             }
-
-            // Copy-on-write
             PreferenceChangeListener[] old = prefListeners;
             prefListeners = new PreferenceChangeListener[old.length + 1];
             System.arraycopy(old, 0, prefListeners, 0, old.length);
@@ -1220,8 +1211,6 @@ public class NodePreferences extends Preferences {
             if ((prefListeners == null) || (prefListeners.length == 0)) {
                 throw new IllegalArgumentException(NOTREGISTRD_LISTENER + name);
             }
-
-            // Copy-on-write
             PreferenceChangeListener[] newPl = new PreferenceChangeListener[prefListeners.length - 1];
             int i = 0;
             while (i < newPl.length && prefListeners[i] != pcl) {
@@ -1246,8 +1235,6 @@ public class NodePreferences extends Preferences {
             if (removed) {
                 throw new IllegalStateException(REMOVED_NODE + name);
             }
-
-            // Copy-on-write
             if (nodeListeners == null) {
                 nodeListeners = new NodeChangeListener[1];
                 nodeListeners[0] = ncl;
@@ -1270,8 +1257,6 @@ public class NodePreferences extends Preferences {
             if ((nodeListeners == null) || (nodeListeners.length == 0)) {
                 throw new IllegalArgumentException(NOTREGISTRD_LISTENER + name);
             }
-
-            // Copy-on-write
             int i = 0;
             while (i < nodeListeners.length && nodeListeners[i] != ncl) {
                 i++;
@@ -1289,9 +1274,8 @@ public class NodePreferences extends Preferences {
             nodeListeners = newNl;
         }
     }
-
-    // "SPI" METHODS
     /**
+     * "SPI" METHODS
      * Put the given key-value association into this preference node. It is
      * guaranteed that <tt>key</tt> and <tt>value</tt> are non-null and of legal
      * length. Also, it is guaranteed that this node has not been removed. (The
@@ -1702,7 +1686,6 @@ public class NodePreferences extends Preferences {
         @Override
         public void run() {
             while (true) {
-                // Wait on eventQueue till an event is present
                 EventObject event = null;
                 synchronized (EVENT_QUEUE) {
                     try {
@@ -1715,8 +1698,6 @@ public class NodePreferences extends Preferences {
                         return;
                     }
                 }
-
-                // Now we have event & hold no locks; deliver evt to listeners
                 NodePreferences src = (NodePreferences) event.getSource();
                 if (event instanceof PreferenceChangeEvent) {
                     PreferenceChangeEvent pce = (PreferenceChangeEvent) event;
@@ -1749,7 +1730,6 @@ public class NodePreferences extends Preferences {
      */
     private static synchronized void startEventDispatchThreadIfNecessary() {
         if (eventDispatchThread == null) {
-            // XXX Log "Starting event dispatch thread"
             eventDispatchThread = new EventDispatchThread();
             eventDispatchThread.setDaemon(true);
             eventDispatchThread.start();
@@ -1889,14 +1869,13 @@ public class NodePreferences extends Preferences {
 
     /**
      * Method exports Node with all it SubNodes into ZIP with properties files
-     * 
-     * @param os
-     *            the output stream on which to emit the ZIP document.
-     * @throws IOException
-     *             if writing to the specified output stream results in an
-     *             <tt>IOException</tt>.
-     * @throws BackingStoreException
-     *             if preference data cannot be read from backing store.
+     *
+     * @param os the output stream on which to emit the ZIP document.
+     * @throws IOException if writing to the specified output stream results in
+     * an
+     * <tt>IOException</tt>.
+     * @throws BackingStoreException if preference data cannot be read from
+     * backing store.
      */
     @Override
     public void exportNode(OutputStream os) throws IOException, BackingStoreException {
@@ -1909,14 +1888,13 @@ public class NodePreferences extends Preferences {
 
     /**
      * Method exports Node with all it SubNodes into into ZIP with XML file
-     * 
-     * @param os
-     *            the output stream on which to emit the ZIP document.
-     * @throws IOException
-     *             if writing to the specified output stream results in an
-     *             <tt>IOException</tt>.
-     * @throws BackingStoreException
-     *             if preference data cannot be read from backing store.
+     *
+     * @param os the output stream on which to emit the ZIP document.
+     * @throws IOException if writing to the specified output stream results in
+     * an
+     * <tt>IOException</tt>.
+     * @throws BackingStoreException if preference data cannot be read from
+     * backing store.
      */
     public void exportNodeXML(OutputStream os) throws IOException, BackingStoreException {
         new ZipFiles().exportZipPreferencesXML(this, os);
@@ -1925,6 +1903,7 @@ public class NodePreferences extends Preferences {
     public void exportNodeXML(String path) throws IOException, BackingStoreException {
         new ZipFiles().exportZipPreferencesXML(this, path);
     }
+
     /**
      * Method exports Node with all it SubNodes
      *
@@ -1957,14 +1936,13 @@ public class NodePreferences extends Preferences {
     /**
      * Method imports Node with all it SubNodes from ZIP with XMLs to current
      * node
-     * 
-     * @param is
-     *            the input stream on which to emit the ZIP document.
-     * @throws IOException
-     *             if writing to the specified output stream results in an
-     *             <tt>IOException</tt>.
-     * @throws BackingStoreException
-     *             if preference data cannot be read from backing store.
+     *
+     * @param is the input stream on which to emit the ZIP document.
+     * @throws IOException if writing to the specified output stream results in
+     * an
+     * <tt>IOException</tt>.
+     * @throws BackingStoreException if preference data cannot be read from
+     * backing store.
      */
     public void importNodeXML(InputStream is) throws IOException, BackingStoreException {
         new ZipFiles().importZipPreferencesXML(is, absolutePath);

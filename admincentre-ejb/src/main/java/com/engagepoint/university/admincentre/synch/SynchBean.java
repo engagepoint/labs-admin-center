@@ -8,70 +8,70 @@ import com.engagepoint.university.admincentre.util.Constants;
 
 /**
  * Session Bean implementation class SynchBean
+ *
  * @author Roman Garkavenko
  */
 @Stateless
 public class SynchBean implements Synch {
 
     /**
-     * Default constructor. 
+     * Default constructor.
      */
     public SynchBean() {
     }
-    
-	@Override
-	public boolean isConnected() {
-		return SynchMaster.getInstance().isConnected();
-	}
 
-	@Override
-	public String getChannelName() {
-		return SynchMaster.getInstance().getChannelName();
-	}
+    @Override
+    public boolean isConnected() {
+        return SynchMaster.getInstance().isConnected();
+    }
 
-	@Override
-	public void setChannelName(String name) throws IllegalStateException{
-		SynchMaster.getInstance().setChannelName(name);
-	}
-	
-	@Override
-	public String getMode() {
-		return SynchMaster.getInstance().getMode().name();
-	}
+    @Override
+    public String getChannelName() {
+        return SynchMaster.getInstance().getChannelName();
+    }
 
-	@Override
-	public void setMode(String modeLine) throws IllegalStateException {
-		if(SynchMaster.Mode.AUTO.name().equals(modeLine) 
-				|| SynchMaster.Mode.MANUAL.name().equals(modeLine)){
-			SynchMaster.getInstance().setMode(SynchMaster.Mode.valueOf(modeLine));
-		}else{
-			throw new IllegalArgumentException(modeLine + Constants.IS_ILLEGAL_ARGUMENT_ENUM);
-		}
-	}
+    @Override
+    public void setChannelName(String name) throws IllegalStateException {
+        SynchMaster.getInstance().setChannelName(name);
+    }
 
+    @Override
+    public String getMode() {
+        return SynchMaster.getInstance().getMode().name();
+    }
 
-	@Override
-	public String getClusterName() {
-		return SynchMaster.getInstance().getClusterName();
-	}
+    @Override
+    public void setMode(String modeLine) throws IllegalStateException {
+        if (SynchMaster.Mode.AUTO.name().equals(modeLine)
+                || SynchMaster.Mode.MANUAL.name().equals(modeLine)) {
+            SynchMaster.getInstance().setMode(SynchMaster.Mode.valueOf(modeLine));
+        } else {
+            throw new IllegalArgumentException(modeLine + Constants.IS_ILLEGAL_ARGUMENT_ENUM);
+        }
+    }
 
-	@Override
-	public void connect(String clusterName) throws IllegalStateException {
-		if(isConnected()){
-			throw new IllegalStateException(Constants.CHANNEL_IS_CONNECTED);
-		}
-		SynchMaster.getInstance().connect(clusterName);
-	}
-    
-	@Override
-	public boolean autoConnect(String clusterName) throws IllegalStateException, SynchronizationException {
-		connect(clusterName);
-		return SynchMaster.getInstance().autoSynch();
-	}
-	
-	@Override
-	public void disconnect(){
-		SynchMaster.getInstance().disconnect();
-	}
+    @Override
+    public String getClusterName() {
+        return SynchMaster.getInstance().getClusterName();
+    }
+
+    @Override
+    public void connect(String clusterName) throws IllegalStateException {
+        if (isConnected()) {
+            throw new IllegalStateException(Constants.CHANNEL_IS_CONNECTED);
+        }
+        SynchMaster.getInstance().connect(clusterName);
+    }
+
+    @Override
+    public boolean autoConnect(String clusterName) throws IllegalStateException, SynchronizationException {
+        connect(clusterName);
+        return SynchMaster.getInstance().autoSynch();
+    }
+
+    @Override
+    public void disconnect() {
+        SynchMaster.getInstance().disconnect();
+    }
 
 }

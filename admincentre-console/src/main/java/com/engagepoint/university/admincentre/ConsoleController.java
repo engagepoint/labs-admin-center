@@ -8,20 +8,19 @@ import com.engagepoint.university.admincentre.preferences.NodePreferences;
 import com.engagepoint.university.admincentre.synchronization.Pair;
 import com.engagepoint.university.admincentre.synchronization.SynchMaster;
 import com.engagepoint.university.admincentre.synchronization.SynchMaster.MergeStatus;
-
-import org.jgroups.Address;
-
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import org.jgroups.Address;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConsoleController {
 
-    private static final Logger LOGGER = Logger.getLogger(ConsoleController.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConsoleController.class.getName());
     private static final StringBuilder ALIGN_STRING = new StringBuilder("---");
     private Preferences currentPreferences = new NodePreferences(null, "");
 
@@ -65,10 +64,10 @@ public class ConsoleController {
                     displayNodes(preference.node(preferenceChildrenNames[i]));
                 }
                 ALIGN_STRING.delete(0, 3);
-
             }
         } catch (BackingStoreException e) {
-            LOGGER.warning("displayNodes: message" + e.getMessage());
+            LOGGER.warn("Failed to display nodes. Probably there some problems"
+                    + "with the database", e);
         }
     }
 
@@ -79,7 +78,7 @@ public class ConsoleController {
             if (keys.length != 0) {
                 for (int i = 0; i < keys.length; i++) {
 
-                    LOGGER.info(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3)
+                    LOGGER.debug(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3)
                             + " Key = " + keys[i] + ";" + "Value = "
                             + preferance.get(keys[i], "value wasn`t found"));
 
@@ -87,9 +86,9 @@ public class ConsoleController {
                 LOGGER.info("");
             }
         } catch (BackingStoreException e) {
-            LOGGER.warning("displayKeys: message" + e.getMessage());
+            LOGGER.warn("Failed to display keys. Probably there some problems"
+                    + "with the database", e);
         }
-
     }
 
     public boolean selectNode(ConsoleInputString cis) {
@@ -104,7 +103,8 @@ public class ConsoleController {
                     this.currentPreferences = currentPreferences.node(path);
                 }
             } catch (BackingStoreException e) {
-                LOGGER.warning("displayKeys: message" + e.getMessage());
+                LOGGER.warn("Failed to select node. Probably there some problems"
+                        + "with the database", e);
             }
             displayNodes(currentPreferences);
             return true;
@@ -134,16 +134,16 @@ public class ConsoleController {
     public void remove(ConsoleInputString cis) throws WrongInputArgException {
         String entity = null;
         if (cis.getSecondArg().equals("-node")) {
-        	if("/".equals( currentPreferences.absolutePath() )){
-        		LOGGER.info("Could not remove root node.");
-        		return;
-        	}
+            if ("/".equals(currentPreferences.absolutePath())) {
+                LOGGER.info("Could not remove root node.");
+                return;
+            }
             try {
-            	Preferences parentPreferences = currentPreferences.parent();
+                Preferences parentPreferences = currentPreferences.parent();
                 currentPreferences.removeNode();
                 currentPreferences = parentPreferences;
             } catch (BackingStoreException e) {
-            	throw new IllegalStateException("nodeRemove: failure in the backing store", e);
+                throw new IllegalStateException("nodeRemove: failure in the backing store", e);
             }
         } else if (cis.getSecondArg().equals("-key")) {
             entity = cis.getThirdArg();
@@ -169,16 +169,16 @@ public class ConsoleController {
         try {
             new NodePreferences(null, "").exportNode(path);
         } catch (BackingStoreException e) {
-            LOGGER.info("Can`t export using path" + path);
+            LOGGER.error("Can`t export using path: " + path, e);
         } catch (IOException e) {
-            LOGGER.info("Can`t export using path" + path);
+            LOGGER.error("Can`t export using path: " + path, e);
         }
     }
 
     public boolean nameValidation(String name) {
         boolean value = name.matches("^\\w+$");
         if (!value) {
-            LOGGER.info("You enter not valid name... Only a-zA-Z_0-9");
+            LOGGER.debug("You have entered the invalid name. Only symbols a-zA-Z_0-9 are allowed");
         }
         return value;
     }
@@ -193,35 +193,34 @@ public class ConsoleController {
         try {
             KeyType.valueOf(keyType);
         } catch (IllegalArgumentException e) {
+            LOGGER.warn("Invalid key type /n", e);
             KeyType[] keyTypeList = KeyType.values();
-            LOGGER.info("You enter wrong key type. Use one of the next types :");
+            LOGGER.debug("You have entered invalid key type. Use one of the next types :");
             for (KeyType keyTypeTemp : keyTypeList) {
-                LOGGER.info("  " + keyTypeTemp.toString());
+                LOGGER.debug("  " + keyTypeTemp.toString());
             }
             return false;
         }
         return true;
-
     }
 
     private void refresh() {			//TODO remove method
-		if(((NodePreferences)currentPreferences).currentNodeExists()){
-			currentPreferences = new NodePreferences(null, "").node(currentPreferences.absolutePath());
-		}else{
-			currentPreferences = new NodePreferences(null, "");
-		}
-
+        if (((NodePreferences) currentPreferences).currentNodeExists()) {
+            currentPreferences = new NodePreferences(null, "").node(currentPreferences.absolutePath());
+        } else {
+            currentPreferences = new NodePreferences(null, "");
+        }
     }
-    
-    public boolean showMessageIfRemoved(){
-		if(((NodePreferences)currentPreferences).currentNodeExists()){
-			currentPreferences = new NodePreferences(null, "").node(currentPreferences.absolutePath());
-			return false;
-		}else{
-			LOGGER.info("Current node was removed, refreshing...");
-			currentPreferences = new NodePreferences(null, "");
-			return true;
-		}
+
+    public boolean showMessageIfRemoved() {
+        if (((NodePreferences) currentPreferences).currentNodeExists()) {
+            currentPreferences = new NodePreferences(null, "").node(currentPreferences.absolutePath());
+            return false;
+        } else {
+            LOGGER.info("Current node was removed, refreshing...");
+            currentPreferences = new NodePreferences(null, "");
+            return true;
+        }
     }
 
     public void synch(ConsoleInputString cis) {
@@ -275,34 +274,35 @@ public class ConsoleController {
                 SynchMaster.getInstance().saveConfig();
                 LOGGER.info("Configurations were saved.");
                 break;
-            default: //TODO
+            default:
         }
     }
 
     /**
-     * Prints caution info if trying to call methods
-     * which require connected channel
+     * Prints caution info if trying to call methods which require connected
+     * channel
      *
      * @return <br><b>true</b> if channel is connected
      * <br><b>false</br> otherwise
      */
     private boolean isConnected() {
-        if (SynchMaster.getInstance().isConnected())
+        if (SynchMaster.getInstance().isConnected()) {
             return true;
-        LOGGER.info("Channel is disconnected. Command could not be used.");
+        }
+        LOGGER.info("/n Channel is disconnected. Command could not be used. /n");
         return false;
     }
 
     /**
-     * Prints caution info if trying to call methods
-     * acceptable only for non-coordinator member.
+     * Prints caution info if trying to call methods acceptable only for
+     * non-coordinator member.
      *
      * @return <br><b>true</b> if member is coordinator
      * <br><b>false</br> otherwise
      */
     private boolean isCoordinator() {
         if (SynchMaster.getInstance().isCoordinator()) {
-            LOGGER.info("This member is coordinator");
+            LOGGER.debug("This member is coordinator");
             return true;
         }
         return false;
@@ -318,12 +318,13 @@ public class ConsoleController {
                 + "\nConnected............" + SynchMaster.getInstance().isConnected());
         if (SynchMaster.getInstance().isConnected()) {
             LOGGER.info("Cluster name........." + SynchMaster.getInstance().getClusterName()
-            		+ "\nCoordinator.........." + SynchMaster.getInstance().getCoordinator().toString());
-            if(!SynchMaster.getInstance().isCoordinator())
-            	LOGGER.info("State synchronized..." + !(SynchMaster.getInstance().isMemberChanged()
-            				|| SynchMaster.getInstance().isClusterChanged()));
+                    + "\nCoordinator.........." + SynchMaster.getInstance().getCoordinator().toString());
+            if (!SynchMaster.getInstance().isCoordinator()) {
+                LOGGER.info("State synchronized..." + !(SynchMaster.getInstance().isMemberChanged()
+                        || SynchMaster.getInstance().isClusterChanged()));
+            }
             String addresses = "Addresses(" + SynchMaster.getInstance().getAddressList().size() + "): ";
-            for (Iterator<Address> i = SynchMaster.getInstance().getAddressList().iterator(); i.hasNext(); ) {
+            for (Iterator<Address> i = SynchMaster.getInstance().getAddressList().iterator(); i.hasNext();) {
                 addresses = addresses.concat(SynchMaster.getInstance().getChannelName(i.next()));
                 if (i.hasNext()) {
                     addresses = addresses.concat(", ");
@@ -354,7 +355,6 @@ public class ConsoleController {
         return AdditionalCommands.valueOf(cis.getSecondArg().toUpperCase(Locale.US).replaceFirst("-", ""));
     }
 
-
     public void checkCreateCommand(ConsoleInputString cis) throws WrongInputArgException {
         int length = cis.getLength();
         if (AdditionalCommands.NODE.getCommand().equals(cis.getSecondArg()) && (length == 3)) {
@@ -366,17 +366,20 @@ public class ConsoleController {
         }
     }
 
-    //switch-case commands
-
     private void disconnect() {
         SynchMaster.getInstance().disconnect();
-        if (!SynchMaster.getInstance().isConnected())
+        if (!SynchMaster.getInstance().isConnected()) {
             LOGGER.info("Disconnected.");
+        }
     }
 
     private void merge() {
-        if (!isConnected()) return;
-        if (isCoordinator()) return;
+        if (!isConnected()) {
+            return;
+        }
+        if (isCoordinator()) {
+            return;
+        }
         List<Pair<MergeStatus, AbstractEntity>> mergeList = SynchMaster.getInstance().merge();
         for (Pair<MergeStatus, AbstractEntity> pair : mergeList) {
             LOGGER.info(pair.toString());
@@ -384,49 +387,71 @@ public class ConsoleController {
     }
 
     private void pull() {
-        if (!isConnected()) return;
-        if (isCoordinator()) return;
+        if (!isConnected()) {
+            return;
+        }
+        if (isCoordinator()) {
+            return;
+        }
         if (SynchMaster.getInstance().pull()) {
             LOGGER.info("Pulled.");
             refresh();
-        } else
+        } else {
             LOGGER.info("Nothing to pull, you have all cluster's data.");
+        }
     }
 
     private void push() {
-        if (!isConnected()) return;
+        if (!isConnected()) {
+            return;
+        }
         if (SynchMaster.getInstance().isSingle()) {
             LOGGER.info("Only one member in cluster.");
             return;
         }
-        if (SynchMaster.getInstance().push())
+        if (SynchMaster.getInstance().push()) {
             LOGGER.info("Pushed.");
-        else
+        } else {
             LOGGER.info("Nothing to push, you do not have local changes.");
+        }
     }
 
     private void reset() {
-        if (!isConnected()) return;
-        if (isCoordinator()) return;
+        if (!isConnected()) {
+            return;
+        }
+        if (isCoordinator()) {
+            return;
+        }
         if (SynchMaster.getInstance().reset()) {
             LOGGER.info("Reseted local changes.");
             refresh();
-        } else
+        } else {
             LOGGER.info("Nothing to reset, you do not have local changes.");
+        }
     }
 
     private void revert() {
-        if (!isConnected()) return;
-        if (isCoordinator()) return;
+        if (!isConnected()) {
+            return;
+        }
+        if (isCoordinator()) {
+            return;
+        }
         if (SynchMaster.getInstance().revert()) {
             LOGGER.info("Cluster has been reverted.");
-        } else
+        } else {
             LOGGER.info("Nothing to revert, you have all cluster data.");
+        }
     }
 
     private void autosynch() {
-        if (!isConnected()) return;
-        if (isCoordinator()) return;
+        if (!isConnected()) {
+            return;
+        }
+        if (isCoordinator()) {
+            return;
+        }
         if (SynchMaster.getInstance().getMode() == SynchMaster.Mode.MANUAL) {
             SynchMaster.getInstance().pull();
             SynchMaster.getInstance().push();
@@ -462,8 +487,7 @@ public class ConsoleController {
             } else if (SynchMaster.getInstance().getMode() == SynchMaster.Mode.MANUAL
                     && cis.getThirdArg().equals("auto")
                     && (SynchMaster.getInstance().isMemberChanged()
-                    ||
-                    SynchMaster.getInstance().isClusterChanged())) {
+                    || SynchMaster.getInstance().isClusterChanged())) {
                 LOGGER.info("Current member is not synchronized with cluster."
                         + " Use commands 'push', 'pull', 'reset', 'revert' to"
                         + " synch with cluster.");

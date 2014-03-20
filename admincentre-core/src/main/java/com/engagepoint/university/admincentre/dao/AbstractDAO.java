@@ -27,6 +27,7 @@ import com.engagepoint.university.admincentre.util.ConfLoader;
 
 public abstract class AbstractDAO<T extends AbstractEntity> extends Observable implements
         GenericDAO<T> {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDAO.class);
     private static final String CACHE_CONFIG = "cache_config.xml";
     private static final String USED_CACHE = "evictionCache";
@@ -46,14 +47,13 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
             if (!cache.containsKey(instanceId)) {
                 cache.put(instanceId, newInstance);
                 //TODO find out why it doesn`t work on LTE
-                try{
-                	if(SynchMaster.connected){
-                		setChanged();
-                		notifyObservers(new CRUDPayload(CRUDOperation.CREATE, newInstance));
-                	}
-                }
-                catch(Exception e){
-                    LOGGER.warn("exception when create was occured, sychroniztion might not work ",
+                try {
+                    if (SynchMaster.connected) {
+                        setChanged();
+                        notifyObservers(new CRUDPayload(CRUDOperation.CREATE, newInstance));
+                    }
+                } catch (Exception e) {
+                    LOGGER.warn("Exception when create was occured, sychroniztion might not work ",
                             newInstance.getId(), e);
                 }
             } else {
@@ -73,7 +73,7 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
             if (cache.containsKey(id)) {
                 variable = cache.get(id);
             }
-           
+
             return variable;
         } finally {
             stopCacheManager();
@@ -86,12 +86,12 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
             getCache(CACHE_CONFIG, USED_CACHE);
             cache.replace(transientObject.getId(), transientObject);
             try {
-            	if(SynchMaster.connected){
-            		setChanged();
-            		notifyObservers(new CRUDPayload(CRUDOperation.UPDATE, transientObject));
-            	}
+                if (SynchMaster.connected) {
+                    setChanged();
+                    notifyObservers(new CRUDPayload(CRUDOperation.UPDATE, transientObject));
+                }
             } catch (Exception e) {
-                LOGGER.warn("exception when update was occured, sychroniztion might not work ",
+                LOGGER.warn("Exception when update was occured, sychroniztion might not work ",
                         transientObject.getId(), e);
             }
         } finally {
@@ -109,12 +109,12 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
             }
             cache.remove(keyId);
             try {
-            	if(SynchMaster.connected){
-            		setChanged();
-            		notifyObservers(new CRUDPayload(CRUDOperation.DELETE, temp));
-            	}
+                if (SynchMaster.connected) {
+                    setChanged();
+                    notifyObservers(new CRUDPayload(CRUDOperation.DELETE, temp));
+                }
             } catch (Exception e) {
-                LOGGER.warn("exception when update was occured, sychroniztion might not work ",
+                LOGGER.warn("Exception when update was occured, sychroniztion might not work ",
                         keyId, e);
             }
         } finally {
@@ -172,6 +172,7 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
 
     /**
      * Puts new received cache
+     *
      * @param cacheData
      * @throws IOException
      * @throws UnsupportedOperationException if could not put all

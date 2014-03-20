@@ -1,10 +1,10 @@
 package com.engagepoint.university.admincentre.exception;
 
-public class WrongInputArgException  extends Exception{
+public class WrongInputArgException extends Exception {
 
     public WrongInputArgException() {
-       this("You enter wrong argument. Try to use -help for get information about " +
-               "application commands");
+        this("You enter wrong argument. Try to use -help for get information about "
+                + "application commands");
     }
 
     public WrongInputArgException(String message) {

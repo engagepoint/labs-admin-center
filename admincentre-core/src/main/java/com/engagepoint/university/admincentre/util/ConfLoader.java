@@ -7,7 +7,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -27,6 +26,13 @@ public class ConfLoader {
     public static final String PREFIX = "stream2file";
     public static final String SUFFIX = ".tmp";
     private static volatile ConfLoader instance;
+
+    public static synchronized ConfLoader getInstance() {
+        if (instance == null) {
+            instance = new ConfLoader();
+        }
+        return instance;
+    }
     private Element rootElement;
     private FileReader fr;
     private Document rDoc;
@@ -60,7 +66,7 @@ public class ConfLoader {
                 configurationFile = new File(configPath);
                 fileWasFound = true;
             } else {
-                LOGGER.info("there is no configuration file in working dir: " + configPath);
+                LOGGER.warn("there is no configuration file in working dir: " + configPath);
             }
         }
         if (!fileWasFound) {
@@ -77,13 +83,6 @@ public class ConfLoader {
         this.clusterName = rDoc.getRootElement().getChild("synchronization")
                 .getAttributeValue("clusterName");
         this.basePath = rDoc.getRootElement().getChild("infinispan").getAttributeValue("basePath");
-    }
-
-    public static synchronized ConfLoader getInstance() {
-        if (instance == null) {
-            instance = new ConfLoader();
-        }
-        return instance;
     }
 
     private boolean isFileExists(String filePath) {
@@ -122,33 +121,34 @@ public class ConfLoader {
      *
      * @return synchronization mode
      */
-    public String getMode() {
-        return mode;
-    }
+        public String getMode() {
+            return mode;
+        }
     /*
      * @deprecated
      */
-
-    @Deprecated
+    
+        @Deprecated
     public void setMode(String mode) {
         this.mode = mode;
         rDoc.getRootElement().getChild("synchronization").getAttribute("mode").setValue(mode);
         write();
     }
 
+
     /**
      * Allows to get synchronization cluster name from configuration file
      *
      * @return name of cluster
      */
-    public String getClusterName() {
-        return clusterName;
-    }
+        public String getClusterName() {
+            return clusterName;
+        }
 
     /*
      * @deprecated
      */
-    @Deprecated
+        @Deprecated
     public void setClusterName(String clusterName) {
         this.clusterName = clusterName;
         rDoc.getRootElement().getChild("synchronization").getAttribute("clusterName")
@@ -161,40 +161,40 @@ public class ConfLoader {
      *
      * @return name of channel
      */
-    public String getBasePath() {
-        String path = basePath;
-        int firstSlash = path.indexOf('/');
-        if (path.indexOf("#{") == 0 && path.indexOf("}") == firstSlash - 1) {
-            String systemDir = System.getProperty(path.substring(2, firstSlash - 1));
-            if (systemDir != null) {
-                path = systemDir.concat(path.substring(firstSlash));
+        public String getBasePath() {
+            String path = basePath;
+            int firstSlash = path.indexOf('/');
+            if (path.indexOf("#{") == 0 && path.indexOf("}") == firstSlash - 1) {
+                String systemDir = System.getProperty(path.substring(2, firstSlash - 1));
+                if (systemDir != null) {
+                    path = systemDir.concat(path.substring(firstSlash));
+                }
             }
+            return path;
         }
-        return path;
-    }
 
     /*
      * @deprecated
      */
-    @Deprecated
+        @Deprecated
     public void setBasePath(String path) {
         this.basePath = path;
         rDoc.getRootElement().getChild("infinispan").getAttribute("basePath").setValue(path);
         write();
     }
 
-    private void write() {
-        XMLOutputter outputter = new XMLOutputter();
-        outputter.setFormat(Format.getPrettyFormat());
-        FileWriter fw;
-        try {
-            fw = new FileWriter(configurationFile);
-            outputter.output(this.rDoc, fw);
-            fw.close();
-        } catch (IOException e) {
-            LOGGER.warn("Error during writing configuration file ", e);
+        private void write() {
+            XMLOutputter outputter = new XMLOutputter();
+            outputter.setFormat(Format.getPrettyFormat());
+            FileWriter fw;
+            try {
+                fw = new FileWriter(configurationFile);
+                outputter.output(this.rDoc, fw);
+                fw.close();
+            } catch (IOException e) {
+                LOGGER.warn("Error during writing configuration file ", e);
+            }
         }
-    }
 
     private void read() {
         SAXBuilder parser = new SAXBuilder();
@@ -212,11 +212,10 @@ public class ConfLoader {
             LOGGER.warn("Error during reading building DOM ", e);
         }
     }
-    
+
     /*
      * Read from is to buffer
      */
-
     private File streamToFile(InputStream in) throws IOException {
         final File tempFile = File.createTempFile(PREFIX, SUFFIX);
         tempFile.deleteOnExit();

@@ -2,7 +2,7 @@ package com.engagepoint.university.admincentre.synch;
 
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
-								
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

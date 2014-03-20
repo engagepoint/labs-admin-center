@@ -17,9 +17,9 @@ import com.engagepoint.university.admincentre.preferences.NodePreferences;
 
 @Stateless
 public class DataBean {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataBean.class.getName());
 
     private TreeProperties root;
-    private static final Logger LOGGER = LoggerFactory.getLogger(DataBean.class.getName());
 
     public TreeProperties getPreferencesTree() {
         root = new TreeProperties("root", null);
@@ -96,8 +96,7 @@ public class DataBean {
                 try {
                     new NodePreferences(null, "").node(absPath).removeNode();
                 } catch (BackingStoreException backingStoreException) {
-                    LOGGER.error(DataBean.class.getName(), "public void deleteNode()",
-                            backingStoreException);
+                    LOGGER.error("Failed to delete Node /n", backingStoreException);
                 }
             } else {
                 new NodePreferences(null, "").node(absPath).remove(selectedDocument.getName());
@@ -126,7 +125,7 @@ public class DataBean {
                         KeyType.valueOf(temporaryDocument.getType()), temporaryDocument.getValue());
 
             } catch (IOException e) {
-                LOGGER.warn("Adding the Node/Key: " + newName + " failed", e);
+                LOGGER.warn("Adding the Node/Key: " + newName + " failed /n", e);
             }
             new TreeProperties(new PropertiesDocument(path, newName, temporaryDocument.getValue(),
                     temporaryDocument.getType(), temporaryDocument.isFile()),

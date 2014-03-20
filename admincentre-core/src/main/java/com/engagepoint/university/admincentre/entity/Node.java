@@ -2,7 +2,6 @@ package com.engagepoint.university.admincentre.entity;
 
 import java.util.LinkedList;
 import java.util.List;
-
 import org.hibernate.search.annotations.Indexed;
 
 @Indexed
@@ -15,14 +14,14 @@ public class Node extends AbstractEntity {
     public Node(String parentNodeId, String name) {
         super(name, parentNodeId);
     }
-    
+
     public Node() {
     }
-    
+
     public void setChildNodeIdList(List<String> childNodeIdList) {
         this.childNodeIdList = childNodeIdList;
     }
-    
+
     public List<String> getKeyIdList() {
         return keyIdList;
     }

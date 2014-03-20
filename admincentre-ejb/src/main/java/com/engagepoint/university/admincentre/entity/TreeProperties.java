@@ -3,8 +3,8 @@ package com.engagepoint.university.admincentre.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class TreeProperties {
+
     public static final String DEFAULT_TYPE = "default";
 
     private String type;
@@ -25,9 +25,9 @@ public class TreeProperties {
         this.data = data;
         children = new ArrayList<TreeProperties>();
         this.parent = parent;
-        if (this.parent != null){
+        if (this.parent != null) {
             this.parent.getChildren().add(this);
-    }
+        }
     }
 
     public TreeProperties(String type, Object data, TreeProperties parent) {
@@ -35,9 +35,9 @@ public class TreeProperties {
         this.data = data;
         children = new ArrayList<TreeProperties>();
         this.parent = parent;
-        if (this.parent != null){
+        if (this.parent != null) {
             this.parent.getChildren().add(this);
-    }
+        }
     }
 
     public String getType() {
@@ -94,7 +94,7 @@ public class TreeProperties {
     }
 
     public boolean isLeaf() {
-        if (children == null){
+        if (children == null) {
             return true;
         }
         return children.isEmpty();
@@ -102,10 +102,10 @@ public class TreeProperties {
 
     @Override
     public String toString() {
-        if (data != null){
+        if (data != null) {
             return data.toString();
-        } else{
+        } else {
             return super.toString();
-    }
+        }
     }
 }

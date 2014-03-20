@@ -53,5 +53,4 @@ public class ConfLoadBeanImpl implements ConfLoadBean {
         confLoader.setBasePath(basePath);
     }
 
-
 }
