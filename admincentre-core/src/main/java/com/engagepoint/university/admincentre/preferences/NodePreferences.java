@@ -152,6 +152,7 @@ public class NodePreferences extends Preferences {
                 nodeDAO.update(parent.currentNode);
                 newNode = true;
             }
+
             for (String childId : currentNode.getChildNodeIdList()) {
                 Node childNode = NodeDAO.getInstance().read(childId);
                 String childName = childNode.getName();
@@ -1353,6 +1354,7 @@ public class NodePreferences extends Preferences {
     protected void removeSpi(String key) throws IOException {
 
         keyDAO.delete(key);
+        Node currentNode = nodeDAO.read(this.getKey(key).getParentNodeId());
         currentNode.getKeyIdList().remove(key);
         nodeDAO.update(this.currentNode);
     }

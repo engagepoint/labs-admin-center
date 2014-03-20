@@ -16,7 +16,7 @@ public class Test2 {
         another.put("11", "11");
         another1.put("12", "12");
         another2.put("13", "13");
-
+        // another2.remove("13");
 
         // try {
         // another2.removeNode();

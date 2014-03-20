@@ -138,12 +138,10 @@ public class DataBean {
     public TreeProperties getNodeByDoc(PropertiesDocument document, TreeProperties root) {
 
         TreeProperties foundTree = null;
-
-
          for (TreeProperties treeNode : root.getChildren()) {
             PropertiesDocument currentDocument = (PropertiesDocument) treeNode.getData();
 
-            if (document.getAbsolutePath().equals(currentDocument.getAbsolutePath())) {
+            if (document.equals(currentDocument)) {
                 return treeNode;
             } else {
                 foundTree = getNodeByDoc(document, treeNode);
