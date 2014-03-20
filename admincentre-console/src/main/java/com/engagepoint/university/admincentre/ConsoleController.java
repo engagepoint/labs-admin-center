@@ -92,7 +92,7 @@ public class ConsoleController {
         }
     }
 
-    public boolean selectNode(ConsoleInputString cis) {
+    public void selectNode(ConsoleInputString cis) throws WrongInputArgException {
         if (cis.getLength() == 2) {
             String path = cis.getSecondArg();
             try {
@@ -106,10 +106,9 @@ public class ConsoleController {
                         + "with the database", e);
             }
             displayNodes(currentPreferences);
-            return true;
+        } else {
+            throw new WrongInputArgException();
         }
-        return false;
-
     }
 
     public void createNode(String nodeName) {
