@@ -1,7 +1,6 @@
 package com.engagepoint.university.admincentre;
 
 public class ConsoleInputString {
-
     private String firstArg;
     private String secondArg;
     private String thirdArg;
@@ -62,13 +61,13 @@ public class ConsoleInputString {
 
     @Override
     public String toString() {
-        return "ConsoleInputString{"
-                + "firstArg='" + firstArg + '\''
-                + ", secondArg='" + secondArg + '\''
-                + ", thirdArg='" + thirdArg + '\''
-                + ", fourthArg='" + fourthArg + '\''
-                + ", fifthArg='" + fifthArg + '\''
-                + ", length=" + length
-                + '}';
+        return "ConsoleInputString{" +
+                "firstArg='" + firstArg + '\'' +
+                ", secondArg='" + secondArg + '\'' +
+                ", thirdArg='" + thirdArg + '\'' +
+                ", fourthArg='" + fourthArg + '\'' +
+                ", fifthArg='" + fifthArg + '\'' +
+                ", length=" + length +
+                '}';
     }
 }

@@ -1,7 +1,6 @@
 package com.engagepoint.university.admincentre;
 
 public enum AdditionalCommands {
-
     NODE("-node"),
     KEY("-key"),
     CONNECT("-connect"),
