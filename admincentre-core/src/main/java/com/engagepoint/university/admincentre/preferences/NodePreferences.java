@@ -1352,7 +1352,11 @@ public class NodePreferences extends Preferences {
      * @throws IOException
      */
     protected void removeSpi(String key) throws IOException {
+
         Node currentNode = nodeDAO.read(this.getKey(key).getParentNodeId());
+        if (this.currentNode.equals(currentNode)) {
+            this.currentNode = currentNode;
+        }
         keyDAO.delete(key);
         currentNode.getKeyIdList().remove(key);
         nodeDAO.update(currentNode);
