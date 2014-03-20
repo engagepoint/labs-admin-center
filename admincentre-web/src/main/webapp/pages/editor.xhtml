@@ -13,67 +13,6 @@
             <br/>
 
             <h2><h:outputText value="#{trans.prefAdm}"/></h2>
-
-            <ui:remove>
-                <p:menuButton value="Options" id="Options">
-                    <p:menuitem value="Export" id="export"
-                                icon="ui-icon-disk"
-                                ajax="false"
-                                actionListener="#{tempController.onExportZip}">
-                        <p:fileDownload value="#{fileController.downloadFile}"/>
-                    </p:menuitem>
-                    <p:menuitem value="Import"
-                                update="ImportDialog"
-                                icon="ui-icon-arrowrefresh-1-w"
-                                oncomplete="uploadXML.show()"/>
-                </p:menuButton>
-
-                <p:commandButton value="Configuration" oncomplete="confDialog.show()">
-
-                </p:commandButton>
-            </ui:remove>
-            <!--Config dialog-->
-            <p:dialog id="confDialog"
-                      header="Configure Dialog"
-                      widgetVar="confDialog"
-                      position="center, center"
-                      showEffect="fade"
-                      modal="true"
-                      closable="false">
-
-                <ui:remove>
-                    <h:outputLabel value="Channel: "/>
-                    <p:inputText value="#{configBean.channel}" style="font-weight:bold"/>
-
-                    <h:outputLabel value="Mode"/>
-                    <p:inputText value="#{configBean.mode}" style="font-weight:bold"/>
-
-                    <h:outputLabel value="Cluster "/>
-                    <p:inputText value="#{configBean.cluster}" style="font-weight:bold"/>
-
-                    <h:outputLabel value="Base Path"/>
-                    <p:inputText value="#{configBean.basePath}" style="font-weight:bold"/>
-                </ui:remove>
-                <br/>
-                <br/>
-                <p:commandButton
-                    id="confOkButton"
-                    value="Ok"
-                    styleClass="ml20"
-                    style="float:right"
-                    ajax="false"
-                    update="treeTable"
-                    oncomplete="confDialog.hide()"/>
-                <h:outputText value="    "/>
-
-                <p:commandButton
-                    id="confCancelButton"
-                    value="Cancel"
-                    styleClass="secondary"
-                    style="float: right"
-                    action="cancel"
-                    oncomplete="confDialog.hide()"/>
-            </p:dialog>
             <br/>
             <uib:gridContainer  id="searchParams">
                 <uib:gridRow fluid="false" styleClass="mb20">
@@ -101,17 +40,6 @@
                 </uib:gridRow>
             </uib:gridContainer>
 
-            <p:dialog id="ImportDialog"
-                      header="Import Dialog"
-                      widgetVar="uploadXML"
-                      modal="true" height="200" width="800">
-                <p:fileUpload value="#{fileController.uploadFile}"
-                              fileUploadListener="#{tempController.onImportZip}"
-                              multiple="true"
-                              oncomplete="uploadXML.hide()"/>
-
-            </p:dialog>
-
             <p:treeTable id="treeTable"
                          value="#{documentsController.root}"
                          var="doc">
@@ -138,11 +66,12 @@
                         styleClass="ui-button-icon-only secondary small"
                         style="float: right"
                         icon="ui-icon-remove"
+                        update="treeTable"
                         oncomplete="delDialog.show()">
                         <f:setPropertyActionListener value="#{doc}"
                                                      target="#{documentsController.selectedDoc}"/>
                     </p:commandButton>
-
+                    
                     <uib:buttonGroup>
                         <!--Add button-->
                         <p:commandButton
@@ -152,6 +81,7 @@
                             styleClass="ui-button-icon-only secondary small"
                             icon="ui-icon-add"
                             style="float: left"
+                            update="treeTable"
                             oncomplete="addDlg.show()">
                             <f:setPropertyActionListener value="#{doc}"
                                                          target="#{documentsController.selectedDoc}"/>
@@ -160,15 +90,32 @@
                         <!--Edit button-->
                         <p:commandButton id="editButton"
                                          title="#{trans.edit}"
+                                         rendered="#{doc.file}"
                                          style="float: right"
                                          styleClass="ui-button-icon-only secondary small"
                                          icon="ui-icon-edit-small"
+                                         update="treeTable"
                                          oncomplete="editDialog.show()">
                             <f:setPropertyActionListener value="#{doc}"
                                                          target="#{documentsController.selectedDoc}"/>
                         </p:commandButton>
                     </uib:buttonGroup>
-
+                    
+                    <!--KeyEdit button-->
+                        <p:commandButton id="keyEditButton"
+                                         title="#{trans.edit}"
+                                         rendered="#{not doc.file}"
+                                         styleClass="ui-button-icon-only secondary small"
+                                         style="float: right"
+                                         icon="ui-icon-edit-small"
+                                         update="treeTable"
+                                         oncomplete="editDialog.show()">
+                            <f:setPropertyActionListener value="#{doc}"
+                                                         target="#{documentsController.selectedDoc}"/>
+                            
+                            
+                        </p:commandButton>
+                    
                     <!--Delete dialog-->
                     <p:dialog id="delDialog"
                               header="#{trans.delConfHeader}"
