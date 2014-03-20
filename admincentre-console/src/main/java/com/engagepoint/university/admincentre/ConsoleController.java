@@ -81,7 +81,6 @@ public class ConsoleController {
                     LOGGER.debug(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3)
                             + " Key = " + keys[i] + ";" + "Value = "
                             + preferance.get(keys[i], "value wasn`t found"));
-
                 }
                 LOGGER.info("");
             }
@@ -96,10 +95,6 @@ public class ConsoleController {
             String path = cis.getSecondArg();
             try {
                 if (currentPreferences.nodeExists(path)) {
-//                    String argument = cis.getSecondArg();
-//                    String absPath = currentPreferences.absolutePath();
-//                    String fullPath = "/".equals(absPath)
-//                            ? absPath + argument : absPath +"/"+ argument;
                     this.currentPreferences = currentPreferences.node(path);
                 }
             } catch (BackingStoreException e) {
@@ -118,7 +113,6 @@ public class ConsoleController {
             String newPath = (("/").equals(currentPreferences.absolutePath()) ? "/" + nodeName
                     : currentPreferences.absolutePath() + "/" + nodeName);
             currentPreferences.node(newPath);
-//            currentPreferences.node(currentPreferences.absolutePath());
         }
         displayNodes(this.currentPreferences);
     }
@@ -128,7 +122,6 @@ public class ConsoleController {
             currentPreferences.put(keyName, keyValue);
         }
         displayNodes(currentPreferences);
-
     }
 
     public void remove(ConsoleInputString cis) throws WrongInputArgException {
@@ -149,16 +142,16 @@ public class ConsoleController {
             entity = cis.getThirdArg();
             NodePreferences nodePreferences = new NodePreferences(null, "");
             Key key;
-			try {
-				key = nodePreferences.getKey(entity);
-				if(null != key){
-					nodePreferences.node(key.getParentNodeId()).remove(entity);
-				}else{
-					LOGGER.info("Selected key does not exist.");
-				}
-			} catch (IOException e) {
-				LOGGER.warning("Cannot read from storage " + e.getMessage());
-			}
+            try {
+                key = nodePreferences.getKey(entity);
+                if (null != key) {
+                    nodePreferences.node(key.getParentNodeId()).remove(entity);
+                } else {
+                    LOGGER.info("Selected key does not exist.");
+                }
+            } catch (IOException e) {
+                LOGGER.warn("Cannot read from storage " + e.getMessage());
+            }
         } else {
             throw new WrongInputArgException();
         }
@@ -204,7 +197,7 @@ public class ConsoleController {
         return true;
     }
 
-    private void refresh() {			//TODO remove method
+    private void refresh() {
         if (((NodePreferences) currentPreferences).currentNodeExists()) {
             currentPreferences = new NodePreferences(null, "").node(currentPreferences.absolutePath());
         } else {
@@ -347,7 +340,7 @@ public class ConsoleController {
             case NAME:
                 name(cis);
                 break;
-            default: //TODO
+            default:
         }
     }
 
