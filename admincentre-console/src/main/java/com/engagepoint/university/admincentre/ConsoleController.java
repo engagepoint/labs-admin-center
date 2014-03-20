@@ -1,6 +1,7 @@
 package com.engagepoint.university.admincentre;
 
 import com.engagepoint.university.admincentre.entity.AbstractEntity;
+import com.engagepoint.university.admincentre.entity.Key;
 import com.engagepoint.university.admincentre.entity.KeyType;
 import com.engagepoint.university.admincentre.exception.WrongInputArgException;
 import com.engagepoint.university.admincentre.preferences.NodePreferences;
@@ -117,7 +118,7 @@ public class ConsoleController {
             String newPath = (("/").equals(currentPreferences.absolutePath()) ? "/" + nodeName
                     : currentPreferences.absolutePath() + "/" + nodeName);
             currentPreferences.node(newPath);
-            currentPreferences.node(currentPreferences.absolutePath());
+//            currentPreferences.node(currentPreferences.absolutePath());
         }
         displayNodes(this.currentPreferences);
     }
@@ -146,7 +147,18 @@ public class ConsoleController {
             }
         } else if (cis.getSecondArg().equals("-key")) {
             entity = cis.getThirdArg();
-            currentPreferences.remove(entity);
+            NodePreferences nodePreferences = new NodePreferences(null, "");
+            Key key;
+			try {
+				key = nodePreferences.getKey(entity);
+				if(null != key){
+					nodePreferences.node(key.getParentNodeId()).remove(entity);
+				}else{
+					LOGGER.info("Selected key does not exist.");
+				}
+			} catch (IOException e) {
+				LOGGER.warning("Cannot read from storage " + e.getMessage());
+			}
         } else {
             throw new WrongInputArgException();
         }
