@@ -30,6 +30,13 @@ public class ValidatorAdd {
         return true;
     }
 
+    public static void clearInputs(UIComponent uiComponent, UIComponent parent) {
+        ((HtmlInputText) uiComponent).resetValue();
+        UIComponent sone2 = parent.findComponent("inputName2");
+        HtmlInputText htmlInputText2 = (HtmlInputText) sone2;
+        htmlInputText2.resetValue();
+    }
+
     public void validateAlpha(FacesContext facesContext, UIComponent uiComponent, Object value) throws ValidatorException {
         String selectedValue;
         UIComponent parent = uiComponent.getParent();
@@ -45,11 +52,13 @@ public class ValidatorAdd {
                     if (!StringUtils.isNumeric((String) value)) {
                         HtmlInputText htmlInputText = (HtmlInputText) uiComponent;
                         FacesMessage facesMessage = new FacesMessage(htmlInputText.getLabel() + ": Must be Integer Number");
+                        clearInputs(uiComponent, parent);
                         throw new ValidatorException(facesMessage);
                     } else {
                         if (("Double".equals(selectedValue) || "Float".equals(selectedValue)) && (!isDouble((String) value))) {
                             HtmlInputText htmlInputText = (HtmlInputText) uiComponent;
                             FacesMessage facesMessage = new FacesMessage(htmlInputText.getLabel() + ": Must be Floating-Point Number");
+                            clearInputs(uiComponent, parent);
                             throw new ValidatorException(facesMessage);
                         }
                     }
