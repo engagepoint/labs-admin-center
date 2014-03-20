@@ -140,11 +140,15 @@ public class DataBean {
         TreeProperties foundTree = null;
          for (TreeProperties treeNode : root.getChildren()) {
             PropertiesDocument currentDocument = (PropertiesDocument) treeNode.getData();
-
+            if (foundTree == null) {
             if (document.equals(currentDocument)) {
                 return treeNode;
             } else {
                 foundTree = getNodeByDoc(document, treeNode);
+            }
+            }
+ else {
+                return foundTree;
             }
         }
         return foundTree;
