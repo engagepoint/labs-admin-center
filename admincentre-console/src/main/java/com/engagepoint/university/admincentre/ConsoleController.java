@@ -186,13 +186,18 @@ public class ConsoleController {
      * @return true if key type exist in enum KeyType
      */
     public boolean keyTypeValidation(String keyType) {
-    	KeyType[] keyTypeList = KeyType.values();
-    	 for (KeyType keyTypeTemp : keyTypeList) {
-             if(keyType.equals(keyTypeTemp.name())){
-            	 return true;
-             }
-         }
-    	 return false;
+        try {
+            KeyType.valueOf(keyType);
+        } catch (IllegalArgumentException e) {
+            LOGGER.info("Invalid key type /n");
+            KeyType[] keyTypeList = KeyType.values();
+            LOGGER.info("You have entered invalid key type. Use one of the next types :");
+            for (KeyType keyTypeTemp : keyTypeList) {
+                LOGGER.info("  " + keyTypeTemp.toString());
+            }
+            return false;
+        }
+        return true;
     }
 
     private void refresh() {
