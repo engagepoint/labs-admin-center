@@ -31,7 +31,9 @@ public enum Commands {
             + "\n\t -load \t\t\tloads configurations from file"
             + "\n\t -save \t\t\tsave configurations to file"),
     EXPORT("-export",
-            "exports current base into zip located in entered path");
+            "exports current base into zip located in entered path"),
+    IMPORT("-import", "import current base from zip located in entered path");
+
 
     private String name;
     private String description;

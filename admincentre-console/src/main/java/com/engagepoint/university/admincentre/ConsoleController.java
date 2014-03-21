@@ -13,7 +13,7 @@ import org.jgroups.Address;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -80,9 +80,18 @@ public class ConsoleController {
             if (keys.length != 0) {
                 for (int i = 0; i < keys.length; i++) {
 
-                    LOGGER.info(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3)
-                            + " Key = " + keys[i] + ";" + "Value = "
-                            + preferance.get(keys[i], "value wasn`t found"));
+
+                    try {
+                        KeyType keyType = ((NodePreferences) preferance).getKey(keys[i]).getType();
+                        keyType.toString();
+                        LOGGER.info((ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3)
+                                + " Key = {}; Type = {}; Value = {}"),
+                                keys[i],
+                                keyType.toString(),
+                                preferance.get(keys[i], "value wasn`t found"));
+                    } catch (IOException e) {
+                        LOGGER.info("Can't get key");
+                    }
                 }
                 LOGGER.info("");
             }
@@ -145,16 +154,16 @@ public class ConsoleController {
             entity = cis.getThirdArg();
             NodePreferences nodePreferences = new NodePreferences(null, "");
             Key key;
-            try {
-                key = nodePreferences.getKey(entity);
-                if (null != key) {
-                    nodePreferences.node(key.getParentNodeId()).remove(entity);
-                } else {
-                    LOGGER.info("Selected key does not exist.");
-                }
-            } catch (IOException e) {
-                LOGGER.info("Cannot read from storage ", e);
-            }
+			try {
+				key = nodePreferences.getKey(entity);
+				if(null != key){
+					nodePreferences.node(key.getParentNodeId()).remove(entity);
+				}else{
+					LOGGER.info("Selected key does not exist.");
+				}
+			} catch (IOException e) {
+				LOGGER.error("Cannot read from storage ", e);
+			}
         } else {
             throw new WrongInputArgException();
         }
@@ -162,11 +171,30 @@ public class ConsoleController {
 
     public void export(ConsoleInputString cis) {
         String path = cis.getSecondArg();
+        String message = "Can`t export using path {}";
         try {
             new NodePreferences(null, "").exportNode(path);
         } catch (BackingStoreException e) {
-            LOGGER.info("Can`t export using path {}", path, e);
-        }
+            LOGGER.info(message, path);
+        } 
+    }
+
+    public void importFromZip(ConsoleInputString cis) {
+        String path = cis.getSecondArg();
+        String message = "Can`t import using path {}";
+        InputStream is = null;
+        File file = new File(path);
+            try {
+                is = new FileInputStream(file);
+                NodePreferences np = new NodePreferences(null, "");
+                np.importNode(is);
+                currentPreferences = np;
+            } catch (FileNotFoundException e) {
+               LOGGER.info("Can't find file {} in the following way {} ", file.getName(), file.getPath());
+
+            } catch (IOException e) {
+                LOGGER.info(message, path);
+            }
     }
 
     public boolean nameValidation(String name) {

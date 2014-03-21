@@ -120,6 +120,9 @@ public final class Main {
                 case EXPORT:
                     CONSOLE_CONTROLLER.export(cis);
                     break;
+                case IMPORT:
+                    CONSOLE_CONTROLLER.importFromZip(cis);
+                    break;
                 default:
                     CONSOLE_CONTROLLER.showHelp();
                     break;
