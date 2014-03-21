@@ -40,22 +40,26 @@
                 </uib:gridRow>
             </uib:gridContainer>
 
-            <p:treeTable id="treeTable"
+            <p:treeTable id="treeTable" 
+                         resizableColumns="true"
                          value="#{documentsController.root}"
-                         var="doc">
+                         var="doc" style="table-layout: fixed">
                 <f:facet name="header">#{trans.propViewer}</f:facet>
-                <p:column style="width:34%">
+                <p:column style="width:34%;">
                     <f:facet name="header">#{trans.file}</f:facet>
-                    <h:outputText value="#{doc.name}"/>
+                    <h:outputText style="word-wrap:break-word; float:left; width: 120px;"
+                                  value="#{doc.name}"/>
                 </p:column>
 
-                <p:column style="width:34%">
+                <p:column  >
                     <f:facet name="header">#{trans.value}</f:facet>
-                    <h:outputText value="#{doc.value}"/>
+
+                    <h:outputText style="float:left; width: 200px; word-wrap:break-word;" value="#{doc.value}" />
+
                 </p:column>
-                <p:column style="width:9%">
+                <p:column style="width:9%" >
                     <f:facet name="header">#{trans.type}</f:facet>
-                    <h:outputText value="#{doc.type}"/>
+                    <h:outputText value="#{doc.type}" escape="false"/>
                 </p:column>
                 <p:column style="width:23%">
                     <f:facet name="header"></f:facet>
@@ -71,7 +75,7 @@
                         <f:setPropertyActionListener value="#{doc}"
                                                      target="#{documentsController.selectedDoc}"/>
                     </p:commandButton>
-                    
+
                     <uib:buttonGroup>
                         <!--Add button-->
                         <p:commandButton
@@ -100,20 +104,20 @@
                                                          target="#{documentsController.selectedDoc}"/>
                         </p:commandButton>
                     </uib:buttonGroup>
-                    
+
                     <!--KeyEdit button-->
-                        <p:commandButton id="keyEditButton"
-                                         title="#{trans.edit}"
-                                         rendered="#{not doc.file}"
-                                         styleClass="ui-button-icon-only secondary small"
-                                         style="float: right"
-                                         icon="ui-icon-edit-small"
-                                         update="treeTable"
-                                         oncomplete="editDialog.show()">
-                            <f:setPropertyActionListener value="#{doc}"
-                                                         target="#{documentsController.selectedDoc}"/>
-                        </p:commandButton>
-                    
+                    <p:commandButton id="keyEditButton"
+                                     title="#{trans.edit}"
+                                     rendered="#{not doc.file}"
+                                     styleClass="ui-button-icon-only secondary small"
+                                     style="float: right"
+                                     icon="ui-icon-edit-small"
+                                     update="treeTable"
+                                     oncomplete="editDialog.show()">
+                        <f:setPropertyActionListener value="#{doc}"
+                                                     target="#{documentsController.selectedDoc}"/>
+                    </p:commandButton>
+
                     <!--Delete dialog-->
                     <p:dialog id="delDialog"
                               header="#{trans.delConfHeader}"
@@ -267,26 +271,26 @@
                                 <f:selectItem itemLabel="Double" itemValue="Double"/>
                                 <f:selectItem itemLabel="Float" itemValue="Float"/>
                             </p:selectOneMenu>
-                            </uib:gridContainer>
-                            <br/>
-   
-                            <p:commandButton value="Ok"
-                                             id="addOkButton2"
-                                             style="float:right"
-                                             styleClass="ml20"
-                                             ajax="false"
-                                             update="treeTable"
-                                             actionListener="#{documentsController.addNode()}"
-                                             oncomplete="addDlg2.hide()"/>
+                        </uib:gridContainer>
+                        <br/>
 
-                            <h:outputText value="    "/>
+                        <p:commandButton value="Ok"
+                                         id="addOkButton2"
+                                         style="float:right"
+                                         styleClass="ml20"
+                                         ajax="false"
+                                         update="treeTable"
+                                         actionListener="#{documentsController.addNode()}"
+                                         oncomplete="addDlg2.hide()"/>
 
-                            <p:commandButton value="Cancel"
-                                             id="addCancelButton2"
-                                             style="float:right"
-                                             styleClass="secondary"
-                                             actionListener="#{documentsController.resetTempDoc()}"
-                                             oncomplete="addDlg2.hide()"/>
+                        <h:outputText value="    "/>
+
+                        <p:commandButton value="Cancel"
+                                         id="addCancelButton2"
+                                         style="float:right"
+                                         styleClass="secondary"
+                                         actionListener="#{documentsController.resetTempDoc()}"
+                                         oncomplete="addDlg2.hide()"/>
                     </p:dialog>
                 </p:column>
             </p:treeTable>
