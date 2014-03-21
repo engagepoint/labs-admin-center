@@ -1,16 +1,15 @@
 package com.engagepoint.university.admincentre.dao;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-import java.util.List;
-
+import com.engagepoint.university.admincentre.entity.Key;
+import com.engagepoint.university.admincentre.entity.KeyType;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.engagepoint.university.admincentre.entity.Key;
-import com.engagepoint.university.admincentre.entity.KeyType;
+import java.io.IOException;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 public class AbstractDAOTestSearch {
 
@@ -29,8 +28,8 @@ public class AbstractDAOTestSearch {
 	}
 
 	@Test
-	public void testInsertKey() throws Exception {
-		System.out.println("........TESTING KEY SEARCHING.......");
+	public void testSearch() throws Exception {
+		System.out.println("........TESTING KEY SEARCH.......");
 		try {
 			keydao.create(key);
 			keydao.update(key);
