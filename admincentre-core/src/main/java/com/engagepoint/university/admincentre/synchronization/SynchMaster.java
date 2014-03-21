@@ -99,7 +99,6 @@ public class SynchMaster {
 				}
 			}
 
-//			LOGGER.info("getState: SENT " + cacheData.size() + " items");
 		}
 
 		/**
@@ -122,8 +121,6 @@ public class SynchMaster {
 			try {
 				receivedState = (HashMap<String, AbstractEntity>) Util
 						.objectFromStream(new DataInputStream(input));
-//				LOGGER.info("setState: RECEIVED " + receivedState.size()
-//						+ " items");
 			} catch (Exception e) {
 				throw new IllegalStateException(e);
 			}

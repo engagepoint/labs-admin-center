@@ -3,9 +3,7 @@ package com.engagepoint.university.admincentre.web;
 import com.engagepoint.component.menu.UIMenuItem;
 import com.engagepoint.component.menu.model.DefaultMenuModel;
 import com.engagepoint.component.menu.model.MenuModel;
-import com.engagepoint.university.admincentre.synch.Synch;
 import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.RequestScoped;
 import javax.faces.component.UIViewRoot;
@@ -18,9 +16,6 @@ public class LeftMenuBean {
     public static final String EDITOR_URL = "/editor.xhtml";
     public static final String SETTINGS_URL = "/settings.xhtml";
     
-    @EJB
-    private Synch synch;
-    private String clusterName;
     private MenuModel model;
 
     @PostConstruct
@@ -33,15 +28,6 @@ public class LeftMenuBean {
             editorMenu();
         } else if (viewId.endsWith(SETTINGS_URL)) {
             settingsMenu();
-        }
-    }
-
-    public String getInfo() {
-        if (synch.isConnected()) {
-            return "Connected. Channel name: " + synch.getChannelName()
-                    + "; Cluster name: " + synch.getClusterName();
-        } else {
-            return "Disconnected.";
         }
     }
 

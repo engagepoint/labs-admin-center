@@ -22,7 +22,7 @@ public class SynchBean implements Synch {
 
     @Override
     public boolean isConnected() {
-        return SynchMaster.getInstance().isConnected();
+    	return SynchMaster.connected() && SynchMaster.getInstance().isConnected();
     }
 
     @Override

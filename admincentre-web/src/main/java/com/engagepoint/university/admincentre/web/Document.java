@@ -1,11 +1,12 @@
 package com.engagepoint.university.admincentre.web;
 
 import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
+import javax.faces.bean.ViewScoped;
+
 import java.io.Serializable;
 
 @ManagedBean(name = "document")
-@SessionScoped
+@ViewScoped
 public class Document implements Serializable, Comparable<Document> {
 
     private static final long serialVersionUID = 12L;
