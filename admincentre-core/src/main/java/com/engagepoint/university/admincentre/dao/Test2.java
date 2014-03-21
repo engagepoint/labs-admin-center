@@ -3,7 +3,7 @@ package com.engagepoint.university.admincentre.dao;
 import com.engagepoint.university.admincentre.preferences.NodePreferences;
 import java.util.prefs.Preferences;
 
-public class Test2 {
+class Test2 {
 
     public static void main(String[] args) {
 

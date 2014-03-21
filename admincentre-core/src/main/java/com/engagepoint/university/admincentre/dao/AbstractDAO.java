@@ -57,6 +57,7 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
         }
     }
 
+    @Override
     public synchronized T read(String id) throws IOException {
         try {
             T variable = null;
@@ -75,7 +76,7 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
         try {
             getCache(CACHE_CONFIG, USED_CACHE);
             cache.replace(transientObject.getId(), transientObject);
-           tryToSend(CRUDOperation.UPDATE, transientObject);
+            tryToSend(CRUDOperation.UPDATE, transientObject);
         } finally {
             stopCacheManager();
         }
@@ -185,17 +186,16 @@ public abstract class AbstractDAO<T extends AbstractEntity> extends Observable i
         getCache(CACHE_CONFIG, USED_CACHE);
         return cache;
     }
-    
-    private void tryToSend(CRUDOperation crudOperation, T t){
-    	try{
-        	if(SynchMaster.connected() 
-        			&& SynchMaster.getInstance().isConnected()
-        			&& !SynchMaster.getInstance().isSingle()){
-        		setChanged();
-        		notifyObservers(new CRUDPayload(crudOperation, t));
-        	}
-        }
-        catch(Exception e){
+
+    private void tryToSend(CRUDOperation crudOperation, T t) {
+        try {
+            if (SynchMaster.connected()
+                    && SynchMaster.getInstance().isConnected()
+                    && !SynchMaster.getInstance().isSingle()) {
+                setChanged();
+                notifyObservers(new CRUDPayload(crudOperation, t));
+            }
+        } catch (Exception e) {
             LOGGER.error("exception when {} {} was occured, sychroniztion might not work.",
                     crudOperation, t.toString(), e);
         }

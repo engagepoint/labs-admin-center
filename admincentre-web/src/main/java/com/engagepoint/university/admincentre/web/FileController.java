@@ -21,21 +21,8 @@ public class FileController implements Serializable {
 
     private static String pathToTempFile;
     private static final long serialVersionUID = 111L;
-    private StreamedContent downloadFile;
     private static final Logger LOGGER = LoggerFactory
             .getLogger(DocumentsController.class.getName());
-
-    public FileController() throws IOException {
-        if (pathToTempFile.isEmpty()) {
-            return;
-        }
-        File file = new File(pathToTempFile);
-        file.deleteOnExit();
-        InputStream stream = new FileInputStream(file);
-        if (pathToTempFile.contains("zip")) {
-            downloadFile = new DefaultStreamedContent(stream, "zip", "Export.zip");
-        }
-    }
 
     public static void setPathToTempFile(String pathToTempFile) {
         FileController.pathToTempFile = pathToTempFile;
@@ -48,10 +35,21 @@ public class FileController implements Serializable {
             tmpFile.deleteOnExit();
         } catch (BackingStoreException bse) {
             LOGGER.warn("Failed to create file temp.zip", bse);
-        } catch (IOException ioe) {
-            LOGGER.warn("Failed to create file temp.zip", ioe);
         }
         return tmpFile;
+    }
+    private StreamedContent downloadFile;
+
+    public FileController() throws IOException {
+        if (pathToTempFile.isEmpty()) {
+            return;
+        }
+        File file = new File(pathToTempFile);
+        file.deleteOnExit();
+        InputStream stream = new FileInputStream(file);
+        if (pathToTempFile.contains("zip")) {
+            downloadFile = new DefaultStreamedContent(stream, "zip", "Export.zip");
+        }
     }
 
     public StreamedContent getDownloadFile() {

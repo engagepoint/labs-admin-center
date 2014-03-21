@@ -17,8 +17,6 @@ import javax.servlet.http.Part;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.prefs.BackingStoreException;
-
 @ManagedBean
 @RequestScoped
 public class FileUploadController implements Serializable, ActionListener {
@@ -76,8 +74,6 @@ public class FileUploadController implements Serializable, ActionListener {
             np.toString();
             file.delete();
         } catch (IOException e) {
-            LOGGER.warn("Can't import file. Exception -", e);
-        } catch (BackingStoreException e) {
             LOGGER.warn("Can't import file. Exception -", e);
         }
     }

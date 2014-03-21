@@ -4,6 +4,7 @@ import com.engagepoint.university.admincentre.entity.Key;
 import com.engagepoint.university.admincentre.entity.KeyType;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,7 +33,59 @@ public class ZipFiles {
 
     private static final String KEY_TYPE_SEPARATOR = "-";
     private static final Logger LOGGER = LoggerFactory.getLogger(ZipFiles.class);
+    /**
+     * A table of hex digits
+     */
+    private static final char[] hexDigit = {'0', '1', '2', '3', '4', '5', '6',
+        '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+    private static final String PREFIX = "stream2file";
+    private static final String SUFFIX = ".tmp";
     List<String> filesListInDir = new ArrayList<String>();
+
+    private static char toHex(int nibble) {
+        return hexDigit[(nibble & 0xF)];
+    }
+
+    /**
+     * http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
+     */
+    static void loadXML(File file, String rootPath, String relativePath) throws IOException,
+            InvalidPropertiesFormatException {
+        String path = rootPath + relativePath;
+        if (path.indexOf("//") != -1) {
+            path = path.replace("//", "/");
+        }
+        NodePreferences currentPreferences = (NodePreferences) new NodePreferences(null, "")
+                .node(path);
+
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+
+        Document doc;
+        try {
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            doc = dBuilder.parse(file);
+            doc.getDocumentElement().normalize();
+            LOGGER.info("Root element :" + doc.getDocumentElement().getNodeName());
+
+            NodeList nList = doc.getDocumentElement().getChildNodes();
+            for (int temp = 0; temp < nList.getLength(); temp++) {
+                Node nNode = nList.item(temp);
+                if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                    Element eElement = (Element) nNode;
+                    LOGGER.info("key id : " + eElement.getAttribute("key"));
+                    LOGGER.info("type id : " + eElement.getAttribute("type"));
+                    LOGGER.info("Value Name : " + eElement.getTextContent());
+                    currentPreferences.put(eElement.getAttribute("key"),
+                            KeyType.valueOf(eElement.getAttribute("type")),
+                            eElement.getTextContent());
+                }
+            }
+        } catch (SAXException e) {
+            LOGGER.error("XML parsing error", e);
+        } catch (ParserConfigurationException e) {
+            LOGGER.error("XML parser configuration error", e);
+        }
+    }
 
     /**
      * Exporting preferences into zip archive
@@ -47,8 +100,8 @@ public class ZipFiles {
         try {
             OutputStream fos = new FileOutputStream(zipDirName);
             exportZipPreferences(rootPreferences, fos);
-        } catch (IOException e) {
-            LOGGER.warn("Failed to export preference: " + rootPreferences + " to: " + zipDirName, e);
+        } catch (FileNotFoundException e) {
+            LOGGER.warn("Export of the preference failed: " + rootPreferences + "/n to: " + zipDirName + "/n", e);
         }
     }
 
@@ -57,7 +110,7 @@ public class ZipFiles {
         try {
             OutputStream fos = new FileOutputStream(zipDirName);
             exportZipPreferencesXML(rootPreferences, fos);
-        } catch (IOException e) {
+        } catch (FileNotFoundException e) {
             LOGGER.error("Preferances export failed ", e);
         }
     }
@@ -95,7 +148,7 @@ public class ZipFiles {
             throws BackingStoreException, IOException {
         String rootName = rootPreferences.absolutePath();
         String rightFormatPath = rootName.replaceFirst(rootPath, "");
-        System.out.println("Zipping " + rightFormatPath);
+        LOGGER.info("Zipping to: " + rightFormatPath);
         String[] keys = rootPreferences.keys();
         if (keys.length != 0) {
             String zipEntryName = rightFormatPath + "/" + rootPreferences.name() + ".xml";
@@ -239,15 +292,6 @@ public class ZipFiles {
         return outBuffer.toString();
     }
 
-    private static char toHex(int nibble) {
-        return hexDigit[(nibble & 0xF)];
-    }
-    /**
-     * A table of hex digits
-     */
-    private static final char[] hexDigit = {'0', '1', '2', '3', '4', '5', '6',
-        '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-
     public void importZipPreferences(String zipDirName, String preferencesPath) throws IOException {
         importZipPreferences(new FileInputStream(zipDirName), preferencesPath);
     }
@@ -307,128 +351,6 @@ public class ZipFiles {
             key = key.substring(0, separatorIndex);
             LOGGER.info("Key: " + key + "\nType: " + type + "\nValue: " + value);
             currentPreferences.put(key, type, value);
-        }
-    }
-
-    class LineReader {
-
-        public LineReader(InputStream inStream) {
-            this.inStream = inStream;
-            inByteBuf = new byte[8192];
-        }
-
-        public LineReader(Reader reader) {
-            this.reader = reader;
-            inCharBuf = new char[8192];
-        }
-        byte[] inByteBuf;
-        char[] inCharBuf;
-        char[] lineBuf = new char[1024];
-        int inLimit = 0;
-        int inOff = 0;
-        InputStream inStream;
-        Reader reader;
-
-        int readLine() throws IOException {
-            int len = 0;
-            char c = 0;
-            boolean skipWhiteSpace = true;
-            boolean isCommentLine = false;
-            boolean isNewLine = true;
-            boolean appendedLineBegin = false;
-            boolean precedingBackslash = false;
-            boolean skipLF = false;
-
-            while (true) {
-                if (inOff >= inLimit) {
-                    inLimit = (inStream == null) ? reader.read(inCharBuf)
-                            : inStream.read(inByteBuf);
-                    inOff = 0;
-                    if (inLimit <= 0) {
-                        if (len == 0 || isCommentLine) {
-                            return -1;
-                        }
-                        return len;
-                    }
-                }
-                if (inStream != null) {
-                    /*The line below is equivalent to calling a ISO8859-1 decoder.*/
-                    c = (char) (0xff & inByteBuf[inOff++]);
-                } else {
-                    c = inCharBuf[inOff++];
-                }
-                if (skipLF) {
-                    skipLF = false;
-                    if (c == '\n') {
-                        continue;
-                    }
-                }
-                if (skipWhiteSpace) {
-                    if (c == ' ' || c == '\t' || c == '\f') {
-                        continue;
-                    }
-                    if (!appendedLineBegin && (c == '\r' || c == '\n')) {
-                        continue;
-                    }
-                    skipWhiteSpace = false;
-                    appendedLineBegin = false;
-                }
-                if (isNewLine) {
-                    isNewLine = false;
-                    if (c == '#' || c == '!') {
-                        isCommentLine = true;
-                        continue;
-                    }
-                }
-                if (c != '\n' && c != '\r') {
-                    lineBuf[len++] = c;
-                    if (len == lineBuf.length) {
-                        int newLength = lineBuf.length * 2;
-                        if (newLength < 0) {
-                            newLength = Integer.MAX_VALUE;
-                        }
-                        char[] buf = new char[newLength];
-                        System.arraycopy(lineBuf, 0, buf, 0, lineBuf.length);
-                        lineBuf = buf;
-                    }
-                    /* flip the preceding backslash flag*/
-                    if (c == '\\') {
-                        precedingBackslash = !precedingBackslash;
-                    } else {
-                        precedingBackslash = false;
-                    }
-                } else {
-                    /*reached EOL*/
-                    if (isCommentLine || len == 0) {
-                        isCommentLine = false;
-                        isNewLine = true;
-                        skipWhiteSpace = true;
-                        len = 0;
-                        continue;
-                    }
-                    if (inOff >= inLimit) {
-                        inLimit = (inStream == null)
-                                ? reader.read(inCharBuf)
-                                : inStream.read(inByteBuf);
-                        inOff = 0;
-                        if (inLimit <= 0) {
-                            return len;
-                        }
-                    }
-                    if (precedingBackslash) {
-                        len -= 1;
-                        /*skip the leading whitespace characters in following line */
-                        skipWhiteSpace = true;
-                        appendedLineBegin = true;
-                        precedingBackslash = false;
-                        if (c == '\r') {
-                            skipLF = true;
-                        }
-                    } else {
-                        return len;
-                    }
-                }
-            }
         }
     }
 
@@ -532,12 +454,12 @@ public class ZipFiles {
         zis.close();
     }
 
-    public void importZipPreferencesXML(String zipDirName, String preferencesPath)
-            throws IOException {
+    public void importZipPreferencesXML(String zipDirName, String preferencesPath) throws IOException {
         importZipPreferencesXML(new FileInputStream(zipDirName), preferencesPath);
     }
 
-    public void importZipPreferencesXML(InputStream is, String preferencesPath) throws IOException {
+    public void importZipPreferencesXML(InputStream is, String preferencesPath)
+            throws IOException {
         ZipInputStream zis = new ZipInputStream(is);
 
         ZipEntry entry = zis.getNextEntry();
@@ -558,8 +480,6 @@ public class ZipFiles {
         zis.close();
 
     }
-    private static final String PREFIX = "stream2file";
-    private static final String SUFFIX = ".tmp";
 
     private File streamToFile(InputStream in) throws IOException {
         final File tempFile = File.createTempFile(PREFIX, SUFFIX);
@@ -574,44 +494,125 @@ public class ZipFiles {
         return tempFile;
     }
 
-    /**
-     * http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
-     */
-    static void loadXML(File file, String rootPath, String relativePath) throws IOException,
-            InvalidPropertiesFormatException {
-        String path = rootPath + relativePath;
-        if (path.indexOf("//") != -1) {
-            path = path.replace("//", "/");
+    class LineReader {
+        byte[] inByteBuf;
+        char[] inCharBuf;
+        char[] lineBuf = new char[1024];
+        int inLimit = 0;
+        int inOff = 0;
+        InputStream inStream;
+        Reader reader;
+
+        public LineReader(InputStream inStream) {
+            this.inStream = inStream;
+            inByteBuf = new byte[8192];
         }
-        NodePreferences currentPreferences = (NodePreferences) new NodePreferences(null, "")
-                .node(path);
 
-        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        public LineReader(Reader reader) {
+            this.reader = reader;
+            inCharBuf = new char[8192];
+        }
 
-        Document doc;
-        try {
-            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            doc = dBuilder.parse(file);
-            doc.getDocumentElement().normalize();
-            LOGGER.info("Root element :" + doc.getDocumentElement().getNodeName());
-
-            NodeList nList = doc.getDocumentElement().getChildNodes();
-            for (int temp = 0; temp < nList.getLength(); temp++) {
-                Node nNode = nList.item(temp);
-                if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-                    Element eElement = (Element) nNode;
-                    LOGGER.info("key id : " + eElement.getAttribute("key"));
-                    LOGGER.info("type id : " + eElement.getAttribute("type"));
-                    LOGGER.info("Value Name : " + eElement.getTextContent());
-                    currentPreferences.put(eElement.getAttribute("key"),
-                            KeyType.valueOf(eElement.getAttribute("type")),
-                            eElement.getTextContent());
+        int readLine() throws IOException {
+            int len = 0;
+            char c = 0;
+            boolean skipWhiteSpace = true;
+            boolean isCommentLine = false;
+            boolean isNewLine = true;
+            boolean appendedLineBegin = false;
+            boolean precedingBackslash = false;
+            boolean skipLF = false;
+            
+            while (true) {
+                if (inOff >= inLimit) {
+                    inLimit = (inStream == null) ? reader.read(inCharBuf)
+                            : inStream.read(inByteBuf);
+                    inOff = 0;
+                    if (inLimit <= 0) {
+                        if (len == 0 || isCommentLine) {
+                            return -1;
+                        }
+                        return len;
+                    }
+                }
+                if (inStream != null) {
+                    /*The line below is equivalent to calling a ISO8859-1 decoder.*/
+                    c = (char) (0xff & inByteBuf[inOff++]);
+                } else {
+                    c = inCharBuf[inOff++];
+                }
+                if (skipLF) {
+                    skipLF = false;
+                    if (c == '\n') {
+                        continue;
+                    }
+                }
+                if (skipWhiteSpace) {
+                    if (c == ' ' || c == '\t' || c == '\f') {
+                        continue;
+                    }
+                    if (!appendedLineBegin && (c == '\r' || c == '\n')) {
+                        continue;
+                    }
+                    skipWhiteSpace = false;
+                    appendedLineBegin = false;
+                }
+                if (isNewLine) {
+                    isNewLine = false;
+                    if (c == '#' || c == '!') {
+                        isCommentLine = true;
+                        continue;
+                    }
+                }
+                if (c != '\n' && c != '\r') {
+                    lineBuf[len++] = c;
+                    if (len == lineBuf.length) {
+                        int newLength = lineBuf.length * 2;
+                        if (newLength < 0) {
+                            newLength = Integer.MAX_VALUE;
+                        }
+                        char[] buf = new char[newLength];
+                        System.arraycopy(lineBuf, 0, buf, 0, lineBuf.length);
+                        lineBuf = buf;
+                    }
+                    /* flip the preceding backslash flag*/
+                    if (c == '\\') {
+                        precedingBackslash = !precedingBackslash;
+                    } else {
+                        precedingBackslash = false;
+                    }
+                } else {
+                    /*reached EOL*/
+                    if (isCommentLine || len == 0) {
+                        isCommentLine = false;
+                        isNewLine = true;
+                        skipWhiteSpace = true;
+                        len = 0;
+                        continue;
+                    }
+                    if (inOff >= inLimit) {
+                        inLimit = (inStream == null)
+                                ? reader.read(inCharBuf)
+                                : inStream.read(inByteBuf);
+                        inOff = 0;
+                        if (inLimit <= 0) {
+                            return len;
+                        }
+                    }
+                    if (precedingBackslash) {
+                        len -= 1;
+                        /*skip the leading whitespace characters in following line */
+                        skipWhiteSpace = true;
+                        appendedLineBegin = true;
+                        precedingBackslash = false;
+                        if (c == '\r') {
+                            skipLF = true;
+                        }
+                    } else {
+                        return len;
+                    }
                 }
             }
-        } catch (SAXException e) {
-            LOGGER.error("XML parsing error", e);
-        } catch (ParserConfigurationException e) {
-            LOGGER.error("XML parser configuration error", e);
         }
     }
 }

@@ -1,5 +1,10 @@
 package com.engagepoint.university.admincentre.preferences;
 
+import com.engagepoint.university.admincentre.dao.KeyDAO;
+import com.engagepoint.university.admincentre.dao.NodeDAO;
+import com.engagepoint.university.admincentre.entity.Key;
+import com.engagepoint.university.admincentre.entity.KeyType;
+import com.engagepoint.university.admincentre.entity.Node;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,38 +21,46 @@ import java.util.prefs.NodeChangeListener;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.engagepoint.university.admincentre.dao.KeyDAO;
-import com.engagepoint.university.admincentre.dao.NodeDAO;
-import com.engagepoint.university.admincentre.entity.Key;
-import com.engagepoint.university.admincentre.entity.KeyType;
-import com.engagepoint.university.admincentre.entity.Node;
 
 public class NodePreferences extends Preferences {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NodePreferences.class);
     private static final NodePreferences[] EMPTY_ABSTRACT_PREFS_ARRAY = new NodePreferences[0];
-    private static final char INT_TO_BASE64[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+    private static final char[] INT_TO_BASE64 = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
         'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a',
         'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
         's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8',
         '9', '+', '/'};
+    private static final String REMOVED_NODE = "Node has been removed: ";
+    private static final String NOTREGISTRD_LISTENER = "Listener not registered in node: ";
+    /**
+     * This array is a lookup table that translates unicode characters drawn
+     * from the "Base64 Alphabet" (as specified in Table 1 of RFC 2045) into
+     * their 6-bit positive integer equivalents. Characters that are not in the
+     * Base64 alphabet but fall within the bounds of the array are translated to
+     * -1.
+     */
+    private static final byte[] BASE64_TO_INT = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1, 63, 52, 53, 54, 55, 56, 57, 58, 59,
+        60, 61, -1, -1, -1, -1, -1, -1, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
+        15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, -1, -1, 26, 27, 28, 29, 30,
+        31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51};
+    /**
+     * Queue of pending notification events. When a preference or node change
+     * event for which there are one or more listeners occurs, it is placed on
+     * this queue and the queue is notified. A background thread waits on this
+     * queue and delivers the events. This decouples event delivery from
+     * preference activity, greatly simplifying locking and reducing opportunity
+     * for deadlock.
+     */
+    private static final List<EventObject> EVENT_QUEUE = new LinkedList<EventObject>();
+    private static Thread eventDispatchThread = null;
     private final KeyDAO keyDAO = KeyDAO.getInstance();
     private final NodeDAO nodeDAO = NodeDAO.getInstance();
     private Node currentNode;
-    private static final String REMOVED_NODE = "Node has been removed: ";
-    private static final String NOTREGISTRD_LISTENER = "Listener not registered in node: ";
-
-    public Node getCurrentNode() {
-        return currentNode;
-    }
-
-    public void setCurrentNode(Node currentNode) {
-        this.currentNode = currentNode;
-    }
     /**
      * Our name relative to parent.
      */
@@ -60,10 +73,6 @@ public class NodePreferences extends Preferences {
      * Our parent node.
      */
     private final NodePreferences parent;
-
-    public NodePreferences getParent() {
-        return parent;
-    }
     /**
      * Our root node.
      */
@@ -81,10 +90,6 @@ public class NodePreferences extends Preferences {
      * prior to calling childSpi() or getChild().
      */
     private Map<String, NodePreferences> kidCache = new HashMap<String, NodePreferences>();
-
-    public Map<String, NodePreferences> getKidCache() {
-        return kidCache;
-    }
     /**
      * This field is used to keep track of whether or not this node has been
      * removed. Once it's set to true, it will never be reset to false.
@@ -116,11 +121,114 @@ public class NodePreferences extends Preferences {
      * root.
      * @param name the name of this preference node, relative to its parent, or
      * <tt>""</tt> if this is the root.
-     * @throws IOException
      * @throws IllegalArgumentException if <tt>name</tt> contains a slash
      * (<tt>'/'</tt>), or
      * <tt>parent</tt> is <tt>null</tt> and name isn't <tt>""</tt>.
      */
+    private static String byteArrayToBase64(byte... a) {
+        int aLen = a.length;
+        int numFullGroups = aLen / 3;
+        int numBytesInPartialGroup = aLen - 3 * numFullGroups;
+        int resultLen = 4 * ((aLen + 2) / 3);
+        StringBuilder result = new StringBuilder(resultLen);
+        char[] intToAlpha = INT_TO_BASE64;
+        int inCursor = 0;
+        for (int i = 0; i < numFullGroups; i++) {
+            int byte0 = a[inCursor++] & 0xff;
+            int byte1 = a[inCursor++] & 0xff;
+            int byte2 = a[inCursor++] & 0xff;
+            result.append(intToAlpha[byte0 >> 2]);
+            result.append(intToAlpha[(byte0 << 4) & 0x3f | (byte1 >> 4)]);
+            result.append(intToAlpha[(byte1 << 2) & 0x3f | (byte2 >> 6)]);
+            result.append(intToAlpha[byte2 & 0x3f]);
+        }
+        if (numBytesInPartialGroup != 0) {
+            int byte0 = a[inCursor++] & 0xff;
+            result.append(intToAlpha[byte0 >> 2]);
+            if (numBytesInPartialGroup == 1) {
+                result.append(intToAlpha[(byte0 << 4) & 0x3f]);
+                result.append("==");
+            } else {
+                int byte1 = a[inCursor++] & 0xff;
+                result.append(intToAlpha[(byte0 << 4) & 0x3f | (byte1 >> 4)]);
+                result.append(intToAlpha[(byte1 << 2) & 0x3f]);
+                result.append('=');
+            }
+        }
+        return result.toString();
+    }
+
+    private static byte[] base64ToByteArray(String s) {
+        byte[] alphaToInt = BASE64_TO_INT;
+        int sLen = s.length();
+        int numGroups = sLen / 4;
+        if (4 * numGroups != sLen) {
+            throw new IllegalArgumentException(
+                    "String length must be a multiple of four, its length" + sLen);
+        }
+        int missingBytesInLastGroup = 0;
+        int numFullGroups = numGroups;
+        if (sLen != 0) {
+            if (s.charAt(sLen - 1) == '=') {
+                missingBytesInLastGroup++;
+                numFullGroups--;
+            }
+            if (s.charAt(sLen - 2) == '=') {
+                missingBytesInLastGroup++;
+            }
+        }
+        byte[] result = new byte[3 * numGroups - missingBytesInLastGroup];
+        int inCursor = 0, outCursor = 0;
+        for (int i = 0; i < numFullGroups; i++) {
+            int ch0 = base64toInt(s.charAt(inCursor++), alphaToInt);
+            int ch1 = base64toInt(s.charAt(inCursor++), alphaToInt);
+            int ch2 = base64toInt(s.charAt(inCursor++), alphaToInt);
+            int ch3 = base64toInt(s.charAt(inCursor++), alphaToInt);
+            result[outCursor++] = (byte) ((ch0 << 2) | (ch1 >> 4));
+            result[outCursor++] = (byte) ((ch1 << 4) | (ch2 >> 2));
+            result[outCursor++] = (byte) ((ch2 << 6) | ch3);
+        }
+        if (missingBytesInLastGroup != 0) {
+            int ch0 = base64toInt(s.charAt(inCursor++), alphaToInt);
+            int ch1 = base64toInt(s.charAt(inCursor++), alphaToInt);
+            result[outCursor++] = (byte) ((ch0 << 2) | (ch1 >> 4));
+
+            if (missingBytesInLastGroup == 1) {
+                int ch2 = base64toInt(s.charAt(inCursor++), alphaToInt);
+                result[outCursor++] = (byte) ((ch1 << 4) | (ch2 >> 2));
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Translates the specified character, which is assumed to be in the "Base
+     * 64 Alphabet" into its equivalent 6-bit positive integer.
+     *
+     * @throw IllegalArgumentException or ArrayOutOfBoundsException if c is not
+     * in the Base64 Alphabet.
+     */
+    private static int base64toInt(char c, byte... alphaToInt) {
+        int result = alphaToInt[c];
+        if (result < 0) {
+            throw new IllegalArgumentException("Illegal character " + c);
+        }
+        return result;
+    }
+
+    /**
+     * This method starts the event dispatch thread the first time it is called.
+     * The event dispatch thread will be started only if someone registers a
+     * listener.
+     */
+    private static synchronized void startEventDispatchThreadIfNecessary() {
+        if (eventDispatchThread == null) {
+            eventDispatchThread = new EventDispatchThread();
+            eventDispatchThread.setDaemon(true);
+            eventDispatchThread.start();
+        }
+    }
+
     public NodePreferences(NodePreferences parent, String name) {
 
         if (parent == null) {
@@ -169,6 +277,22 @@ public class NodePreferences extends Preferences {
         } catch (IOException e) {
             LOGGER.error("Can not create NodePreferences instance /n", e);
         }
+    }
+
+    public Node getCurrentNode() {
+        return currentNode;
+    }
+
+    public void setCurrentNode(Node currentNode) {
+        this.currentNode = currentNode;
+    }
+
+    public NodePreferences getParent() {
+        return parent;
+    }
+
+    public Map<String, NodePreferences> getKidCache() {
+        return kidCache;
     }
 
     /**
@@ -249,7 +373,7 @@ public class NodePreferences extends Preferences {
             } catch (IOException e) {
                 LOGGER.warn("Key's Id assignment failed", e);
             }
-            return ((result == null) ? def : result.getValue());
+            return result == null ? def : result.getValue();
         }
     }
 
@@ -390,7 +514,7 @@ public class NodePreferences extends Preferences {
         try {
             put(key, KeyType.Long, Long.toString(value));
         } catch (IOException e) {
-            LOGGER.warn("Failed to put the key " + key + " value: " + value, e);
+            LOGGER.warn("Exception: Can't put the Long key: " + key + " value: " + value + "/n", e);
         }
     }
 
@@ -425,7 +549,7 @@ public class NodePreferences extends Preferences {
                 result = Long.parseLong(value);
             }
         } catch (NumberFormatException e) {
-            LOGGER.warn("Failed to get the key: " + key + " value: " + result, e);
+            LOGGER.warn("Failed to get the key '" + key + "' with value: " + result, e);
         }
         return result;
     }
@@ -452,7 +576,7 @@ public class NodePreferences extends Preferences {
         try {
             put(key, KeyType.Boolean, String.valueOf(value));
         } catch (IOException e) {
-            LOGGER.warn("Failed to put the key: " + key + " value: " + value, e);
+            LOGGER.warn("Failed to put the Boolean key: " + key + " value: " + value, e);
         }
     }
 
@@ -517,7 +641,7 @@ public class NodePreferences extends Preferences {
         try {
             put(key, KeyType.Float, Float.toString(value));
         } catch (IOException e) {
-            LOGGER.warn("Failed to put the key: " + key + " value: " + value, e);
+            LOGGER.warn("It is impossible to put the key: " + key + " value: " + value, e);
         }
     }
 
@@ -552,7 +676,7 @@ public class NodePreferences extends Preferences {
                 result = Float.parseFloat(value);
             }
         } catch (NumberFormatException e) {
-            LOGGER.warn("Failed to get the key: " + key + " value: " + result, e);
+            LOGGER.warn("Can not get the key: " + key + "/n value: " + result + "/n", e);
         }
         return result;
     }
@@ -579,7 +703,7 @@ public class NodePreferences extends Preferences {
         try {
             put(key, KeyType.Double, Double.toString(value));
         } catch (IOException e) {
-            LOGGER.warn("Failed to get the key: " + key + " value: " + value, e);
+            LOGGER.warn("Failed to put key: " + key + "/n", e);
         }
     }
 
@@ -640,41 +764,6 @@ public class NodePreferences extends Preferences {
         }
     }
 
-    private static String byteArrayToBase64(byte... a) {
-        int aLen = a.length;
-        int numFullGroups = aLen / 3;
-        int numBytesInPartialGroup = aLen - 3 * numFullGroups;
-        int resultLen = 4 * ((aLen + 2) / 3);
-        StringBuilder result = new StringBuilder(resultLen);
-        char[] intToAlpha = INT_TO_BASE64;
-        /* Translate all full groups from byte array elements to Base64 */
-        int inCursor = 0;
-        for (int i = 0; i < numFullGroups; i++) {
-            int byte0 = a[inCursor++] & 0xff;
-            int byte1 = a[inCursor++] & 0xff;
-            int byte2 = a[inCursor++] & 0xff;
-            result.append(intToAlpha[byte0 >> 2]);
-            result.append(intToAlpha[(byte0 << 4) & 0x3f | (byte1 >> 4)]);
-            result.append(intToAlpha[(byte1 << 2) & 0x3f | (byte2 >> 6)]);
-            result.append(intToAlpha[byte2 & 0x3f]);
-        }
-        /* Translate partial group if present */
-        if (numBytesInPartialGroup != 0) {
-            int byte0 = a[inCursor++] & 0xff;
-            result.append(intToAlpha[byte0 >> 2]);
-            if (numBytesInPartialGroup == 1) {
-                result.append(intToAlpha[(byte0 << 4) & 0x3f]);
-                result.append("==");
-            } else {
-                int byte1 = a[inCursor++] & 0xff;
-                result.append(intToAlpha[(byte0 << 4) & 0x3f | (byte1 >> 4)]);
-                result.append(intToAlpha[(byte1 << 2) & 0x3f]);
-                result.append('=');
-            }
-        }
-        return result.toString();
-    }
-
     /**
      * This array is a lookup table that translates 6-bit positive integer index
      * values into their "Base64 Alphabet" equivalents as specified in Table 1
@@ -710,84 +799,6 @@ public class NodePreferences extends Preferences {
         }
         return result;
     }
-
-    private static byte[] base64ToByteArray(String s) {
-        byte[] alphaToInt = BASE64_TO_INT;
-        int sLen = s.length();
-        int numGroups = sLen / 4;
-        if (4 * numGroups != sLen) {
-            throw new IllegalArgumentException(
-                    "String length must be a multiple of four, its length" + sLen);
-        }
-        int missingBytesInLastGroup = 0;
-        int numFullGroups = numGroups;
-        if (sLen != 0) {
-            if (s.charAt(sLen - 1) == '=') {
-                missingBytesInLastGroup++;
-                numFullGroups--;
-            }
-            if (s.charAt(sLen - 2) == '=') {
-                missingBytesInLastGroup++;
-            }
-        }
-        byte[] result = new byte[3 * numGroups - missingBytesInLastGroup];
-
-        /* Translate all full groups from base64 to byte array elements */
-        int inCursor = 0, outCursor = 0;
-        for (int i = 0; i < numFullGroups; i++) {
-            int ch0 = base64toInt(s.charAt(inCursor++), alphaToInt);
-            int ch1 = base64toInt(s.charAt(inCursor++), alphaToInt);
-            int ch2 = base64toInt(s.charAt(inCursor++), alphaToInt);
-            int ch3 = base64toInt(s.charAt(inCursor++), alphaToInt);
-            result[outCursor++] = (byte) ((ch0 << 2) | (ch1 >> 4));
-            result[outCursor++] = (byte) ((ch1 << 4) | (ch2 >> 2));
-            result[outCursor++] = (byte) ((ch2 << 6) | ch3);
-        }
-
-        /* Translate partial group, if present */
-        if (missingBytesInLastGroup != 0) {
-            int ch0 = base64toInt(s.charAt(inCursor++), alphaToInt);
-            int ch1 = base64toInt(s.charAt(inCursor++), alphaToInt);
-            result[outCursor++] = (byte) ((ch0 << 2) | (ch1 >> 4));
-
-            if (missingBytesInLastGroup == 1) {
-                int ch2 = base64toInt(s.charAt(inCursor++), alphaToInt);
-                result[outCursor++] = (byte) ((ch1 << 4) | (ch2 >> 2));
-            }
-        }
-        /* assert inCursor == s.length()-missingBytesInLastGroup;
-         * assert outCursor == result.length;
-         */
-        return result;
-    }
-
-    /**
-     * Translates the specified character, which is assumed to be in the "Base
-     * 64 Alphabet" into its equivalent 6-bit positive integer.
-     *
-     * @throw IllegalArgumentException or ArrayOutOfBoundsException if c is not
-     * in the Base64 Alphabet.
-     */
-    private static int base64toInt(char c, byte... alphaToInt) {
-        int result = alphaToInt[c];
-        if (result < 0) {
-            throw new IllegalArgumentException("Illegal character " + c);
-        }
-        return result;
-    }
-    /**
-     * This array is a lookup table that translates unicode characters drawn
-     * from the "Base64 Alphabet" (as specified in Table 1 of RFC 2045) into
-     * their 6-bit positive integer equivalents. Characters that are not in the
-     * Base64 alphabet but fall within the bounds of the array are translated to
-     * -1.
-     */
-    private static final byte BASE64_TO_INT[] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-        -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1, 63, 52, 53, 54, 55, 56, 57, 58, 59,
-        60, 61, -1, -1, -1, -1, -1, -1, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
-        15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, -1, -1, 26, 27, 28, 29, 30,
-        31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51};
 
     /**
      * Implements the <tt>keys</tt> method as per the specification in
@@ -938,7 +949,6 @@ public class NodePreferences extends Preferences {
                 return node(new StringTokenizer(path, "/", true));
             }
         }
-        /* Absolute path. Note that we've dropped our lock to avoid deadlock */
         return root.node(new StringTokenizer(path.substring(1), "/", true));
     }
 
@@ -949,9 +959,8 @@ public class NodePreferences extends Preferences {
      */
     private Preferences node(StringTokenizer path) {
         String token = path.nextToken();
-        /* Check for consecutive slashes */
         if ("/".equals(token)) {
-            throw new IllegalArgumentException("Consecutive slashes in path: " + path);
+            throw new IllegalArgumentException("Consecutive slashes in path " + path);
         }
         synchronized (lock) {
             NodePreferences child = kidCache.get(token);
@@ -967,7 +976,7 @@ public class NodePreferences extends Preferences {
             }
             path.nextToken();
             if (!path.hasMoreTokens()) {
-                throw new IllegalArgumentException("Path ends with slash: " + path);
+                throw new IllegalArgumentException("Eror: path ends with slash " + path);
             }
             return child.node(path);
         }
@@ -1008,7 +1017,6 @@ public class NodePreferences extends Preferences {
                 return nodeExists(new StringTokenizer(path, "/", true));
             }
         }
-        /* Absolute path. Note that we've dropped our lock to avoid deadlock */
         return root.nodeExists(new StringTokenizer(path.substring(1), "/", true));
     }
 
@@ -1017,7 +1025,6 @@ public class NodePreferences extends Preferences {
      */
     private boolean nodeExists(StringTokenizer path) throws BackingStoreException {
         String token = path.nextToken();
-        /* Check for consecutive slashes */
         if ("/".equals(token)) {
             throw new IllegalArgumentException("Consecutive slashes in path: " + path);
         }
@@ -1032,7 +1039,6 @@ public class NodePreferences extends Preferences {
             if (!path.hasMoreTokens()) {
                 return true;
             }
-            /* Consume slash */
             path.nextToken();
             if (!path.hasMoreTokens()) {
                 throw new IllegalArgumentException("Path ends with slash: " + path);
@@ -1274,12 +1280,12 @@ public class NodePreferences extends Preferences {
             nodeListeners = newNl;
         }
     }
+
     /**
-     * "SPI" METHODS
-     * Put the given key-value association into this preference node. It is
-     * guaranteed that <tt>key</tt> and <tt>value</tt> are non-null and of legal
-     * length. Also, it is guaranteed that this node has not been removed. (The
-     * implementor needn't check for any of these things.)
+     * "SPI" METHODS Put the given key-value association into this preference
+     * node. It is guaranteed that <tt>key</tt> and <tt>value</tt> are non-null
+     * and of legal length. Also, it is guaranteed that this node has not been
+     * removed. (The implementor needn't check for any of these things.)
      *
      * <p>
      * This method is invoked with the lock on this node held.
@@ -1572,28 +1578,6 @@ public class NodePreferences extends Preferences {
      * @throws BackingStoreException if this operation cannot be completed due
      * to a failure in the backing store, or inability to communicate with it.
      */
-    /**
-     * Implements the <tt>flush</tt> method as per the specification in
-     * {@link Preferences#flush()}.
-     *
-     * <p>
-     * This implementation calls a recursive helper method that locks this node,
-     * invokes flushSpi() on it, unlocks this node, and recursively invokes this
-     * method on each "cached child." A cached child is a child of this node
-     * that has been created in this VM and not subsequently removed. In effect,
-     * this method does a depth first traversal of the "cached subtree" rooted
-     * at this node, calling flushSpi() on each node in the subTree while only
-     * that node is locked. Note that flushSpi() is invoked top-down.
-     *
-     * <p>
-     * If this method is invoked on a node that has been removed with the
-     * {@link #removeNode()} method, flushSpi() is invoked on this node, but not
-     * on others.
-     *
-     * @throws BackingStoreException if this operation cannot be completed due
-     * to a failure in the backing store, or inability to communicate with it.
-     * @see #flush()
-     */
     @Override
     public void flush() throws BackingStoreException {
         flush2();
@@ -1642,97 +1626,6 @@ public class NodePreferences extends Preferences {
     protected boolean isRemoved() {
         synchronized (lock) {
             return removed;
-        }
-    }
-    /**
-     * Queue of pending notification events. When a preference or node change
-     * event for which there are one or more listeners occurs, it is placed on
-     * this queue and the queue is notified. A background thread waits on this
-     * queue and delivers the events. This decouples event delivery from
-     * preference activity, greatly simplifying locking and reducing opportunity
-     * for deadlock.
-     */
-    private static final List<EventObject> EVENT_QUEUE = new LinkedList<EventObject>();
-
-    /**
-     * These two classes are used to distinguish NodeChangeEvents on eventQueue
-     * so the event dispatch thread knows whether to call childAdded or
-     * childRemoved.
-     */
-    private static class NodeAddedEvent extends NodeChangeEvent {
-
-        private static final long serialVersionUID = 135L;
-
-        NodeAddedEvent(Preferences parent, Preferences child) {
-            super(parent, child);
-        }
-    }
-
-    private static class NodeRemovedEvent extends NodeChangeEvent {
-
-        private static final long serialVersionUID = 136L;
-
-        NodeRemovedEvent(Preferences parent, Preferences child) {
-            super(parent, child);
-        }
-    }
-
-    /**
-     * A single background thread ("the event notification thread") monitors the
-     * event queue and delivers events that are placed on the queue.
-     */
-    private static class EventDispatchThread extends Thread {
-
-        @Override
-        public void run() {
-            while (true) {
-                EventObject event = null;
-                synchronized (EVENT_QUEUE) {
-                    try {
-                        while (EVENT_QUEUE.isEmpty()) {
-                            EVENT_QUEUE.wait();
-                        }
-                        event = EVENT_QUEUE.remove(0);
-                    } catch (InterruptedException e) {
-                        LOGGER.error("Process was unexpectedly interrupted ", e);
-                        return;
-                    }
-                }
-                NodePreferences src = (NodePreferences) event.getSource();
-                if (event instanceof PreferenceChangeEvent) {
-                    PreferenceChangeEvent pce = (PreferenceChangeEvent) event;
-                    PreferenceChangeListener[] listeners = src.prefListeners();
-                    for (int i = 0; i < listeners.length; i++) {
-                        listeners[i].preferenceChange(pce);
-                    }
-                } else {
-                    NodeChangeEvent nce = (NodeChangeEvent) event;
-                    NodeChangeListener[] listeners = src.nodeListeners();
-                    if (nce instanceof NodeAddedEvent) {
-                        for (int i = 0; i < listeners.length; i++) {
-                            listeners[i].childAdded(nce);
-                        }
-                    } else {
-                        for (int i = 0; i < listeners.length; i++) {
-                            listeners[i].childRemoved(nce);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    private static Thread eventDispatchThread = null;
-
-    /**
-     * This method starts the event dispatch thread the first time it is called.
-     * The event dispatch thread will be started only if someone registers a
-     * listener.
-     */
-    private static synchronized void startEventDispatchThreadIfNecessary() {
-        if (eventDispatchThread == null) {
-            eventDispatchThread = new EventDispatchThread();
-            eventDispatchThread.setDaemon(true);
-            eventDispatchThread.start();
         }
     }
 
@@ -1878,12 +1771,20 @@ public class NodePreferences extends Preferences {
      * backing store.
      */
     @Override
-    public void exportNode(OutputStream os) throws IOException, BackingStoreException {
-        exportSubtree(os);
+    public void exportNode(OutputStream os) throws BackingStoreException {
+        try {
+            exportSubtree(os);
+        } catch (BackingStoreException e) {
+            LOGGER.warn("Output stream is dead? - Please check it.", e);
+        }
     }
 
-    public void exportNode(String path) throws IOException, BackingStoreException {
-        new ZipFiles().exportZipPreferences(this, path);
+    public void exportNode(String path) throws BackingStoreException {
+        try {
+            new ZipFiles().exportZipPreferences(this, path);
+        } catch (BackingStoreException e) {
+            LOGGER.warn("Export of preferences to the path '" + path + "' is unavaliable.", e);
+        }
     }
 
     /**
@@ -1896,12 +1797,20 @@ public class NodePreferences extends Preferences {
      * @throws BackingStoreException if preference data cannot be read from
      * backing store.
      */
-    public void exportNodeXML(OutputStream os) throws IOException, BackingStoreException {
-        new ZipFiles().exportZipPreferencesXML(this, os);
+    public void exportNodeXML(OutputStream os) throws BackingStoreException {
+        try {
+            new ZipFiles().exportZipPreferencesXML(this, os);
+        } catch (BackingStoreException e) {
+            LOGGER.warn("Export of preferences to XML is unavaliable. Output stream is dead? ", e);
+        }
     }
 
-    public void exportNodeXML(String path) throws IOException, BackingStoreException {
-        new ZipFiles().exportZipPreferencesXML(this, path);
+    public void exportNodeXML(String path) throws BackingStoreException {
+        try {
+            new ZipFiles().exportZipPreferencesXML(this, path);
+        } catch (BackingStoreException e) {
+            LOGGER.warn("Export of XML preferences to the path '" + path + "' is unavaliable. Wrong path?", e);
+        }
     }
 
     /**
@@ -1915,8 +1824,12 @@ public class NodePreferences extends Preferences {
      * backing store.
      */
     @Override
-    public void exportSubtree(OutputStream os) throws IOException, BackingStoreException {
-        new ZipFiles().exportZipPreferences(this, os);
+    public void exportSubtree(OutputStream os) throws BackingStoreException {
+        try {
+            new ZipFiles().exportZipPreferences(this, os);
+        } catch (BackingStoreException e) {
+            LOGGER.warn("Export of subtree is unavaliable. Is something wrong with the BackingStore? ", e);
+        }
     }
 
     /**
@@ -1929,8 +1842,12 @@ public class NodePreferences extends Preferences {
      * @throws BackingStoreException if preference data cannot be read from
      * backing store.
      */
-    public void importNode(InputStream is) throws IOException, BackingStoreException {
-        new ZipFiles().importZipPreferences(is, absolutePath);
+    public void importNode(InputStream is) throws IOException {
+        try {
+            new ZipFiles().importZipPreferences(is, absolutePath);
+        } catch (IOException e) {
+            LOGGER.error("Import failed, InputStream is alive: " + (is == null) + "absolutePath is: " + absolutePath, e);
+        }
     }
 
     /**
@@ -1944,7 +1861,70 @@ public class NodePreferences extends Preferences {
      * @throws BackingStoreException if preference data cannot be read from
      * backing store.
      */
-    public void importNodeXML(InputStream is) throws IOException, BackingStoreException {
+    public void importNodeXML(InputStream is) throws BackingStoreException {
+        try {
         new ZipFiles().importZipPreferencesXML(is, absolutePath);
+        } catch(IOException e) {
+            LOGGER.warn("Something wrong with InputStream, is it alive: " + (is == null) + "/n", e);
+        }
+    }
+
+    private static class NodeAddedEvent extends NodeChangeEvent {
+
+        private static final long serialVersionUID = 135L;
+
+        NodeAddedEvent(Preferences parent, Preferences child) {
+            super(parent, child);
+        }
+    }
+
+    private static class NodeRemovedEvent extends NodeChangeEvent {
+
+        private static final long serialVersionUID = 136L;
+
+        NodeRemovedEvent(Preferences parent, Preferences child) {
+            super(parent, child);
+        }
+    }
+
+    private static class EventDispatchThread extends Thread {
+
+        @Override
+        public void run() {
+            while (true) {
+                EventObject event = null;
+                synchronized (EVENT_QUEUE) {
+                    try {
+                        while (EVENT_QUEUE.isEmpty()) {
+                            EVENT_QUEUE.wait();
+                        }
+                        event = EVENT_QUEUE.remove(0);
+                    } catch (InterruptedException e) {
+                        LOGGER.error("Process was unexpectedly interrupted ", e);
+                        return;
+                    }
+                }
+                NodePreferences src = (NodePreferences) event.getSource();
+                if (event instanceof PreferenceChangeEvent) {
+                    PreferenceChangeEvent pce = (PreferenceChangeEvent) event;
+                    PreferenceChangeListener[] listeners = src.prefListeners();
+                    for (int i = 0; i < listeners.length; i++) {
+                        listeners[i].preferenceChange(pce);
+                    }
+                } else {
+                    NodeChangeEvent nce = (NodeChangeEvent) event;
+                    NodeChangeListener[] listeners = src.nodeListeners();
+                    if (nce instanceof NodeAddedEvent) {
+                        for (int i = 0; i < listeners.length; i++) {
+                            listeners[i].childAdded(nce);
+                        }
+                    } else {
+                        for (int i = 0; i < listeners.length; i++) {
+                            listeners[i].childRemoved(nce);
+                        }
+                    }
+                }
+            }
+        }
     }
 }

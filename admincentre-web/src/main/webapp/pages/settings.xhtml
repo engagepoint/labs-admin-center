@@ -17,7 +17,6 @@
 
             <uib:gridContainer>
                 <uib:gridRow fluid="true">
-
                     <uib:gridColumn column="6">
                         <uib:buttonGroup>
                             <p:commandButton value="Import"
@@ -33,11 +32,14 @@
                     </uib:gridColumn>
                 </uib:gridRow>
             </uib:gridContainer>
+            
             <p:dialog id="ImportDialog"
                       header="Import Dialog"
                       widgetVar="uploadXML"
-                      modal="true" height="200" width="800">
-
+                      position="top"
+                      modal="true"
+                      height="200"
+                      width="800">
 
                 <h:commandButton value="Choose File" id="butt_choose"
                                  style="position: relative; "
@@ -64,10 +66,7 @@
                                  actionListener="#{fileUploadController.upload}"
                                  onclick="uploadXML.hide()">
                 </h:commandButton>
-
             </p:dialog>
-
-
         </h:form>
     </ui:define>
 </ui:composition>

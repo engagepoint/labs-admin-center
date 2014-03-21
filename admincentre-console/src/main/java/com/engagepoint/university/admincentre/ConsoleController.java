@@ -68,7 +68,7 @@ public class ConsoleController {
                 ALIGN_STRING.delete(0, 3);
             }
         } catch (BackingStoreException e) {
-            LOGGER.warn("Failed to display nodes. Probably there some problems"
+            LOGGER.info("Failed to display nodes. Probably there some problems"
                     + "with the database", e);
         }
     }
@@ -80,14 +80,14 @@ public class ConsoleController {
             if (keys.length != 0) {
                 for (int i = 0; i < keys.length; i++) {
 
-                    LOGGER.debug(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3)
+                    LOGGER.info(ALIGN_STRING.substring(0, ALIGN_STRING.length() - 3)
                             + " Key = " + keys[i] + ";" + "Value = "
                             + preferance.get(keys[i], "value wasn`t found"));
                 }
                 LOGGER.info("");
             }
         } catch (BackingStoreException e) {
-            LOGGER.warn("Failed to display keys. Probably there some problems"
+            LOGGER.info("Failed to display keys. Probably there some problems"
                     + "with the database", e);
         }
     }
@@ -102,7 +102,7 @@ public class ConsoleController {
                     LOGGER.warn("Node with such name does not exist");
                 }
             } catch (BackingStoreException e) {
-                LOGGER.warn("Failed to select node. Probably there some problems"
+                LOGGER.info("Failed to select node. Probably there some problems"
                         + "with the database", e);
             }
             displayNodes(currentPreferences);
@@ -145,16 +145,16 @@ public class ConsoleController {
             entity = cis.getThirdArg();
             NodePreferences nodePreferences = new NodePreferences(null, "");
             Key key;
-			try {
-				key = nodePreferences.getKey(entity);
-				if(null != key){
-					nodePreferences.node(key.getParentNodeId()).remove(entity);
-				}else{
-					LOGGER.info("Selected key does not exist.");
-				}
-			} catch (IOException e) {
-				LOGGER.error("Cannot read from storage ", e);
-			}
+            try {
+                key = nodePreferences.getKey(entity);
+                if (null != key) {
+                    nodePreferences.node(key.getParentNodeId()).remove(entity);
+                } else {
+                    LOGGER.info("Selected key does not exist.");
+                }
+            } catch (IOException e) {
+                LOGGER.info("Cannot read from storage ", e);
+            }
         } else {
             throw new WrongInputArgException();
         }
@@ -165,9 +165,7 @@ public class ConsoleController {
         try {
             new NodePreferences(null, "").exportNode(path);
         } catch (BackingStoreException e) {
-            LOGGER.error("Can`t export using path {}", path, e);
-        } catch (IOException e) {
-            LOGGER.error("Can`t export using path {}", path, e);
+            LOGGER.info("Can`t export using path {}", path, e);
         }
     }
 
@@ -186,18 +184,18 @@ public class ConsoleController {
      * @return true if key type exist in enum KeyType
      */
     public boolean keyTypeValidation(String keyType) {
-        try {
-            KeyType.valueOf(keyType);
-        } catch (IllegalArgumentException e) {
-            LOGGER.info("Invalid key type /n");
-            KeyType[] keyTypeList = KeyType.values();
-            LOGGER.info("You have entered invalid key type. Use one of the next types :");
-            for (KeyType keyTypeTemp : keyTypeList) {
-                LOGGER.info("  " + keyTypeTemp.toString());
+        KeyType[] keyTypeList = KeyType.values();
+        for (KeyType keyTypeTemp : keyTypeList) {
+            if (keyType.equals(keyTypeTemp.name())) {
+                return true;
             }
-            return false;
         }
-        return true;
+        String types = "";
+        for (KeyType keyTypeTemp : keyTypeList) {
+            types = types + " " + keyTypeTemp.name();
+        }
+        LOGGER.info("Wrong type of the key, please try one of the following:" + types);
+        return false;
     }
 
     private void refresh() {
@@ -315,11 +313,12 @@ public class ConsoleController {
                 SynchMaster.getInstance().isConnected());
         if (SynchMaster.getInstance().isConnected()) {
             LOGGER.info("Cluster name.........{}\nCoordinator..........{}",
-            		SynchMaster.getInstance().getClusterName(),
-            		SynchMaster.getInstance().getCoordinator().toString());
-            if(!SynchMaster.getInstance().isCoordinator())
-            	LOGGER.info("State synchronized...{}", !(SynchMaster.getInstance().isMemberChanged()
-            				|| SynchMaster.getInstance().isClusterChanged()));
+                    SynchMaster.getInstance().getClusterName(),
+                    SynchMaster.getInstance().getCoordinator().toString());
+            if (!SynchMaster.getInstance().isCoordinator()) {
+                LOGGER.info("State synchronized...{}", !(SynchMaster.getInstance().isMemberChanged()
+                        || SynchMaster.getInstance().isClusterChanged()));
+            }
             String addresses = "Addresses(" + SynchMaster.getInstance().getAddressList().size() + "): ";
             for (Iterator<Address> i = SynchMaster.getInstance().getAddressList().iterator(); i.hasNext();) {
                 addresses = addresses.concat(SynchMaster.getInstance().getChannelName(i.next()));
