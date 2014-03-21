@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.MessageFormat;
 import java.util.Locale;
 
 public final class Main {
@@ -91,7 +92,7 @@ public final class Main {
             try {
                 checkCommand(cis);
             } catch (WrongInputArgException e) {
-                LOGGER.warn("[WRONG INPUT] {}", e.getMessage(), e);
+                LOGGER.info("Can't analyze line...\n{}", e.getMessage());
             }
         }
     }
@@ -125,7 +126,8 @@ public final class Main {
                     break;
             }
         } catch (IllegalArgumentException e) {
-            throw new WrongInputArgException(e);
+            throw new WrongInputArgException("You enter wrong argument. Try to use -help for get information about "
+                    + "application commands");
         }
     }
 }

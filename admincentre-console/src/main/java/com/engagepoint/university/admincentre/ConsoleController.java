@@ -174,7 +174,7 @@ public class ConsoleController {
     public boolean nameValidation(String name) {
         boolean value = name.matches("^\\w+$");
         if (!value) {
-            LOGGER.debug("You have entered the invalid name. Only symbols a-zA-Z_0-9 are allowed");
+            LOGGER.info("You have entered the invalid name. Only symbols a-zA-Z_0-9 are allowed");
         }
         return value;
     }
